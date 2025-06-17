@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Portofolio Mining</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f0f6fa;
+      color: #333;
+      transition: background 0.3s, color 0.3s;
+    }
+    .dark {
+      background: #121212;
+      color: #f5f5f5;
+    }
+    .container { max-width: 700px; margin: auto; padding: 16px; padding-bottom: 80px; }
+    .summary-card {
+      background: #e9f4fb;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+    .dark .summary-card {
+      background: #1f1f1f;
+      color: #f5f5f5;
+    }
+    .summary-card h1 { font-size: 28px; margin: 0; }
+    .summary-card small { color: #666; }
+    .dark .summary-card small { color: #aaa; }
+    .summary-stats { margin-top: 12px; font-size: 14px; color: #444; }
+    .dark .summary-stats { color: #ccc; }
+    .btn-group {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+    }
+    .btn-group button {
+      flex: 1;
+      margin: 0 4px;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #007bff;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .asset-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .dark .asset-card {
+      background: #1a1a1a;
+      box-shadow: 0 1px 4px rgba(255,255,255,0.05);
+    }
+    .asset-left { display: flex; align-items: center; }
+    .asset-left svg { width: 36px; height: 36px; margin-right: 12px; }
+    .asset-info { font-size: 14px; }
+    .asset-info .symbol { font-weight: bold; }
+    .asset-right { text-align: right; font-size: 14px; }
+    .asset-profit { font-size: 12px; }
+    .profit-up { color: green; }
+    .profit-down { color: red; }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #fff;
+      border-top: 1px solid #ccc;
+      display: flex;
+      justify-content: space-around;
+      padding: 6px 0;
+      z-index: 1000;
+    }
+    .dark .bottom-nav {
+      background: #1f1f1f;
+      border-color: #444;
+    }
+    .bottom-nav a {
+      text-decoration: none;
+      color: #555;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+    .dark .bottom-nav a {
+      color: #aaa;
+    }
+    .bottom-nav a svg { width: 22px; height: 22px; margin-bottom: 2px; }
+    .bottom-nav a.active { color: #007bff; }
+    .bottom-nav a.active svg { stroke: #007bff; }
+
+    .toggle-darkmode {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 2000;
+    }
+  </style>
+</head>
+<body>
+  <button class="toggle-darkmode" id="darkToggle">🌓</button>
+
+  <div class="container" id="content">
+    <div class="summary-card">
+      <h1 id="idr">Loading...</h1>
+      <small id="btc">≈ Loading BTC</small>
+      <div class="summary-stats">
+        Return Value (1D): <strong id="return">Loading...</strong>
+      </div>
+      <div class="btn-group">
+        <button>Deposit</button>
+        <button style="background:#fff; color:#007bff; border:1px solid #007bff;">Withdraw</button>
+        <button style="background:#28a745;">Earn</button>
+      </div>
+    </div>
+    <div id="asset-list"></div>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="index.html">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M3 12L12 3l9 9v8a2 2 0 0 1-2 2h-3m-6 0H5a2 2 0 0 1-2-2z"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="market.html">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/></svg>
+      <span>Market</span>
+    </a>
+    <a href="market.html" class="active">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 6v6l4 2m6-4a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+      <span>Dompet</span>
+    </a>
+    <a href="mining.html">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 12h6M12 9v6m9-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+      <span>Mining</span>
+    </a>
+    <a href="mitra.html">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M16 21v-2a4 4 0 0 0-8 0v2m8-6a4 4 0 0 0-8 0m8-10a4 4 0 1 1-8 0"/></svg>
+      <span>Mitra</span>
+    </a>
+  </div>
+
+  <!-- Script utama (supabase & isi wallet) -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+    const supabase = createClient(
+      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+    );
+
+    let currentUser = null;
+
+    async function initUserWallet() {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error || !user) return window.location.href = "index.html"
+      currentUser = user;
+
+      const { data: wallets } = await supabase
+        .from('wallets')
+        .select('id')
+        .eq('user_id', user.id)
+
+      if (!wallets || wallets.length === 0) {
+        const defaultWallets = ['USDT', 'EXR', 'CX', 'MX', 'GX', 'LX', 'SX'].map(symbol => ({
+          symbol,
+          name: symbol === 'USDT' ? 'USDT' :
+                symbol === 'EXR' ? 'Exora' :
+                symbol === 'CX' ? 'CrystalX' :
+                symbol === 'MX' ? 'MineX' :
+                symbol === 'GX' ? 'GoldX' :
+                symbol === 'LX' ? 'LavaX' : 'ShadowX',
+          amount: 0, idr_value: 0, profit_percent: 0, user_id: user.id
+        }));
+        await supabase.from('wallets').insert(defaultWallets);
+      }
+    }
+
+    async function loadPortfolio() {
+      const { data: wallets } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', currentUser.id);
+
+      const { data: prices } = await supabase
+        .from('price_pool')
+        .select('symbol, last_price, logo_svg, price_change_percent');
+
+      const priceMap = Object.fromEntries(prices.map(p => [p.symbol, p]));
+
+      let total = 0;
+      let html = '';
+
+      wallets.forEach(asset => {
+        const priceData = priceMap[asset.symbol];
+        const latestPrice = priceData?.last_price || 0;
+        const logoSVG = priceData?.logo_svg || '';
+        const priceChange = priceData?.price_change_percent ?? 0;
+
+        asset.idr_value = asset.amount * latestPrice;
+        const profitClass = asset.profit_percent >= 0 ? 'profit-up' : 'profit-down';
+        const priceClass = priceChange >= 0 ? 'profit-up' : 'profit-down';
+        const priceSign = priceChange >= 0 ? '+' : '';
+
+        html += `
+          <div class="asset-card">
+            <div class="asset-left">
+              ${logoSVG || '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#ccc"/></svg>'}
+              <div class="asset-info">
+                <div class="symbol">${asset.name} (${asset.symbol})</div>
+                <div>Saldo: ${asset.amount}</div>
+                <div class="${priceClass}" style="font-size: 12px;">
+                  Harga: Rp ${latestPrice.toLocaleString('id-ID')} (${priceSign}${priceChange.toFixed(2)}%)
+                </div>
+              </div>
+            </div>
+            <div class="asset-right">
+              Rp ${asset.idr_value.toLocaleString('id-ID')}
+              <div class="asset-profit ${profitClass}">
+                ${asset.profit_percent.toFixed(1)}%
+              </div>
+            </div>
+          </div>
+        `;
+
+        total += asset.idr_value;
+      });
+
+      document.getElementById('asset-list').innerHTML = html;
+      document.getElementById('idr').innerText = 'Rp ' + total.toLocaleString('id-ID');
+      document.getElementById('btc').innerText = '≈ ' + (total / 850000000).toFixed(4) + ' BTC';
+      document.getElementById('return').innerText = '+Rp ' + Math.round(total * 0.05).toLocaleString('id-ID');
+    }
+
+    initUserWallet().then(loadPortfolio);
+  </script>
+
+  <!-- Script Dark Mode -->
+  <script>
+    function toggleDarkMode() {
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('darkmode', isDark ? '1' : '0');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('darkmode') === '1') {
+        document.body.classList.add('dark');
+      }
+      document.getElementById('darkToggle').addEventListener('click', toggleDarkMode);
+    });
+  </script>
+</body>
+</html>
