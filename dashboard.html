@@ -2,125 +2,413 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Portofolio Mining</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Game Crypto</title>
   <style>
     body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #f0f6fa;
-      color: #333;
-      transition: background 0.3s, color 0.3s;
-    }
-    .dark {
-      background: #121212;
-      color: #f5f5f5;
-    }
-    .container { max-width: 700px; margin: auto; padding: 16px; padding-bottom: 80px; }
-    .summary-card {
-      background: #e9f4fb;
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      position: sticky;
-      top: 0;
-      z-index: 999;
-    }
-    .dark .summary-card {
-      background: #1f1f1f;
-      color: #f5f5f5;
-    }
-    .summary-card h1 { font-size: 28px; margin: 0; }
-    .summary-card small { color: #666; }
-    .dark .summary-card small { color: #aaa; }
-    .summary-stats { margin-top: 12px; font-size: 14px; color: #444; }
-    .dark .summary-stats { color: #ccc; }
-    .btn-group {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 16px;
-    }
-    .btn-group button {
-      flex: 1;
-      margin: 0 4px;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      background: #007bff;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .asset-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    }
-    .dark .asset-card {
-      background: #1a1a1a;
-      box-shadow: 0 1px 4px rgba(255,255,255,0.05);
-    }
-    .asset-left { display: flex; align-items: center; }
-    .asset-left svg { width: 36px; height: 36px; margin-right: 12px; }
-    .asset-info { font-size: 14px; }
-    .asset-info .symbol { font-weight: bold; }
-    .asset-right { text-align: right; font-size: 14px; }
-    .asset-profit { font-size: 12px; }
-    .profit-up { color: green; }
-    .profit-down { color: red; }
-    .bottom-nav {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: #fff;
-      border-top: 1px solid #ccc;
-      display: flex;
-      justify-content: space-around;
-      padding: 6px 0;
-      z-index: 1000;
-    }
-    .dark .bottom-nav {
-      background: #1f1f1f;
-      border-color: #444;
-    }
-    .bottom-nav a {
-      text-decoration: none;
-      color: #555;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex: 1;
-    }
-    .dark .bottom-nav a {
-      color: #aaa;
-    }
-    .bottom-nav a svg { width: 22px; height: 22px; margin-bottom: 2px; }
-    .bottom-nav a.active { color: #007bff; }
-    .bottom-nav a.active svg { stroke: #007bff; }
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #1e3a8a 50%, #581c87 100%);
+  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
 
-    .toggle-darkmode {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      z-index: 2000;
-    }
+.bg-pattern {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle, .shape1, .shape2, .shape3 {
+  position: absolute;
+}
+.particle {
+  width: 4px;
+  height: 4px;
+  background: #22d3ee;
+  border-radius: 50%;
+  animation: float 3s infinite ease-in-out;
+}
+.shape1 {
+  top: 80px;
+  left: 80px;
+  width: 128px;
+  height: 128px;
+  border: 2px solid #22d3ee;
+  transform: rotate(45deg);
+  animation: rotate 20s linear infinite;
+}
+.shape2 {
+  top: 160px;
+  right: 128px;
+  width: 96px;
+  height: 96px;
+  border: 2px solid #a855f7;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+.shape3 {
+  bottom: 128px;
+  left: 160px;
+  width: 160px;
+  height: 160px;
+  border: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: bounce 3s infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+  50% { transform: translateY(-20px) rotate(180deg); opacity: 0.5; }
+}
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+/* === Modal === */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+#loading-spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999; /* pastikan muncul di atas */
+  text-align: center;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner-wrapper {
+  animation: spin 4s linear infinite;
+  display: inline-block;
+}
+/* === Modal (Bottom Sheet Style) === */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: rgba(30, 41, 59, 0.95); /* gelap, transparan */
+  color: white;
+  border-radius: 20px 20px 0 0;
+  padding: 24px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 80vh;
+  transform: translateY(100%);
+  animation: slideUp 0.3s ease forwards;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.modal-overlay.show .modal-content {
+  transform: translateY(0);
+}
+
+.modal-handle {
+  width: 40px;
+  height: 4px;
+  background: #475569;
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+.modal-content h3 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  text-align: center;
+}
+
+.modal-price {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #22d3ee;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 16px;
+  margin: 12px 0 24px 0;
+  border-radius: 12px;
+  border: 2px solid #334155;
+  font-size: 16px;
+  box-sizing: border-box;
+  background: #1e293b;
+  color: white;
+}
+
+.modal-content input:focus {
+  outline: none;
+  border-color: #22d3ee;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.modal-actions button:active {
+  transform: scale(0.98);
+}
+
+.btn-buy {
+  background: #22d3ee;
+  color: #0f172a;
+}
+.btn-buy:hover {
+  background: #0ea5e9;
+}
+
+.btn-sell {
+  background: #a855f7;
+  color: white;
+}
+.btn-sell:hover {
+  background: #9333ea;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  color: #94a3b8;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.btn-close:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+.modal-content.closing {
+  animation: slideDown 0.3s ease forwards;
+}
+
+/* === Summary & Asset Cards === */
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 16px;
+  padding-bottom: 80px;
+}
+.summary-card {
+  background: rgba(30, 41, 59, 0.85); /* cocok dengan background utama */
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  color: white;
+  backdrop-filter: blur(6px); /* opsional untuk efek kaca */
+}
+.summary-card h1 {
+  font-size: 28px;
+  margin: 0;
+}
+.summary-card small {
+  color: #ccc;
+}
+.summary-stats {
+  margin-top: 12px;
+  font-size: 18px;
+  color: #ccc;
+}
+.btn-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+.btn-group button {
+  flex: 1;
+  margin: 0 4px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #007bff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+.btn-group button:nth-child(2) {
+  background: white;
+  color: #007bff;
+  border: 1px solid #007bff;
+}
+.btn-group button:nth-child(3) {
+  background: #28a745;
+}
+
+/* === Asset Card === */
+.asset-card {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.asset-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.asset-left {
+  display: flex;
+  align-items: center;
+}
+.asset-left svg {
+  width: 36px;
+  height: 36px;
+  margin-right: 12px;
+}
+.asset-info {
+  font-size: 14px;
+}
+.asset-info .symbol {
+  font-weight: bold;
+}
+.asset-right {
+  text-align: right;
+  font-size: 14px;
+}
+
+/* === Bottom Navigation === */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  border-top: 1px solid #334155;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+}
+
+.bottom-nav a {
+  color: #94a3b8;
+  text-align: center;
+  font-size: 12px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bottom-nav a svg {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 4px;
+  fill: #94a3b8;
+  transition: fill 0.2s ease;
+}
+
+.bottom-nav a.active,
+.bottom-nav a:hover {
+  color: #38bdf8;
+}
+
+.bottom-nav a.active svg,
+.bottom-nav a:hover svg {
+  fill: #38bdf8;
+}
   </style>
 </head>
 <body>
-  <button class="toggle-darkmode" id="darkToggle">🌓</button>
 
-  <div class="container" id="content">
+  <!-- Modal -->
+  <div id="trade-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-handle"></div>
+      <button class="btn-close" onclick="closeModal()">×</button>
+      <h3 id="modal-title">Trade</h3>
+      <div class="modal-price" id="modal-price">-</div>
+      <input type="number" id="modal-amount" placeholder="Masukkan jumlah..." />
+      <div class="modal-actions">
+        <button id="buy-btn" class="btn-buy">Beli</button>
+        <button id="sell-btn" class="btn-sell">Jual</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
     <div class="summary-card">
       <h1 id="idr">Loading...</h1>
       <small id="btc">≈ Loading BTC</small>
@@ -133,140 +421,238 @@
         <button style="background:#28a745;">Earn</button>
       </div>
     </div>
-    <div id="asset-list"></div>
+
+    <div id="asset-list">
+      <div id="loading-spinner">
+        <div class="spinner-wrapper">
+          <svg width="240" height="240" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background -->
+            <circle cx="50" cy="50" r="48" fill="url(#bgGradient)" stroke="#0ff" stroke-width="2"/>
+
+            <!-- Simbol bergaya futuristik -->
+            <g transform="translate(50,50)">
+              <polygon points="0,-30 26,15 -26,15" fill="url(#coreGradient)" stroke="#00ffff" stroke-width="1.5" />
+              <polygon points="0,30 -26,-15 26,-15" fill="url(#coreGradient2)" stroke="#00ffff" stroke-width="1.5" />
+              <circle cx="0" cy="0" r="6" fill="#00ffff" stroke="#fff" stroke-width="1"/>
+            </g>
+
+            <!-- Gradien -->
+            <defs>
+              <radialGradient id="bgGradient" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#001f3f" />
+                <stop offset="100%" stop-color="#000814" />
+              </radialGradient>
+              <linearGradient id="coreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00ffff" />
+                <stop offset="100%" stop-color="#0066ff" />
+              </linearGradient>
+              <linearGradient id="coreGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00ccff" />
+                <stop offset="100%" stop-color="#0033ff" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+      <!-- Asset list akan dimuat di sini -->
+    </div>
   </div>
 
+  <!-- Navigasi bawah dipisahkan dari container -->
   <div class="bottom-nav">
     <a href="index.html">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M3 12L12 3l9 9v8a2 2 0 0 1-2 2h-3m-6 0H5a2 2 0 0 1-2-2z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg>
       <span>Home</span>
     </a>
     <a href="market.html">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg>
       <span>Market</span>
     </a>
     <a href="market.html" class="active">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 6v6l4 2m6-4a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
       <span>Dompet</span>
     </a>
     <a href="mining.html">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 12h6M12 9v6m9-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
       <span>Mining</span>
     </a>
     <a href="mitra.html">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M16 21v-2a4 4 0 0 0-8 0v2m8-6a4 4 0 0 0-8 0m8-10a4 4 0 1 1-8 0"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2m8-6a4 4 0 00-8 0m8-10a4 4 0 11-8 0" stroke="currentColor" stroke-width="2"/></svg>
       <span>Mitra</span>
     </a>
   </div>
+</body>
+</html>
 
-  <!-- Script utama (supabase & isi wallet) -->
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
-    );
+  const supabase = createClient(
+    'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+  );
 
-    let currentUser = null;
+  let currentUser = null;
+  let selectedSymbol = null;
+  let selectedPrice = 0;
 
-    async function initUserWallet() {
-      const { data: { user }, error } = await supabase.auth.getUser()
-      if (error || !user) return window.location.href = "index.html"
-      currentUser = user;
+  const ASSET_SYMBOLS = ['USDT', 'EXR', 'CX', 'MX', 'GX', 'LX', 'SX'];
+  const BTC_TO_IDR = 850000000;
 
-      const { data: wallets } = await supabase
-        .from('wallets')
-        .select('id')
-        .eq('user_id', user.id)
+  window.closeModal = function() {
+    const modal = document.getElementById('trade-modal');
+    const modalContent = modal.querySelector('.modal-content');
+    modalContent.classList.add('closing');
+    setTimeout(() => {
+      modal.style.display = 'none';
+      modal.classList.remove('show');
+      modalContent.classList.remove('closing');
+    }, 300);
+  }
 
-      if (!wallets || wallets.length === 0) {
-        const defaultWallets = ['USDT', 'EXR', 'CX', 'MX', 'GX', 'LX', 'SX'].map(symbol => ({
-          symbol,
-          name: symbol === 'USDT' ? 'USDT' :
-                symbol === 'EXR' ? 'Exora' :
-                symbol === 'CX' ? 'CrystalX' :
-                symbol === 'MX' ? 'MineX' :
-                symbol === 'GX' ? 'GoldX' :
-                symbol === 'LX' ? 'LavaX' : 'ShadowX',
-          amount: 0, idr_value: 0, profit_percent: 0, user_id: user.id
-        }));
-        await supabase.from('wallets').insert(defaultWallets);
-      }
+  function showModal() {
+    const modal = document.getElementById('trade-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+  }
+
+  function initModalEvents() {
+    const modal = document.getElementById('trade-modal');
+    modal.addEventListener('click', function (e) {
+      if (e.target === this) closeModal();
+    });
+  }
+
+  function getAssetName(symbol) {
+    const names = {
+      'USDT': 'USDT', 'EXR': 'Exora', 'CX': 'CrystalX',
+      'MX': 'MineX', 'GX': 'GoldX', 'LX': 'LavaX', 'SX': 'ShadowX'
+    };
+    return names[symbol] || symbol;
+  }
+
+  async function initUserWallet() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+      window.location.href = "index.html";
+      return;
     }
 
-    async function loadPortfolio() {
-      const { data: wallets } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('user_id', currentUser.id);
+    currentUser = user;
 
-      const { data: prices } = await supabase
-        .from('price_pool')
-        .select('symbol, last_price, logo_svg, price_change_percent');
+    const { data: wallets } = await supabase
+      .from('wallets')
+      .select('id')
+      .eq('user_id', user.id);
 
-      const priceMap = Object.fromEntries(prices.map(p => [p.symbol, p]));
+    if (!wallets || wallets.length === 0) {
+      const defaultWallets = ASSET_SYMBOLS.map(symbol => ({
+        symbol,
+        name: getAssetName(symbol),
+        amount: 0,
+        idr_value: 0,
+        profit_percent: 0,
+        user_id: user.id
+      }));
+      await supabase.from('wallets').insert(defaultWallets);
+    }
+  }
 
-      let total = 0;
-      let html = '';
+  async function loadPortfolio() {
+    const { data: wallets } = await supabase
+      .from('wallets')
+      .select('*')
+      .eq('user_id', currentUser.id);
 
-      wallets.forEach(asset => {
-        const priceData = priceMap[asset.symbol];
-        const latestPrice = priceData?.last_price || 0;
-        const logoSVG = priceData?.logo_svg || '';
-        const priceChange = priceData?.price_change_percent ?? 0;
+    const { data: prices } = await supabase
+      .from('price_pool')
+      .select('symbol, last_price, logo_svg, price_change_percent');
 
-        asset.idr_value = asset.amount * latestPrice;
-        const profitClass = asset.profit_percent >= 0 ? 'profit-up' : 'profit-down';
-        const priceClass = priceChange >= 0 ? 'profit-up' : 'profit-down';
-        const priceSign = priceChange >= 0 ? '+' : '';
+    const priceMap = Object.fromEntries(prices.map(p => [p.symbol, p]));
+    let total = 0;
+    let html = '';
 
-        html += `
-          <div class="asset-card">
-            <div class="asset-left">
-              ${logoSVG || '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#ccc"/></svg>'}
-              <div class="asset-info">
-                <div class="symbol">${asset.name} (${asset.symbol})</div>
-                <div>Saldo: ${asset.amount}</div>
-                <div class="${priceClass}" style="font-size: 12px;">
-                  Harga: Rp ${latestPrice.toLocaleString('id-ID')} (${priceSign}${priceChange.toFixed(2)}%)
-                </div>
-              </div>
-            </div>
-            <div class="asset-right">
-              Rp ${asset.idr_value.toLocaleString('id-ID')}
-              <div class="asset-profit ${profitClass}">
-                ${asset.profit_percent.toFixed(1)}%
-              </div>
+    wallets.forEach(asset => {
+      const priceData = priceMap[asset.symbol];
+      const latestPrice = priceData?.last_price || 0;
+
+      asset.idr_value = asset.amount * latestPrice;
+
+      html += `
+        <div class="asset-card" data-symbol="${asset.symbol}">
+          <div class="asset-left">
+            ${priceData?.logo_svg || '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#ccc"/></svg>'}
+            <div class="asset-info">
+              <div class="symbol">${asset.name} (${asset.symbol})</div>
+              <div>Saldo: ${asset.amount}</div>
             </div>
           </div>
-        `;
+          <div class="asset-right">
+            Rp ${asset.idr_value.toLocaleString('id-ID')}
+            <div style="font-size: 12px;">Harga: Rp ${latestPrice.toLocaleString('id-ID')}</div>
+          </div>
+        </div>
+      `;
 
-        total += asset.idr_value;
-      });
-
-      document.getElementById('asset-list').innerHTML = html;
-      document.getElementById('idr').innerText = 'Rp ' + total.toLocaleString('id-ID');
-      document.getElementById('btc').innerText = '≈ ' + (total / 850000000).toFixed(4) + ' BTC';
-      document.getElementById('return').innerText = '+Rp ' + Math.round(total * 0.05).toLocaleString('id-ID');
-    }
-
-    initUserWallet().then(loadPortfolio);
-  </script>
-
-  <!-- Script Dark Mode -->
-  <script>
-    function toggleDarkMode() {
-      const isDark = document.body.classList.toggle('dark');
-      localStorage.setItem('darkmode', isDark ? '1' : '0');
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      if (localStorage.getItem('darkmode') === '1') {
-        document.body.classList.add('dark');
-      }
-      document.getElementById('darkToggle').addEventListener('click', toggleDarkMode);
+      total += asset.idr_value;
     });
-  </script>
+
+    document.getElementById('asset-list').innerHTML = html;
+    document.getElementById('idr').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+    document.getElementById('btc').innerText = `≈ ${(total / BTC_TO_IDR).toFixed(4)} BTC`;
+    document.getElementById('return').innerText = `+Rp ${Math.round(total * 0.05).toLocaleString('id-ID')}`;
+
+    document.querySelectorAll('.asset-card').forEach(card => {
+      card.addEventListener('click', () => {
+        selectedSymbol = card.getAttribute('data-symbol');
+        selectedPrice = priceMap[selectedSymbol]?.last_price || 0;
+        document.getElementById('modal-title').innerText = `Trade ${selectedSymbol}`;
+        document.getElementById('modal-price').innerText = `Rp ${selectedPrice.toLocaleString('id-ID')}`;
+        document.getElementById('modal-amount').value = '';
+        showModal();
+      });
+    });
+  }
+
+  async function handleTrade(isBuy) {
+    const amount = parseFloat(document.getElementById('modal-amount').value);
+    if (!amount || amount <= 0) return alert("⚠️ Masukkan jumlah yang valid.");
+
+    const { data: walletData, error } = await supabase
+      .from('wallets')
+      .select('amount')
+      .eq('user_id', currentUser.id)
+      .eq('symbol', selectedSymbol)
+      .single();
+
+    if (error || !walletData) return alert("❌ Gagal mengambil data saldo.");
+
+    const currentBalance = parseFloat(walletData.amount);
+    if (!isBuy && amount > currentBalance) {
+      return alert(`❌ Anda mencoba menjual ${amount} ${selectedSymbol}, tapi saldo Anda hanya ${currentBalance}.`);
+    }
+
+    const { error: tradeError } = await supabase.rpc('trade_asset', {
+      user_id_input: currentUser.id,
+      symbol_input: selectedSymbol,
+      amount_input: amount,
+      is_buy: isBuy
+    });
+
+    if (tradeError) return alert("❌ Transaksi gagal: " + tradeError.message);
+
+    alert(`✅ Transaksi ${isBuy ? 'pembelian' : 'penjualan'} berhasil!`);
+    closeModal();
+    loadPortfolio();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initModalEvents();
+    initUserWallet().then(loadPortfolio);
+
+    document.getElementById('buy-btn').addEventListener('click', () => handleTrade(true));
+    document.getElementById('sell-btn').addEventListener('click', () => handleTrade(false));
+  });
+</script>
 </body>
 </html>
