@@ -436,26 +436,25 @@ let currentUserId = null;
 
 async function claimReward(accessToken) {
   try {
-await fetch('https://ocfjkltbtwqrbiucrkyq.supabase.co/functions/v1/claim-reward', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  },
-  credentials: 'include',
-  mode: 'cors'
-});
+    const res = await fetch('https://ocfjkltbtwqrbiucrkyq.supabase.co/functions/v1/claim-reward', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      credentials: 'omit' // ✅ cukup ini karena kamu pakai Bearer token, bukan cookie
+    });
 
-    if (!response.ok) {
-      const err = await response.json();
+    if (!res.ok) {
+      const err = await res.json(); // ✅ PERBAIKAN DI SINI
       throw new Error(err.error || 'Unknown error');
     }
 
-    const result = await response.json();
+    const result = await res.json(); // ✅
     console.log('Reward claimed:', result.claimed);
     return result;
   } catch (err) {
-    console.error('Gagal kirim klaim:', err);
+    console.error('Gagal kirim klaim:', err.message || err);
     throw err;
   }
 }
