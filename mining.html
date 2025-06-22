@@ -441,26 +441,22 @@ async function claimReward(accessToken) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`
-      }
+      },
+      mode: 'cors',
+      credentials: 'include' // hanya perlu kalau kirim cookie, bisa dihapus kalau token saja
     });
 
-    const result = await response.json();
-
     if (!response.ok) {
-      console.error("Claim gagal:", result.error || result);
-      alert("Gagal klaim: " + (result.error || "Unknown error"));
-      return;
+      const err = await response.json();
+      throw new Error(err.error || 'Unknown error');
     }
 
-    console.log("Claim berhasil:", result.claimed);
-    alert(`Berhasil klaim: ${result.claimed} EXR`);
-
-    // Misalnya kamu ingin update UI setelah klaim:
-    await loadWalletBalance();
-
+    const result = await response.json();
+    console.log('Reward claimed:', result.claimed);
+    return result;
   } catch (err) {
-    console.error("Gagal kirim klaim:", err.message || err);
-    alert("Koneksi ke server gagal. Periksa jaringan atau CORS.");
+    console.error('Gagal kirim klaim:', err);
+    throw err;
   }
 }
 
