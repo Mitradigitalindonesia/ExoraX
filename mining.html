@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EXORA Mining - EXR</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #1e3a8a 50%, #581c87 100%);
+      color: white;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .mining-header {
+      margin-top: 24px;
+    }
+
+    .coin-amount {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .earning-info {
+      display: flex;
+      justify-content: space-between;
+      width: 80%;
+      max-width: 400px;
+      margin: 0 auto 20px;
+      font-size: 9px;
+      color: #a1a1aa;
+    }
+
+    .earning-info div span {
+      display: block;
+      color: #f8fafc;
+      font-weight: bold;
+      font-size: 7px;
+    }
+
+    .logo-container {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 16px;
+      cursor: pointer;
+    }
+
+    .logo-container svg {
+      width: 100%;
+      height: 100%;
+      transition: transform 0.3s ease;
+    }
+
+    .logo-container.active svg {
+      animation: spin 3s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .stats-info {
+      font-size: 14px;
+      margin-top: 12px;
+      color: #cbd5e1;
+    }
+
+    .stats-info .highlight {
+      font-weight: bold;
+      color: #38bdf8;
+    }
+
+    .cooldown {
+      font-size: 12px;
+      margin-top: 6px;
+      color: #f87171;
+    }
+
+    .mining-rig-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 400px;
+      margin: 30px auto 90px;
+      width: 90%;
+    }
+
+    .mining-rig-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      border: 1px solid #334155;
+    }
+
+    .mining-rig-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: left;
+    }
+
+    .mining-rig-info strong {
+      font-size: 16px;
+    }
+
+    .mining-rig-info span {
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+
+    .btn-buy-rig {
+      background: #22d3ee;
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-buy-rig:hover {
+      background: #0ea5e9;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.6);
+      border-top: 1px solid #334155;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+    }
+
+    .bottom-nav a {
+      color: #94a3b8;
+      text-align: center;
+      font-size: 12px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .bottom-nav a svg {
+      width: 20px;
+      height: 20px;
+      margin-bottom: 4px;
+      fill: #94a3b8;
+      transition: fill 0.2s ease;
+    }
+
+    .bottom-nav a.active,
+    .bottom-nav a:hover {
+      color: #38bdf8;
+    }
+
+    .bottom-nav a.active svg,
+    .bottom-nav a:hover svg {
+      fill: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Saldo dan info earning -->
+<div class="mining-header">
+  <div class="coin-amount" id="coinAmount">0.0000 EXR</div>
+  <div class="earning-info">
+    <div>
+      Last 24h
+      <span id="last24h">0.0000</span>
+    </div>
+    <div>
+      Total
+      <span id="totalEarning">0.0000</span>
+    </div>
+  </div>
+</div>
+
+<!-- Logo / tombol mining -->
+<div class="logo-container" id="logoMining">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="48" fill="url(#bgGradient)" stroke="#0ff" stroke-width="2"/>
+    <g transform="translate(50,50)">
+      <polygon points="0,-30 26,15 -26,15" fill="url(#coreGradient)" stroke="#00ffff" stroke-width="1.5" />
+      <polygon points="0,30 -26,-15 26,-15" fill="url(#coreGradient2)" stroke="#00ffff" stroke-width="1.5" />
+      <circle cx="0" cy="0" r="6" fill="#00ffff" stroke="#fff" stroke-width="1"/>
+    </g>
+    <defs>
+      <radialGradient id="bgGradient" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#001f3f" />
+        <stop offset="100%" stop-color="#000814" />
+      </radialGradient>
+      <linearGradient id="coreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#00ffff" />
+        <stop offset="100%" stop-color="#0066ff" />
+      </linearGradient>
+      <linearGradient id="coreGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#00ccff" />
+        <stop offset="100%" stop-color="#0033ff" />
+      </linearGradient>
+    </defs>
+  </svg>
+</div>
+
+<!-- Hashrate dan cooldown -->
+<div class="stats-info">
+  Hashrate: <span class="highlight" id="hashrate">0 H/s</span>
+</div>
+<div class="cooldown" id="cooldownText">
+  Tidak ada cooldown saat ini
+</div>
+
+<!-- List item yang bisa dibeli -->
+<h3 style="margin-top: 32px;">Pilih Mining Item</h3>
+<div class="mining-rig-list" id="cloud-plans"></div>
+
+<!-- Navigasi bawah -->
+<div class="bottom-nav">
+  <a href="index.html">
+    <svg ...></svg>
+    <span>Home</span>
+  </a>
+  <a href="market.html">
+    <svg ...></svg>
+    <span>Market</span>
+  </a>
+  <a href="wallet.html">
+    <svg ...></svg>
+    <span>Dompet</span>
+  </a>
+  <a href="mining.html" class="active">
+    <svg ...></svg>
+    <span>Mining</span>
+  </a>
+  <a href="mitra.html">
+    <svg ...></svg>
+    <span>Mitra</span>
+  </a>
+</div>
+
+<!-- Modal untuk konfirmasi beli -->
+<div id="plan-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:1000;">
+  <div style="background:#1e293b; padding:20px; border-radius:8px; width:300px; text-align:center; color:white;">
+    <h3 id="modal-plan-name">Plan Name</h3>
+    <p>Harga: <span id="modal-plan-price">0</span> EXR</p>
+    <button id="modal-confirm" style="background:#22d3ee; color:#000; padding:8px 12px; margin-right:8px;">Aktifkan</button>
+    <button id="modal-cancel" style="background:#f87171; color:#fff; padding:8px 12px;">Batal</button>
+  </div>
+</div>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const supabase = createClient(
+    'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+  );
+
+  const coinAmount = document.getElementById('coinAmount');
+  const last24h = document.getElementById('last24h');
+  const totalEarning = document.getElementById('totalEarning');
+  const hashrateEl = document.getElementById('hashrate');
+  const cooldownText = document.getElementById('cooldownText');
+  const logo = document.getElementById('logoMining');
+  const plansContainer = document.getElementById('cloud-plans');
+
+  const modal = document.getElementById('plan-modal');
+  const modalPlanName = document.getElementById('modal-plan-name');
+  const modalPlanPrice = document.getElementById('modal-plan-price');
+  const modalConfirm = document.getElementById('modal-confirm');
+  const modalCancel = document.getElementById('modal-cancel');
+
+let miningInterval = null;
+let tick = 0;
+let sessionEarned = 0;
+let unclaimedEarned = 0;
+let displayed24h = 0;
+let displayedTotal = 0;
+let currentUserId = null;
+
+  async function loadWalletBalance(userId) {
+    const { data, error } = await supabase
+      .from('wallets')
+      .select('amount')
+      .eq('user_id', userId)
+      .eq('symbol', 'EXR')
+      .single();
+
+    if (error) {
+      console.error('Error fetch wallet:', error.message);
+      coinAmount.textContent = '0.0000 EXR';
+      return 0;
+    }
+
+    const amount = parseFloat(data?.amount) || 0;
+    coinAmount.textContent = amount.toFixed(4) + ' EXR';
+    return amount;
+  }
+
+  // Load total hashrate dari inventory
+  async function loadHashrate(userId) {
+    const { data, error } = await supabase
+      .from('inventory')
+      .select('hashrate')
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error fetch inventory hashrate:', error.message);
+      hashrateEl.textContent = '0 H/s';
+      return 0;
+    }
+
+    let total = 0;
+    data.forEach(item => total += parseFloat(item.hashrate || 0));
+    hashrateEl.textContent = total.toFixed(0) + ' H/s';
+    return total;
+  }
+
+  // Load item mining dari tabel items
+  async function loadItems() {
+    const { data, error } = await supabase
+      .from('items')
+      .select('*')
+      .order('price_exr', { ascending: true });
+
+    if (error || !data?.length) {
+      plansContainer.innerHTML = '<p>Gagal memuat item mining.</p>';
+      return;
+    }
+
+    plansContainer.innerHTML = '';
+    data.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'mining-rig-card';
+
+      card.innerHTML = `
+        <div class="mining-rig-info">
+          <strong>${item.item_name}</strong>
+          <span>Hashrate: ${item.hashrate?.toFixed(0) || 0} H/s</span>
+          <span>Daya: ${item.power_usage} W</span>
+          <span>Biaya Maint: ${item.maintenance_cost} EXR</span>
+          <span>Harga: ${item.price_exr} EXR</span>
+        </div>
+        <button class="btn-buy-rig" data-item-id="${item.id}">Beli</button>
+      `;
+      plansContainer.appendChild(card);
+    });
+
+    const buttons = plansContainer.querySelectorAll('.btn-buy-rig');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const itemId = btn.getAttribute('data-item-id');
+        const { data: itemData } = await supabase
+          .from('items')
+          .select('*')
+          .eq('id', itemId)
+          .single();
+
+        selectedPlan = itemData;
+        if (!selectedPlan) {
+          alert('Item tidak ditemukan');
+          return;
+        }
+
+        modalPlanName.textContent = selectedPlan.item_name;
+        modalPlanPrice.textContent = selectedPlan.price_exr + ' EXR';
+        modal.style.display = 'flex';
+      });
+    });
+  }
+
+  // Fungsi beli item
+  async function buyMiningRig(userId) {
+    if (!selectedPlan) return;
+
+    const { data: wallet, error: walletErr } = await supabase
+      .from('wallets')
+      .select('amount')
+      .eq('user_id', userId)
+      .eq('symbol', 'EXR')
+      .single();
+
+    if (walletErr || !wallet || wallet.amount < selectedPlan.price_exr) {
+      alert('Saldo tidak cukup atau gagal ambil wallet.');
+      return;
+    }
+
+    const { error: invErr } = await supabase
+      .from('inventory')
+      .insert({
+        user_id: userId,
+        item_id: selectedPlan.id,
+        item_name: selectedPlan.item_name,
+        hashrate: selectedPlan.hashrate,
+        power_usage: selectedPlan.power_usage,
+        quantity: 1
+      });
+
+    if (invErr) {
+      alert('Gagal tambah inventory: ' + invErr.message);
+      return;
+    }
+
+    await supabase
+      .from('wallets')
+      .update({ amount: wallet.amount - selectedPlan.price_exr })
+      .eq('user_id', userId)
+      .eq('symbol', 'EXR');
+
+    alert(`Berhasil membeli ${selectedPlan.item_name}`);
+    modal.style.display = 'none';
+    selectedPlan = null;
+
+    await loadWalletBalance(userId);
+    await loadHashrate(userId);
+    await loadItems();
+  }
+
+async function claimReward(accessToken) {
+  try {
+    const response = await fetch('https://ocfjkltbtwqrbiucrkyq.supabase.co/functions/v1/claim-reward', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error("Claim gagal:", result.error || result);
+      alert("Gagal klaim: " + (result.error || "Unknown error"));
+      return;
+    }
+
+    console.log("Claim berhasil:", result.claimed);
+    alert(`Berhasil klaim: ${result.claimed} EXR`);
+
+    // Misalnya kamu ingin update UI setelah klaim:
+    await loadWalletBalance();
+
+  } catch (err) {
+    console.error("Gagal kirim klaim:", err.message || err);
+    alert("Koneksi ke server gagal. Periksa jaringan atau CORS.");
+  }
+}
+
+async function startMining(hashrate) {
+  if (miningInterval) return;
+
+  logo.classList.add('active');
+  cooldownText.textContent = 'Mining berjalan...';
+
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData?.user?.id) {
+    alert("Gagal memuat ID pengguna.");
+    return;
+  }
+
+  currentUserId = userData.user.id;
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData?.session?.access_token;
+
+  if (!accessToken) {
+    alert("Token tidak ditemukan, silakan login ulang.");
+    return;
+  }
+
+  miningInterval = setInterval(async () => {
+    const earned = hashrate / 100000;
+
+    sessionEarned += earned;
+    unclaimedEarned += earned;
+
+    displayed24h += earned;
+    displayedTotal += earned;
+
+    last24h.textContent = displayed24h.toFixed(4);
+    totalEarning.textContent = displayedTotal.toFixed(4);
+
+    tick++;
+
+    if (tick >= 10) {
+      const claimed = await claimReward(accessToken);
+      if (claimed !== null) {
+        await loadWalletBalance(currentUserId);
+      }
+
+      // Reset hitungan klaim, UI tetap lanjut menampilkan akumulasi
+      sessionEarned = 0;
+      unclaimedEarned = 0;
+      tick = 0;
+    }
+  }, 1000);
+}
+
+function stopMining() {
+  if (!miningInterval) return;
+  clearInterval(miningInterval);
+  miningInterval = null;
+  logo.classList.remove('active');
+  cooldownText.textContent = 'Mining dihentikan';
+}
+
+  // Event listener klik mining
+  logo.addEventListener('click', async () => {
+    if (!currentUserId) return alert('User belum login');
+    if (logo.classList.contains('active')) {
+      stopMining();
+    } else {
+      const hashrate = await loadHashrate(currentUserId);
+      if (hashrate > 0) {
+        startMining(hashrate);
+      } else {
+        alert('Anda belum memiliki mining rig');
+      }
+    }
+  });
+
+  modalCancel.addEventListener('click', () => {
+    modal.style.display = 'none';
+    selectedPlan = null;
+  });
+
+  modalConfirm.addEventListener('click', async () => {
+    if (currentUserId) await buyMiningRig(currentUserId);
+  });
+
+  // Init
+  window.addEventListener('DOMContentLoaded', async () => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+      alert('User belum login.');
+      return;
+    }
+
+    currentUserId = user.id;
+
+    await loadWalletBalance(currentUserId);
+    await loadHashrate(currentUserId);
+    await loadItems();
+  });
+</script>
+</body>
+</html>
