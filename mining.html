@@ -436,13 +436,14 @@ let currentUserId = null;
 
 async function claimReward(accessToken) {
   try {
-   const res = await fetch('https://ocfjkltbtwqrbiucrkyq.supabase.co/functions/v1/claim-reward', {
+await fetch('https://ocfjkltbtwqrbiucrkyq.supabase.co/functions/v1/claim-reward', {
   method: 'POST',
   headers: {
-    'Authorization': `Bearer ${accessToken}`,
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
   },
-  credentials: 'include'  // WAJIB kalau kamu aktifkan "Enforce JWT Verification"
+  credentials: 'include',
+  mode: 'cors'
 });
 
     if (!response.ok) {
