@@ -1,77 +1,37 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - Game Crypto</title>
+  <meta charset="UTF-8">
+  <title>Login dengan Wallet</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom right, #0f2027, #203a43, #2c5364);
+      font-family: sans-serif;
+      background: #111827;
       color: white;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: #1f1f1f;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.4);
-      width: 100%;
-      max-width: 400px;
-      box-sizing: border-box;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 25px;
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 8px;
-      background: #333;
-      color: white;
-      font-size: 16px;
+      flex-direction: column;
     }
     button {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
+      padding: 12px 20px;
+      font-size: 16px;
+      background: #facc15;
       border: none;
       border-radius: 8px;
-      background-color: #00c6ff;
-      font-weight: bold;
       cursor: pointer;
-      font-size: 16px;
-      color: black;
     }
-    button:hover {
-      background-color: #00a8d6;
-    }
-    .footer {
-      text-align: center;
-      font-size: 13px;
-      color: #aaa;
-      margin-top: 10px;
+    h1 {
+      margin-bottom: 16px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Masuk ke Game Crypto</h2>
-
-    <input id="email" type="email" placeholder="Email" required />
-    <input id="password" type="password" placeholder="Password" required />
-    <button id="signupBtn">Daftar</button>
-    <button id="signinBtn">Login</button>
-
-    <div class="footer">© 2025 Game Crypto</div>
-  </div>
+  <h1>Login dengan Wallet</h1>
+  <button id="connect-wallet">Connect Wallet</button>
+  <p id="status" style="margin-top:10px;"></p>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
@@ -80,35 +40,51 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    async function signUp() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
+    async function loginWithWallet() {
+      const status = document.getElementById('status');
+      if (!window.ethereum) return alert("🚫 MetaMask tidak ditemukan.");
 
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const address = await signer.getAddress();
 
-      if (error) {
-        alert("Gagal daftar: " + error.message);
-      } else {
-        alert("Berhasil daftar! Silakan login.");
+        const message = `Login ke aplikasi sebagai ${address}`;
+        const signature = await signer.signMessage(message);
+
+        const fakeEmail = `${address.toLowerCase()}@wallet.app`;
+        const password = signature.slice(0, 20); // Gunakan sebagian signature sebagai password
+
+        // Coba sign up terlebih dahulu
+        await supabase.auth.signUp({
+          email: fakeEmail,
+          password: password,
+          options: {
+            data: {
+              wallet_address: address
+            }
+          }
+        });
+
+        // Kemudian login
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: fakeEmail,
+          password: password
+        });
+
+        if (error) return alert("Gagal login: " + error.message);
+
+        status.innerText = "✅ Login berhasil! Mengalihkan...";
+        setTimeout(() => window.location.href = 'dashboard.html', 1000);
+
+      } catch (err) {
+        console.error(err);
+        alert("⚠️ Gagal login: " + err.message);
       }
     }
 
-    async function signIn() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-      if (error) {
-        alert("Login gagal: " + error.message);
-      } else {
-        alert("Login berhasil!");
-        window.location.href = "dashboard.html"; // Redirect ke dashboard
-      }
-    }
-
-    document.getElementById('signupBtn').addEventListener('click', signUp);
-    document.getElementById('signinBtn').addEventListener('click', signIn);
+    document.getElementById('connect-wallet').addEventListener('click', loginWithWallet);
   </script>
 </body>
 </html>
