@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
-<title>Login Wallet Solana</title>
-<style>
-  body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; text-align: center; padding: 2rem; }
-  button { padding: 12px 24px; font-size: 16px; background: #00c6ff; color: #000; border: none; border-radius: 6px; cursor: pointer; }
-  button:hover { background: #00a8d6; }
-  pre { margin-top: 20px; background: #1f1f1f; padding: 15px; border-radius: 6px; max-width: 600px; margin-left: auto; margin-right: auto; text-align: left; }
-</style>
+  <meta charset="UTF-8" />
+  <title>Login Wallet Solana</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; text-align: center; padding: 2rem; }
+    button { padding: 12px 24px; font-size: 16px; background: #00c6ff; color: #000; border: none; border-radius: 6px; cursor: pointer; }
+    button:hover { background: #00a8d6; }
+    pre { margin-top: 20px; background: #1f1f1f; padding: 15px; border-radius: 6px; max-width: 600px; margin: 1rem auto; text-align: left; }
+  </style>
 </head>
 <body>
 
@@ -17,6 +17,7 @@
 <pre id="output"></pre>
 
 <script type="module">
+  const BACKEND_URL = "https://game-crypto-backend.onrender.com";
   const loginBtn = document.getElementById("login-btn");
   const output = document.getElementById("output");
 
@@ -31,49 +32,43 @@
       const resp = await window.solana.connect();
       const walletAddress = resp.publicKey.toString();
 
-      // Buat pesan login unik
+      // Unique login message
       const message = `Login to Game Crypto\nTimestamp: ${Date.now()}`;
       const encodedMessage = new TextEncoder().encode(message);
 
       // Sign message
-      const signed = await window.solana.signMessage(encodedMessage);
+      const signed = await window.solana.signMessage(encodedMessage, 'utf8');
       const signatureArray = Array.from(signed.signature);
 
-      // Kirim ke backend login-wallet
-      const res = await fetch("http://localhost:3000/login-wallet", {
+      // Send to backend
+      const res = await fetch(`${BACKEND_URL}/login-wallet`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          wallet: walletAddress,
-          message,
-          signature: signatureArray
-        })
+        body: JSON.stringify({ wallet: walletAddress, message, signature: signatureArray }),
       });
 
       const data = await res.json();
       output.textContent = JSON.stringify(data, null, 2);
 
       if (data.success) {
-        // Simpan token JWT
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        alert("Login berhasil!");
+        alert("✅ Login berhasil!");
 
-        // Contoh panggil API private dengan token
-        const profileRes = await fetch("http://localhost:3000/profile", {
+        // Optional: call protected endpoint
+        const profileRes = await fetch(`${BACKEND_URL}/profile`, {
           headers: { Authorization: `Bearer ${data.token}` }
         });
         const profileData = await profileRes.json();
-        console.log("Profile:", profileData);
-
+        console.log("🔒 Profile data:", profileData);
       } else {
         alert("Login gagal: " + data.message);
       }
 
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error:", err);
       alert("Terjadi kesalahan saat login.");
-      output.textContent = String(err);
+      output.textContent = err.message;
     }
   }
 
