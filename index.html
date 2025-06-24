@@ -14,7 +14,6 @@
       height: 100vh;
       margin: 0;
     }
-
     .container {
       text-align: center;
       background: white;
@@ -22,7 +21,6 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
-
     button {
       padding: 10px 20px;
       background: #8c52ff;
@@ -32,11 +30,9 @@
       font-size: 16px;
       cursor: pointer;
     }
-
     button:hover {
       background: #6e3ee7;
     }
-
     #status {
       margin-top: 1rem;
       font-size: 14px;
@@ -51,11 +47,8 @@
     <div id="status"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
     const backendUrl = "https://game-crypto-backend.onrender.com";
-    const supabaseUrl = "https://ocfjkltbtwqrbiucrkyq.supabase.co";
-    const supabase = window.supabase.createClient(supabaseUrl, "");
 
     document.getElementById("login-btn").addEventListener("click", async () => {
       const statusEl = document.getElementById("status");
@@ -93,12 +86,11 @@
 
         const { token, user } = result;
 
-        await supabase.auth.setSession({
-          access_token: token,
-          refresh_token: ""
-        });
+        // Simpan token di localStorage (untuk backend-only API authentication)
+        localStorage.setItem("authToken", token);
 
         statusEl.textContent = `✅ Berhasil login sebagai ${user.wallet_address}`;
+        console.log("Token JWT:", token);
       } catch (err) {
         console.error(err);
         statusEl.textContent = "❌ Gagal login: " + (err.message || "Unknown error");
