@@ -81,10 +81,10 @@
         output.textContent = JSON.stringify(data, null, 2);
 
         if (data.success) {
-          localStorage.setItem("user", JSON.stringify(data.user));
-          alert("Login berhasil!");
-        } else {
-          alert("Gagal login: " + data.message);
+  localStorage.setItem("user", JSON.stringify(data.user));
+  window.location.href = "dompet.html"; // ⬅️ redirect ke halaman dompet.html
+} else {
+  alert("Gagal login: " + data.message);
         }
 
       } catch (err) {
