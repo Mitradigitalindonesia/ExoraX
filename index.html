@@ -1,90 +1,101 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Login dengan Wallet</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <meta charset="UTF-8" />
+  <title>Login Wallet Solana</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #111827;
+      font-family: 'Segoe UI', sans-serif;
+      background: #121212;
       color: white;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      flex-direction: column;
+      margin: 0;
     }
     button {
-      padding: 12px 20px;
+      padding: 12px 24px;
       font-size: 16px;
-      background: #facc15;
+      background-color: #00c6ff;
+      color: #000;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
     }
-    h1 {
-      margin-bottom: 16px;
+    button:hover {
+      background-color: #00a8d6;
+    }
+    pre {
+      margin-top: 20px;
+      background: #1f1f1f;
+      padding: 15px;
+      border-radius: 6px;
+      width: 90%;
+      max-width: 600px;
+      overflow-x: auto;
     }
   </style>
 </head>
 <body>
-  <h1>Login dengan Wallet</h1>
-  <button id="connect-wallet">Connect Wallet</button>
-  <p id="status" style="margin-top:10px;"></p>
+
+  <h2>Login dengan Wallet Solana</h2>
+  <button onclick="login()">Login</button>
+  <pre id="output"></pre>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-    const supabaseUrl = 'https://ocfjkltbtwqrbiucrkyq.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc';
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    async function loginWithWallet() {
-      const status = document.getElementById('status');
-      if (!window.ethereum) return alert("🚫 MetaMask tidak ditemukan.");
+    async function login() {
+      const output = document.getElementById("output");
 
       try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner();
-        const address = await signer.getAddress();
+        if (!window?.solana?.isPhantom) {
+          alert("Phantom Wallet belum terpasang!");
+          return;
+        }
 
-        const message = `Login ke aplikasi sebagai ${address}`;
-        const signature = await signer.signMessage(message);
+        // 1. Connect ke Phantom Wallet
+        const resp = await window.solana.connect();
+        const walletAddress = resp.publicKey.toString();
 
-        const fakeEmail = `${address.toLowerCase()}@wallet.app`;
-        const password = signature.slice(0, 20); // Gunakan sebagian signature sebagai password
+        // 2. Buat pesan untuk ditandatangani
+        const message = `Login to Game Crypto\nTimestamp: ${Date.now()}`;
+        const encodedMessage = new TextEncoder().encode(message);
 
-        // Coba sign up terlebih dahulu
-        await supabase.auth.signUp({
-          email: fakeEmail,
-          password: password,
-          options: {
-            data: {
-              wallet_address: address
-            }
-          }
+        // 3. Tanda tangani pesan
+        const signed = await window.solana.signMessage(encodedMessage, "utf8");
+        const signatureArray = Array.from(signed.signature); // Convert Uint8Array ke Array biasa
+
+        // 4. Kirim ke backend
+        const res = await fetch("https://game-crypto-backend.onrender.com/login-wallet", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            wallet: walletAddress,
+            message,
+            signature: signatureArray
+          })
         });
 
-        // Kemudian login
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: fakeEmail,
-          password: password
-        });
+        const data = await res.json();
+        output.textContent = JSON.stringify(data, null, 2);
 
-        if (error) return alert("Gagal login: " + error.message);
-
-        status.innerText = "✅ Login berhasil! Mengalihkan...";
-        setTimeout(() => window.location.href = 'dompet.html', 1000);
+        if (data.success) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+          alert("Login berhasil!");
+        } else {
+          alert("Gagal login: " + data.message);
+        }
 
       } catch (err) {
         console.error(err);
-        alert("⚠️ Gagal login: " + err.message);
+        alert("Terjadi kesalahan saat login.");
+        output.textContent = String(err);
       }
     }
 
-    document.getElementById('connect-wallet').addEventListener('click', loginWithWallet);
+    // Jadikan fungsi login tersedia secara global
+    window.login = login;
   </script>
 </body>
 </html>
