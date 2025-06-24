@@ -1,101 +1,84 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <title>Login Wallet Solana</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #121212;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-    button {
-      padding: 12px 24px;
-      font-size: 16px;
-      background-color: #00c6ff;
-      color: #000;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #00a8d6;
-    }
-    pre {
-      margin-top: 20px;
-      background: #1f1f1f;
-      padding: 15px;
-      border-radius: 6px;
-      width: 90%;
-      max-width: 600px;
-      overflow-x: auto;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Login Wallet Solana</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; text-align: center; padding: 2rem; }
+  button { padding: 12px 24px; font-size: 16px; background: #00c6ff; color: #000; border: none; border-radius: 6px; cursor: pointer; }
+  button:hover { background: #00a8d6; }
+  pre { margin-top: 20px; background: #1f1f1f; padding: 15px; border-radius: 6px; max-width: 600px; margin-left: auto; margin-right: auto; text-align: left; }
+</style>
 </head>
 <body>
 
-  <h2>Login dengan Wallet Solana</h2>
-  <button onclick="login()">Login</button>
-  <pre id="output"></pre>
+<h2>Login dengan Wallet Solana</h2>
+<button id="login-btn">Login</button>
+<pre id="output"></pre>
 
-  <script type="module">
-    async function login() {
-      const output = document.getElementById("output");
+<script type="module">
+  const loginBtn = document.getElementById("login-btn");
+  const output = document.getElementById("output");
 
-      try {
-        if (!window?.solana?.isPhantom) {
-          alert("Phantom Wallet belum terpasang!");
-          return;
-        }
-
-        // 1. Connect ke Phantom
-        const resp = await window.solana.connect();
-        const walletAddress = resp.publicKey.toString();
-
-        // 2. Buat pesan login
-        const message = `Login to Game Crypto\nTimestamp: ${Date.now()}`;
-        const encodedMessage = new TextEncoder().encode(message);
-
-        // 3. Tanda tangani pesan
-        const signed = await window.solana.signMessage(encodedMessage);
-        const signatureArray = Array.from(signed.signature); // Uint8Array -> array biasa
-
-        // 4. Kirim ke server
-        const res = await fetch("https://game-crypto-backend.onrender.com/login-wallet", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            wallet: walletAddress,
-            message,
-            signature: signatureArray
-          })
-        });
-
-        const data = await res.json();
-        output.textContent = JSON.stringify(data, null, 2);
-
-        if (data.success) {
-  localStorage.setItem("user", JSON.stringify(data.user));
-  window.location.href = "dompet.html"; // ⬅️ redirect ke halaman dompet.html
-} else {
-  alert("Gagal login: " + data.message);
-        }
-
-      } catch (err) {
-        console.error(err);
-        alert("Terjadi kesalahan saat login.");
-        output.textContent = String(err);
-      }
+  async function login() {
+    if (!window.solana?.isPhantom) {
+      alert("Phantom Wallet belum terpasang!");
+      return;
     }
 
-    // Buat fungsi global
-    window.login = login;
-  </script>
+    try {
+      // Connect wallet
+      const resp = await window.solana.connect();
+      const walletAddress = resp.publicKey.toString();
+
+      // Buat pesan login unik
+      const message = `Login to Game Crypto\nTimestamp: ${Date.now()}`;
+      const encodedMessage = new TextEncoder().encode(message);
+
+      // Sign message
+      const signed = await window.solana.signMessage(encodedMessage);
+      const signatureArray = Array.from(signed.signature);
+
+      // Kirim ke backend login-wallet
+      const res = await fetch("http://localhost:3000/login-wallet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          wallet: walletAddress,
+          message,
+          signature: signatureArray
+        })
+      });
+
+      const data = await res.json();
+      output.textContent = JSON.stringify(data, null, 2);
+
+      if (data.success) {
+        // Simpan token JWT
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        alert("Login berhasil!");
+
+        // Contoh panggil API private dengan token
+        const profileRes = await fetch("http://localhost:3000/profile", {
+          headers: { Authorization: `Bearer ${data.token}` }
+        });
+        const profileData = await profileRes.json();
+        console.log("Profile:", profileData);
+
+      } else {
+        alert("Login gagal: " + data.message);
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat login.");
+      output.textContent = String(err);
+    }
+  }
+
+  loginBtn.addEventListener("click", login);
+</script>
+
 </body>
 </html>
