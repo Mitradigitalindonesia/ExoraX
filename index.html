@@ -47,8 +47,12 @@
     <div id="status"></div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
   <script>
     const backendUrl = "https://game-crypto-backend.onrender.com";
+    const supabaseUrl = "https://ocfjkltbtwqrbiucrkyq.supabase.co";
+
+    const supabase = supabaseJs.createClient(supabaseUrl, "");
 
     document.getElementById("login-btn").addEventListener("click", async () => {
       const statusEl = document.getElementById("status");
