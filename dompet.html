@@ -546,13 +546,13 @@ async function initUserWallet() {
   }
 
   const savedUser = JSON.parse(rawUser);
-  if (!savedUser.id) {
+  if (!savedUser.user_id) {
     alert("⚠️ Data login tidak valid. Silakan login ulang.");
     window.location.href = "index.html";
     return;
   }
 
-  currentUser = savedUser;
+  currentUser = { id: savedUser.user_id }; // agar cocok dengan backend
   log("Current user ID:", currentUser.id);
 
   const { data: wallets, error } = await supabase
