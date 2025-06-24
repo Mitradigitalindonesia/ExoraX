@@ -531,34 +531,19 @@ function getAssetName(symbol) {
 }
 
 async function initUserWallet() {
-  // 🔐 Ambil user yang disimpan saat login via signature
   const savedUser = JSON.parse(localStorage.getItem("user"));
-  if (!savedUser || !savedUser.id) {
+  if (!savedUser || !savedUser.wallet) {
     alert("⚠️ Silakan login terlebih dahulu.");
     window.location.href = "index.html";
     return;
   }
 
-  // Ambil user dari sesi Supabase
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) {
-    window.location.href = "index.html";
-    return;
-  }
+  currentUser = savedUser;
 
-  // Validasi ID Supabase = ID dari localStorage
-  if (savedUser.id !== user.id) {
-    alert("⚠️ Sesi tidak cocok. Silakan login ulang.");
-    window.location.href = "index.html";
-    return;
-  }
-
-  currentUser = user;
-
-  const { data: wallets } = await supabase
+  const { data: wallets, error } = await supabase
     .from('wallets')
     .select('id')
-    .eq('user_id', user.id);
+    .eq('wallet', savedUser.wallet);
 
   if (!wallets || wallets.length === 0) {
     const defaultWallets = ASSET_SYMBOLS.map(symbol => ({
@@ -567,8 +552,9 @@ async function initUserWallet() {
       amount: 0,
       idr_value: 0,
       profit_percent: 0,
-      user_id: user.id
+      wallet: savedUser.wallet,
     }));
+
     await supabase.from('wallets').insert(defaultWallets);
   }
 }
@@ -577,7 +563,7 @@ async function loadPortfolio() {
   const { data: wallets } = await supabase
     .from('wallets')
     .select('*')
-    .eq('user_id', currentUser.id);
+    .eq('wallet', currentUser.wallet);
 
   const { data: prices } = await supabase
     .from('price_pool')
@@ -636,7 +622,7 @@ async function handleTrade(isBuy) {
   const { data: walletData, error } = await supabase
     .from('wallets')
     .select('amount')
-    .eq('user_id', currentUser.id)
+    .eq('wallet', currentUser.wallet)
     .eq('symbol', selectedSymbol)
     .single();
 
@@ -648,7 +634,7 @@ async function handleTrade(isBuy) {
   }
 
   const { error: tradeError } = await supabase.rpc('trade_asset', {
-    user_id_input: currentUser.id,
+    wallet_input: currentUser.wallet,
     symbol_input: selectedSymbol,
     amount_input: amount,
     is_buy: isBuy
