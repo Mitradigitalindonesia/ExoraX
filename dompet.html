@@ -496,7 +496,7 @@
   let selectedSymbol = null;
   let selectedPrice = 0;
 
-  const ASSET_SYMBOLS = ['USDT', 'EXR', 'CX', 'MX', 'GX', 'LX', 'SX'];
+  const ASSET_SYMBOLS = ['IDR','USDT', 'EXR', 'CX', 'MX', 'GX', 'LX', 'SX'];
   const BTC_TO_IDR = 850000000;
 
   window.closeModal = function() {
@@ -525,7 +525,7 @@
 
   function getAssetName(symbol) {
     const names = {
-      'USDT': 'USDT', 'EXR': 'Exora', 'CX': 'CrystalX',
+      'IDR':'IDR','USDT': 'USDT', 'EXR': 'Exora', 'CX': 'CrystalX',
       'MX': 'MineX', 'GX': 'GoldX', 'LX': 'LavaX', 'SX': 'ShadowX'
     };
     return names[symbol] || symbol;
