@@ -182,7 +182,7 @@
 
 <!-- Saldo dan info earning -->
 <div class="mining-header">
-  <div class="coin-amount" id="coinAmount">0.0000 EXR</div>
+  <div class="coin-amount" id="coinAmount">0.0000000 EXR</div>
   <div class="earning-info">
     <div>
       Last 24h
@@ -221,51 +221,41 @@
   </svg>
 </div>
 
-<!-- Hashrate dan cooldown -->
-<div class="stats-info">
-  Hashrate: <span class="highlight" id="hashrate">0 H/s</span>
+<!-- Hashrate dan cooldown -->  <div class="stats-info">  
+  Hashrate: <span class="highlight" id="hashrate">0 H/s</span>  
+</div>  
+<div class="cooldown" id="cooldownText">  
+  Tidak ada cooldown saat ini  
+</div> 
+  <div id="powerCost" style="font-size:12px; color:#fbbf24;"></div>
 </div>
-<div class="cooldown" id="cooldownText">
-  Tidak ada cooldown saat ini
-</div>
-
 <!-- List item yang bisa dibeli -->
 <h3 style="margin-top: 32px;">Pilih Mining Item</h3>
 <div class="mining-rig-list" id="cloud-plans"></div>
 
-<!-- Navigasi bawah -->
-<div class="bottom-nav">
-  <a href="index.html">
-    <svg ...></svg>
-    <span>Home</span>
-  </a>
-  <a href="market.html">
-    <svg ...></svg>
-    <span>Market</span>
-  </a>
-  <a href="wallet.html">
-    <svg ...></svg>
-    <span>Dompet</span>
-  </a>
-  <a href="mining.html" class="active">
-    <svg ...></svg>
-    <span>Mining</span>
-  </a>
-  <a href="mitra.html">
-    <svg ...></svg>
-    <span>Mitra</span>
-  </a>
-</div>
-
-<!-- Modal untuk konfirmasi beli -->
-<div id="plan-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:1000;">
-  <div style="background:#1e293b; padding:20px; border-radius:8px; width:300px; text-align:center; color:white;">
-    <h3 id="modal-plan-name">Plan Name</h3>
-    <p>Harga: <span id="modal-plan-price">0</span> EXR</p>
-    <button id="modal-confirm" style="background:#22d3ee; color:#000; padding:8px 12px; margin-right:8px;">Aktifkan</button>
-    <button id="modal-cancel" style="background:#f87171; color:#fff; padding:8px 12px;">Batal</button>
+  <!-- Navigasi bawah dipisahkan dari container -->
+  <div class="bottom-nav">
+    <a href="index.html">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="market.html">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg>
+      <span>Market</span>
+    </a>
+    <a href="market.html" class="active">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
+      <span>Dompet</span>
+    </a>
+    <a href="mining.html">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
+      <span>Mining</span>
+    </a>
+    <a href="mitra.html">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2m8-6a4 4 0 00-8 0m8-10a4 4 0 11-8 0" stroke="currentColor" stroke-width="2"/></svg>
+      <span>Mitra</span>
+    </a>
   </div>
-</div>
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -274,287 +264,170 @@
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
   );
 
-  const coinAmount = document.getElementById('coinAmount');
-  const last24h = document.getElementById('last24h');
-  const totalEarning = document.getElementById('totalEarning');
-  const hashrateEl = document.getElementById('hashrate');
-  const cooldownText = document.getElementById('cooldownText');
   const logo = document.getElementById('logoMining');
-  const plansContainer = document.getElementById('cloud-plans');
+const cooldownText = document.getElementById('cooldownText');
+const coinAmount = document.getElementById('coinAmount');
+const last24h = document.getElementById('last24h');
+const totalEarning = document.getElementById('totalEarning');
+const hashrateEl = document.getElementById('hashrate');
+const rigList = document.getElementById('cloud-plans');
 
-  const modal = document.getElementById('plan-modal');
-  const modalPlanName = document.getElementById('modal-plan-name');
-  const modalPlanPrice = document.getElementById('modal-plan-price');
-  const modalConfirm = document.getElementById('modal-confirm');
-  const modalCancel = document.getElementById('modal-cancel');
-
-let miningInterval = null;
-let tick = 0;
-let sessionEarned = 0;
-let unclaimedEarned = 0;
-let displayed24h = 0;
-let displayedTotal = 0;
 let currentUserId = null;
+let miningInterval = null;
 
-  async function loadWalletBalance(userId) {
-    const { data, error } = await supabase
-      .from('wallets')
-      .select('amount')
-      .eq('user_id', userId)
-      .eq('symbol', 'EXR')
-      .single();
+async function loadWalletBalance(userId) {
+  const { data, error } = await supabase
+    .from('wallets')
+    .select('amount')
+    .eq('user_id', userId)
+    .eq('symbol', 'EXR')
+    .single();
 
-    if (error) {
-      console.error('Error fetch wallet:', error.message);
-      coinAmount.textContent = '0.0000 EXR';
-      return 0;
-    }
+  const amount = parseFloat(data?.amount ?? 0);
+  coinAmount.textContent = amount.toFixed(4) + ' EXR';
+}
 
-    const amount = parseFloat(data?.amount) || 0;
-    coinAmount.textContent = amount.toFixed(4) + ' EXR';
-    return amount;
-  }
+async function loadHashrate(userId) {
+  const { data, error } = await supabase
+    .from('inventory')
+    .select('hashrate')
+    .eq('user_id', userId);
 
-  // Load total hashrate dari inventory
-  async function loadHashrate(userId) {
-    const { data, error } = await supabase
-      .from('inventory')
-      .select('hashrate')
-      .eq('user_id', userId);
-
-    if (error) {
-      console.error('Error fetch inventory hashrate:', error.message);
-      hashrateEl.textContent = '0 H/s';
-      return 0;
-    }
-
-    let total = 0;
-    data.forEach(item => total += parseFloat(item.hashrate || 0));
-    hashrateEl.textContent = total.toFixed(0) + ' H/s';
-    return total;
-  }
-
-  // Load item mining dari tabel items
-  async function loadItems() {
-    const { data, error } = await supabase
-      .from('items')
-      .select('*')
-      .order('price_exr', { ascending: true });
-
-    if (error || !data?.length) {
-      plansContainer.innerHTML = '<p>Gagal memuat item mining.</p>';
-      return;
-    }
-
-    plansContainer.innerHTML = '';
+  let total = 0;
+  if (!error && data) {
     data.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'mining-rig-card';
-
-      card.innerHTML = `
-        <div class="mining-rig-info">
-          <strong>${item.item_name}</strong>
-          <span>Hashrate: ${item.hashrate?.toFixed(0) || 0} H/s</span>
-          <span>Daya: ${item.power_usage} W</span>
-          <span>Biaya Maint: ${item.maintenance_cost} EXR</span>
-          <span>Harga: ${item.price_exr} EXR</span>
-        </div>
-        <button class="btn-buy-rig" data-item-id="${item.id}">Beli</button>
-      `;
-      plansContainer.appendChild(card);
+      total += parseFloat(item.hashrate ?? 0);
     });
+  }
 
-    const buttons = plansContainer.querySelectorAll('.btn-buy-rig');
-    buttons.forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const itemId = btn.getAttribute('data-item-id');
-        const { data: itemData } = await supabase
-          .from('items')
-          .select('*')
-          .eq('id', itemId)
-          .single();
+  hashrateEl.textContent = total.toFixed(0) + ' H/s';
+}
 
-        selectedPlan = itemData;
-        if (!selectedPlan) {
-          alert('Item tidak ditemukan');
-          return;
+async function loadInventoryRigs(userId) {
+  const { data, error } = await supabase
+    .from('inventory')
+    .select('quantity, item_id, item_name, hashrate, power_usage')
+    .eq('user_id', userId);
+
+  rigList.innerHTML = '';
+
+  if (error || !data || data.length === 0) {
+    rigList.innerHTML = '<p style="color:#f87171;">Tidak ada rig terpasang</p>';
+    return;
+  }
+
+  data.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'mining-rig-card';
+    el.innerHTML = `
+      <div class="mining-rig-info">
+        <strong>${item.item_name}</strong>
+        <span>Qty: ${item.quantity}</span>
+        <span>Hashrate: ${item.hashrate ?? 0} H/s</span>
+        <span>Power: ${item.power_usage ?? 0} W</span>
+      </div>
+    `;
+    rigList.appendChild(el);
+  });
+}
+
+async function runMining() {
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData?.session) return alert("Session expired.");
+
+  const { data, error } = await supabase.rpc('rpc_mine');
+
+  if (error) {
+    if (error.message.includes('NO_MX')) cooldownText.textContent = 'Saldo MX tidak cukup!';
+    else if (error.message.includes('COOLDOWN')) cooldownText.textContent = `Cooldown ${error.details} detik`;
+    else cooldownText.textContent = 'Error mining';
+    return;
+  }
+  if (!data.success) return;
+
+  const reward = data.reward;
+  const newExr = data.new_amount;
+  const mxCost = data.mx_cost;
+
+  coinAmount.textContent = newExr.toFixed(6) + ' EXR';
+  cooldownText.textContent = `+${reward.toFixed(6)} EXR, -${mxCost.toFixed(6)} MX`;
+
+  last24h.textContent = (parseFloat(last24h.textContent) + reward).toFixed(6);
+  totalEarning.textContent = (parseFloat(totalEarning.textContent) + reward).toFixed(6);
+
+  loadHashrate(currentUserId);
+  loadWalletBalance(currentUserId);
+
+  document.getElementById('powerCost').textContent = `⚡ Biaya listrik: -${mxCost.toFixed(6)} MX`;
+}
+
+async function stopMining() {
+  if (miningInterval) {
+    clearInterval(miningInterval);
+    miningInterval = null;
+    logo.classList.remove('active');
+    cooldownText.textContent = '⛔ Mining dihentikan';
+
+    const reward = parseFloat(last24h.textContent || '0');
+    if (reward > 0) {
+      try {
+        const { error } = await supabase.rpc('rpc_stop_mining', {
+          total_reward: reward
+        });
+        if (error) {
+          console.error('Gagal menyimpan log mining:', error.message);
+        } else {
+          console.log('Mining log berhasil disimpan.');
         }
-
-        modalPlanName.textContent = selectedPlan.item_name;
-        modalPlanPrice.textContent = selectedPlan.price_exr + ' EXR';
-        modal.style.display = 'flex';
-      });
-    });
-  }
-
-  // Fungsi beli item
-  async function buyMiningRig(userId) {
-    if (!selectedPlan) return;
-
-    const { data: wallet, error: walletErr } = await supabase
-      .from('wallets')
-      .select('amount')
-      .eq('user_id', userId)
-      .eq('symbol', 'EXR')
-      .single();
-
-    if (walletErr || !wallet || wallet.amount < selectedPlan.price_exr) {
-      alert('Saldo tidak cukup atau gagal ambil wallet.');
-      return;
+      } catch (err) {
+        console.error('RPC error:', err);
+      }
     }
 
-    const { error: invErr } = await supabase
-      .from('inventory')
-      .insert({
-        user_id: userId,
-        item_id: selectedPlan.id,
-        item_name: selectedPlan.item_name,
-        hashrate: selectedPlan.hashrate,
-        power_usage: selectedPlan.power_usage,
-        quantity: 1
-      });
-
-    if (invErr) {
-      alert('Gagal tambah inventory: ' + invErr.message);
-      return;
-    }
-
-    await supabase
-      .from('wallets')
-      .update({ amount: wallet.amount - selectedPlan.price_exr })
-      .eq('user_id', userId)
-      .eq('symbol', 'EXR');
-
-    alert(`Berhasil membeli ${selectedPlan.item_name}`);
-    modal.style.display = 'none';
-    selectedPlan = null;
-
-    await loadWalletBalance(userId);
-    await loadHashrate(userId);
-    await loadItems();
-  }
-
-async function claimReward(accessToken) {
-  try {
-    const res = await fetch('https://ocfjkltbtwqrbiucrkyq.supabase.co/functions/v1/claim-reward', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      credentials: 'omit' // ✅ cukup ini karena kamu pakai Bearer token, bukan cookie
-    });
-
-    if (!res.ok) {
-      const err = await res.json(); // ✅ PERBAIKAN DI SINI
-      throw new Error(err.error || 'Unknown error');
-    }
-
-    const result = await res.json(); // ✅
-    console.log('Reward claimed:', result.claimed);
-    return result;
-  } catch (err) {
-    console.error('Gagal kirim klaim:', err.message || err);
-    throw err;
+    // Reset info sesi
+    last24h.textContent = '0.0000';
+    document.getElementById('powerCost').textContent = '';
   }
 }
 
-async function startMining(hashrate) {
+function startMiningLoop() {
   if (miningInterval) return;
 
   logo.classList.add('active');
   cooldownText.textContent = 'Mining berjalan...';
+  runMining();
+  miningInterval = setInterval(runMining, 1000); // 1 detik
+}
 
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData?.user?.id) {
-    alert("Gagal memuat ID pengguna.");
+// Toggle saat logo diklik
+logo.addEventListener('click', async () => {
+  if (!currentUserId) {
+    alert('User belum login.');
     return;
   }
 
-  currentUserId = userData.user.id;
+  if (miningInterval) {
+    stopMining();
+  } else {
+    startMiningLoop();
+  }
+});
 
-  const { data: sessionData } = await supabase.auth.getSession();
-  const accessToken = sessionData?.session?.access_token;
+// Init saat halaman dimuat
+window.addEventListener('DOMContentLoaded', async () => {
+  const { data: { user }, error } = await supabase.auth.getUser();
 
-  if (!accessToken) {
-    alert("Token tidak ditemukan, silakan login ulang.");
+  if (!user || error) {
+    alert('User belum login.');
     return;
   }
 
-  miningInterval = setInterval(async () => {
-    const earned = hashrate / 100000;
+  currentUserId = user.id;
 
-    sessionEarned += earned;
-    unclaimedEarned += earned;
-
-    displayed24h += earned;
-    displayedTotal += earned;
-
-    last24h.textContent = displayed24h.toFixed(4);
-    totalEarning.textContent = displayedTotal.toFixed(4);
-
-    tick++;
-
-    if (tick >= 10) {
-      const claimed = await claimReward(accessToken);
-      if (claimed !== null) {
-        await loadWalletBalance(currentUserId);
-      }
-
-      // Reset hitungan klaim, UI tetap lanjut menampilkan akumulasi
-      sessionEarned = 0;
-      unclaimedEarned = 0;
-      tick = 0;
-    }
-  }, 1000);
-}
-
-function stopMining() {
-  if (!miningInterval) return;
-  clearInterval(miningInterval);
-  miningInterval = null;
-  logo.classList.remove('active');
-  cooldownText.textContent = 'Mining dihentikan';
-}
-
-  // Event listener klik mining
-  logo.addEventListener('click', async () => {
-    if (!currentUserId) return alert('User belum login');
-    if (logo.classList.contains('active')) {
-      stopMining();
-    } else {
-      const hashrate = await loadHashrate(currentUserId);
-      if (hashrate > 0) {
-        startMining(hashrate);
-      } else {
-        alert('Anda belum memiliki mining rig');
-      }
-    }
-  });
-
-  modalCancel.addEventListener('click', () => {
-    modal.style.display = 'none';
-    selectedPlan = null;
-  });
-
-  modalConfirm.addEventListener('click', async () => {
-    if (currentUserId) await buyMiningRig(currentUserId);
-  });
-
-  // Init
-  window.addEventListener('DOMContentLoaded', async () => {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) {
-      alert('User belum login.');
-      return;
-    }
-
-    currentUserId = user.id;
-
-    await loadWalletBalance(currentUserId);
-    await loadHashrate(currentUserId);
-    await loadItems();
-  });
+  await loadWalletBalance(currentUserId);
+  await loadHashrate(currentUserId);
+  await loadInventoryRigs(currentUserId);
+});
 </script>
 </body>
 </html>
