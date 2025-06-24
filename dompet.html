@@ -546,23 +546,19 @@ async function initUserWallet() {
   }
 
   const savedUser = JSON.parse(rawUser);
-  if (!savedUser.wallet && !savedUser.wallet_address) {
+  if (!savedUser.id) {
     alert("⚠️ Data login tidak valid. Silakan login ulang.");
     window.location.href = "index.html";
     return;
   }
 
-  currentUser = {
-    ...savedUser,
-    wallet: savedUser.wallet || savedUser.wallet_address // fallback
-  };
-
-  log("Current user (wallet):", currentUser.wallet);
+  currentUser = savedUser;
+  log("Current user ID:", currentUser.id);
 
   const { data: wallets, error } = await supabase
     .from('wallets')
     .select('id')
-    .eq('wallet_address', currentUser.wallet);
+    .eq('user_id', currentUser.id);
 
   if (error) {
     console.error("❌ Gagal mengambil wallet:", error.message);
@@ -571,7 +567,7 @@ async function initUserWallet() {
 
   if (!wallets || wallets.length === 0) {
     const defaultWallets = ASSET_SYMBOLS.map(symbol => ({
-      wallet_address: currentUser.wallet,
+      user_id: currentUser.id,
       symbol,
       name: getAssetName(symbol),
       amount: 0,
@@ -587,11 +583,12 @@ async function initUserWallet() {
     }
   }
 }
+
 async function loadPortfolio() {
   const { data: userWallets = [] } = await supabase
     .from('wallets')
     .select('*')
-    .eq('wallet_address', currentUser.wallet);
+    .eq('user_id', currentUser.id);
 
   const { data: prices = [] } = await supabase
     .from('price_pool')
@@ -661,7 +658,7 @@ async function handleTrade(isBuy) {
   const { data: walletData, error } = await supabase
     .from('wallets')
     .select('amount')
-    .eq('wallet_address', currentUser.wallet)
+    .eq('user_id', currentUser.id)
     .eq('symbol', selectedSymbol)
     .single();
 
@@ -676,7 +673,7 @@ async function handleTrade(isBuy) {
   }
 
   const { error: tradeError } = await supabase.rpc('trade_asset', {
-    wallet_input: currentUser.wallet,
+    user_input: currentUser.id,
     symbol_input: selectedSymbol,
     amount_input: amount,
     is_buy: isBuy
