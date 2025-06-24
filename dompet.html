@@ -546,7 +546,7 @@ async function initUserWallet() {
   }
 
   const savedUser = JSON.parse(rawUser);
-  if (!savedUser.user_id) {
+  if (!savedUser.id) {
     alert("⚠️ Data login tidak valid. Silakan login ulang.");
     window.location.href = "index.html";
     return;
