@@ -86,11 +86,15 @@
 
         const { token, user } = result;
 
-        // Simpan token di localStorage (untuk backend-only API authentication)
         localStorage.setItem("authToken", token);
 
         statusEl.textContent = `✅ Berhasil login sebagai ${user.wallet_address}`;
-        console.log("Token JWT:", token);
+
+        // Redirect ke halaman dompet.html setelah 1 detik
+        setTimeout(() => {
+          window.location.href = "dompet.html";
+        }, 1000);
+
       } catch (err) {
         console.error(err);
         statusEl.textContent = "❌ Gagal login: " + (err.message || "Unknown error");
