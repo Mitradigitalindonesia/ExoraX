@@ -1,80 +1,109 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Login Wallet Solana</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login dengan Solana</title>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; text-align: center; padding: 2rem; }
-    button { padding: 12px 24px; font-size: 16px; background: #00c6ff; color: #000; border: none; border-radius: 6px; cursor: pointer; }
-    button:hover { background: #00a8d6; }
-    pre { margin-top: 20px; background: #1f1f1f; padding: 15px; border-radius: 6px; max-width: 600px; margin: 1rem auto; text-align: left; }
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      text-align: center;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #8c52ff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #6e3ee7;
+    }
+
+    #status {
+      margin-top: 1rem;
+      font-size: 14px;
+      color: #333;
+    }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h2>Login dengan Solana Wallet</h2>
+    <button id="login-btn">Login</button>
+    <div id="status"></div>
+  </div>
 
-<h2>Login dengan Wallet Solana</h2>
-<button id="login-btn">Login</button>
-<pre id="output"></pre>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const backendUrl = "https://game-crypto-backend.onrender.com";
+    const supabaseUrl = "https://ocfjkltbtwqrbiucrkyq.supabase.co";
+    const supabase = window.supabase.createClient(supabaseUrl, "");
 
-<script type="module">
-  const BACKEND_URL = "https://game-crypto-backend.onrender.com";
-  const loginBtn = document.getElementById("login-btn");
-  const output = document.getElementById("output");
+    document.getElementById("login-btn").addEventListener("click", async () => {
+      const statusEl = document.getElementById("status");
 
-  async function login() {
-    if (!window.solana?.isPhantom) {
-      alert("Phantom Wallet belum terpasang!");
-      return;
-    }
-
-    try {
-      // Connect wallet
-      const resp = await window.solana.connect();
-      const walletAddress = resp.publicKey.toString();
-
-      // Unique login message
-      const message = `Login to Game Crypto\nTimestamp: ${Date.now()}`;
-      const encodedMessage = new TextEncoder().encode(message);
-
-      // Sign message
-      const signed = await window.solana.signMessage(encodedMessage, 'utf8');
-      const signatureArray = Array.from(signed.signature);
-
-      // Send to backend
-      const res = await fetch(`${BACKEND_URL}/login-wallet`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wallet: walletAddress, message, signature: signatureArray }),
-      });
-
-      const data = await res.json();
-      output.textContent = JSON.stringify(data, null, 2);
-
-      if (data.success) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        alert("✅ Login berhasil!");
-window.location.href = "dompet.html";
-
-        // Optional: call protected endpoint
-        const profileRes = await fetch(`${BACKEND_URL}/profile`, {
-          headers: { Authorization: `Bearer ${data.token}` }
-        });
-        const profileData = await profileRes.json();
-        console.log("🔒 Profile data:", profileData);
-      } else {
-        alert("Login gagal: " + data.message);
+      if (!window.solana || !window.solana.isPhantom) {
+        statusEl.textContent = "Phantom Wallet tidak ditemukan. Silakan install Phantom terlebih dahulu.";
+        return;
       }
 
-    } catch (err) {
-      console.error("❌ Error:", err);
-      alert("Terjadi kesalahan saat login.");
-      output.textContent = err.message;
-    }
-  }
+      try {
+        const resp = await window.solana.connect();
+        const walletAddress = resp.publicKey.toString();
+        const timestamp = Date.now();
+        const message = `Sign this message to log in.\nWallet: ${walletAddress}\nTimestamp: ${timestamp}`;
+        const encodedMessage = new TextEncoder().encode(message);
 
-  loginBtn.addEventListener("click", login);
-</script>
+        const signedMessage = await window.solana.signMessage(encodedMessage, "utf8");
+        const signature = Array.from(signedMessage.signature);
 
+        const res = await fetch(`${backendUrl}/login-wallet`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            wallet: walletAddress,
+            message,
+            signature
+          })
+        });
+
+        const result = await res.json();
+
+        if (!result.success) {
+          throw new Error(result.message || "Login gagal");
+        }
+
+        const { token, user } = result;
+
+        await supabase.auth.setSession({
+          access_token: token,
+          refresh_token: ""
+        });
+
+        statusEl.textContent = `✅ Berhasil login sebagai ${user.wallet_address}`;
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "❌ Gagal login: " + (err.message || "Unknown error");
+      }
+    });
+  </script>
 </body>
 </html>
