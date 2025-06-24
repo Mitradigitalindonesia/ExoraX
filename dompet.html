@@ -546,13 +546,17 @@ async function initUserWallet() {
   }
 
   const savedUser = JSON.parse(rawUser);
-  if (!savedUser.wallet) {
+  if (!savedUser.wallet && !savedUser.wallet_address) {
     alert("⚠️ Data login tidak valid. Silakan login ulang.");
     window.location.href = "index.html";
     return;
   }
 
-  currentUser = savedUser;
+  currentUser = {
+    ...savedUser,
+    wallet: savedUser.wallet || savedUser.wallet_address // fallback
+  };
+
   log("Current user (wallet):", currentUser.wallet);
 
   const { data: wallets, error } = await supabase
@@ -583,7 +587,6 @@ async function initUserWallet() {
     }
   }
 }
-
 async function loadPortfolio() {
   const { data: userWallets = [] } = await supabase
     .from('wallets')
