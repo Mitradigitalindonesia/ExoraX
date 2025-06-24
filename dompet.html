@@ -689,7 +689,8 @@ async function handleTrade(isBuy) {
 document.addEventListener('DOMContentLoaded', () => {
   log("DOM Ready: Memulai inisialisasi...");
   initModalEvents();
-  initUserWallet().then(loadPortfolio);
+  await initUserWallet();
+setTimeout(loadPortfolio, 300); // menunggu Supabase siap (menghindari race condition)
   document.getElementById('buy-btn').addEventListener('click', () => handleTrade(true));
   document.getElementById('sell-btn').addEventListener('click', () => handleTrade(false));
 });
