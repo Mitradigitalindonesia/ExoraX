@@ -54,19 +54,19 @@
           return;
         }
 
-        // 1. Connect ke Phantom Wallet
+        // 1. Connect ke Phantom
         const resp = await window.solana.connect();
         const walletAddress = resp.publicKey.toString();
 
-        // 2. Buat pesan untuk ditandatangani
+        // 2. Buat pesan login
         const message = `Login to Game Crypto\nTimestamp: ${Date.now()}`;
         const encodedMessage = new TextEncoder().encode(message);
 
         // 3. Tanda tangani pesan
-        const signed = await window.solana.signMessage(encodedMessage, "utf8");
-        const signatureArray = Array.from(signed.signature); // Convert Uint8Array ke Array biasa
+        const signed = await window.solana.signMessage(encodedMessage);
+        const signatureArray = Array.from(signed.signature); // Uint8Array -> array biasa
 
-        // 4. Kirim ke backend
+        // 4. Kirim ke server
         const res = await fetch("https://game-crypto-backend.onrender.com/login-wallet", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -94,7 +94,7 @@
       }
     }
 
-    // Jadikan fungsi login tersedia secara global
+    // Buat fungsi global
     window.login = login;
   </script>
 </body>
