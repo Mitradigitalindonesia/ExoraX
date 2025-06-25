@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -47,12 +47,19 @@
     <div id="status"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-  <script>
-    const backendUrl = "https://game-crypto-backend.onrender.com";
-    const supabaseUrl = "https://ocfjkltbtwqrbiucrkyq.supabase.co";
+  <!-- bs58 untuk encoding signature -->
+  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/dist/bs58.min.js"></script>
 
-    const supabase = supabaseJs.createClient(supabaseUrl, "");
+  <!-- Supabase client module -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const backendUrl = "https://game-crypto-backend.onrender.com";
+
+    const supabase = createClient(
+      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+    );
 
     document.getElementById("login-btn").addEventListener("click", async () => {
       const statusEl = document.getElementById("status");
@@ -69,8 +76,13 @@
         const message = `Sign this message to log in.\nWallet: ${walletAddress}\nTimestamp: ${timestamp}`;
         const encodedMessage = new TextEncoder().encode(message);
 
+        if (!window.solana.signMessage) {
+          statusEl.textContent = "Wallet tidak mendukung signMessage.";
+          return;
+        }
+
         const signedMessage = await window.solana.signMessage(encodedMessage, "utf8");
-        const signature = Array.from(signedMessage.signature);
+        const signature = bs58.encode(signedMessage.signature);
 
         const res = await fetch(`${backendUrl}/login-wallet`, {
           method: "POST",
@@ -94,7 +106,6 @@
 
         statusEl.textContent = `✅ Berhasil login sebagai ${user.wallet_address}`;
 
-        // Redirect ke halaman dompet.html setelah 1 detik
         setTimeout(() => {
           window.location.href = "dompet.html";
         }, 1000);
