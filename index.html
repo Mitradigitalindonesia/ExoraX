@@ -100,7 +100,9 @@
 
         const { token, user } = result;
 
+        // ✅ Simpan token & UID untuk dipakai di halaman berikutnya
         localStorage.setItem("authToken", token);
+        localStorage.setItem("userId", user.user_id || user.id); // antisipasi key berbeda
 
         statusEl.textContent = `✅ Berhasil login sebagai ${user.wallet_address}`;
 
