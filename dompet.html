@@ -487,159 +487,207 @@
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabaseUrl = 'https://ocfjkltbtwqrbiucrkyq.supabase.co';
-const accessToken = localStorage.getItem("supabaseAccessToken");
-const userId = localStorage.getItem("userId");
+const supabase = createClient(
+  'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+);
 
-if (!accessToken || !userId) {
-  alert("❗ Token tidak ditemukan atau sudah kadaluarsa. Silakan login ulang.");
-  localStorage.clear();
-  window.location.href = "index.html";
-}
+let currentUser = null;
+let selectedSymbol = null;
+let selectedPrice = 0;
 
-const supabase = createClient(supabaseUrl, accessToken, {
-  global: {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  }
-});
-
-const ASSET_SYMBOLS = ['IDR','USDT','EXR','CX','MX','GX','LX','SX'];
+const ASSET_SYMBOLS = ['IDR', 'USDT', 'EXR', 'CX', 'MX', 'GX', 'LX', 'SX'];
 const BTC_TO_IDR = 850000000;
 
-let currentUser = { id: userId };
+function log(...args) {
+  console.log('%c[DEBUG]', 'color: blue; font-weight: bold;', ...args);
+}
+
+function showModal() {
+  const modal = document.getElementById('trade-modal');
+  modal.style.display = 'flex';
+  setTimeout(() => modal.classList.add('show'), 10);
+}
+
+window.closeModal = function () {
+  const modal = document.getElementById('trade-modal');
+  const modalContent = modal.querySelector('.modal-content');
+  modalContent.classList.add('closing');
+  setTimeout(() => {
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    modalContent.classList.remove('closing');
+  }, 300);
+};
+
+function initModalEvents() {
+  const modal = document.getElementById('trade-modal');
+  modal.addEventListener('click', function (e) {
+    if (e.target === this) closeModal();
+  });
+}
+
+function getAssetName(symbol) {
+  const names = {
+    IDR: 'IDR', USDT: 'USDT', EXR: 'Exora', CX: 'CrystalX',
+    MX: 'MineX', GX: 'GoldX', LX: 'LavaX', SX: 'ShadowX'
+  };
+  return names[symbol] || symbol;
+}
 
 async function initUserWallet() {
-  try {
-    const { data: wallets = [], error } = await supabase
+  const rawUser = localStorage.getItem("user");
+  if (!rawUser) { alert("⚠️ Silakan login."); return window.location.href = "index.html"; }
+  const savedUser = JSON.parse(rawUser);
+  const userId = savedUser.user_id || savedUser.id;
+  if (!userId) { alert("⚠️ Data login invalid."); return window.location.href = "index.html"; }
+  currentUser = { id: userId };
+
+  // 1️⃣ Cek wallets user
+  const { data: wallets, error: selectError } = await supabase
+    .from('wallets')
+    .select('id, symbol')
+    .eq('user_id', currentUser.id);
+
+  if (selectError) {
+    console.error("❌ Gagal fetch wallets:", selectError);
+    return;
+  }
+
+  // 2️⃣ Jika belum ada, buat default wallets
+  if (!wallets.length) {
+    const defaultWallets = ASSET_SYMBOLS.map(symbol => ({
+      user_id: currentUser.id,
+      symbol,
+      name: getAssetName(symbol),
+      amount: 0,
+      idr_value: 0,
+      profit_percent: 0
+    }));
+
+    const { data: inserted, error: insertError } = await supabase
       .from('wallets')
-      .select('id, symbol')
-      .eq('user_id', currentUser.id);
+      .insert(defaultWallets)
+      .select(); // <- Tambahkan .select() untuk dapat data created
 
-    if (error) throw error;
-
-    if (wallets.length === 0) {
-      const defaultWallets = ASSET_SYMBOLS.map(symbol => ({
-        user_id: currentUser.id,
-        symbol,
-        name: symbol,
-        amount: 0,
-        idr_value: 0,
-        profit_percent: 0
-      }));
-
-      const { error: insertError } = await supabase.from('wallets').insert(defaultWallets);
-      if (insertError) throw insertError;
+    if (insertError) {
+      console.error("❌ Gagal membuat wallet default:", insertError);
+    } else {
+      console.log("✅ Wallet default dibuat:", inserted.map(w=>w.symbol).join(', '));
     }
-  } catch (err) {
-    console.error("initUserWallet error:", err);
-    alert("❗ Token invalid atau server error. Silakan login ulang.");
-    localStorage.clear();
-    window.location.href = "index.html";
   }
 }
 
 async function loadPortfolio() {
-  try {
-    const { data: wallets, error: walletErr } = await supabase
-      .from('wallets')
-      .select('*')
-      .eq('user_id', currentUser.id);
+  const { data: userWallets = [] } = await supabase
+    .from('wallets')
+    .select('*')
+    .eq('user_id', currentUser.id);
 
-    if (walletErr || !wallets) throw walletErr;
+  const { data: prices = [] } = await supabase
+    .from('price_pool')
+    .select('symbol, last_price, logo_svg, price_change_percent');
 
-    const { data: prices, error: priceErr } = await supabase
-      .from('price_pool')
-      .select('symbol, last_price, logo_svg');
+  const priceMap = Object.fromEntries(prices.map(p => [p.symbol, p]));
+  const walletMap = Object.fromEntries(userWallets.map(w => [w.symbol, w]));
 
-    if (priceErr || !prices) throw priceErr;
+  let total = 0;
+  let html = '';
 
-    const priceMap = Object.fromEntries(prices.map(p => [p.symbol, p]));
-    let total = 0, html = '';
+  ASSET_SYMBOLS.forEach(symbol => {
+    const asset = walletMap[symbol] || {
+      symbol,
+      name: getAssetName(symbol),
+      amount: 0,
+      idr_value: 0,
+    };
 
-    wallets.forEach(w => {
-      const price = priceMap[w.symbol]?.last_price ?? 0;
-      const logo = priceMap[w.symbol]?.logo_svg ?? '';
-      const idrValue = parseFloat(w.amount) * parseFloat(price);
-      total += idrValue;
+    const priceData = priceMap[symbol];
+    const latestPrice = priceData?.last_price || 0;
 
-      html += `
-        <div class="asset-card" data-symbol="${w.symbol}">
-          ${logo}
+    asset.idr_value = asset.amount * latestPrice;
+    total += asset.idr_value;
+
+    html += `
+      <div class="asset-card" data-symbol="${symbol}">
+        <div class="asset-left">
+          ${priceData?.logo_svg || '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#ccc"/></svg>'}
           <div class="asset-info">
-            <div class="symbol">${w.symbol}</div>
-            <div>${w.amount} — Rp ${idrValue.toLocaleString()}</div>
+            <div class="symbol">${asset.name} (${symbol})</div>
+            <div>Saldo: ${asset.amount.toLocaleString('id-ID')}</div>
           </div>
-        </div>`;
-    });
+        </div>
+        <div class="asset-right">
+          Rp ${asset.idr_value.toLocaleString('id-ID')}
+          <div style="font-size: 12px;">Harga: Rp ${latestPrice.toLocaleString('id-ID')}</div>
+        </div>
+      </div>
+    `;
+  });
 
-    document.getElementById('asset-list').innerHTML = html;
-    document.getElementById('idr').textContent = `Rp ${total.toLocaleString()}`;
-    document.getElementById('btc').textContent = `≈ ${(total / BTC_TO_IDR).toFixed(4)} BTC`;
+  document.getElementById('asset-list').innerHTML = html;
+  document.getElementById('idr').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+  document.getElementById('btc').innerText = `≈ ${(total / BTC_TO_IDR).toFixed(4)} BTC`;
+  document.getElementById('return').innerText = `+Rp ${Math.round(total * 0.05).toLocaleString('id-ID')}`;
 
-    document.querySelectorAll('.asset-card').forEach(card => {
-      const symbol = card.dataset.symbol;
-      card.onclick = () => {
-        const selectedPrice = priceMap[symbol]?.last_price ?? 0;
-        document.getElementById('modal-title').textContent = `Trade ${symbol}`;
-        document.getElementById('modal-price').textContent = `Harga Rp ${selectedPrice.toLocaleString()}`;
-        document.getElementById('modal-amount').value = '';
-        document.getElementById('trade-modal').classList.add('show');
-        window.selectedSymbol = symbol;
-        window.selectedPrice = selectedPrice;
-      };
+  document.querySelectorAll('.asset-card').forEach(card => {
+    card.addEventListener('click', () => {
+      selectedSymbol = card.getAttribute('data-symbol');
+      selectedPrice = priceMap[selectedSymbol]?.last_price || 0;
+      document.getElementById('modal-title').innerText = `Trade ${selectedSymbol}`;
+      document.getElementById('modal-price').innerText = `Rp ${selectedPrice.toLocaleString('id-ID')}`;
+      document.getElementById('modal-amount').value = '';
+      showModal();
     });
-  } catch (err) {
-    console.error("loadPortfolio error:", err);
-    alert("❗ Gagal memuat portofolio. Silakan login ulang.");
-    localStorage.clear();
-    window.location.href = "index.html";
-  }
+  });
 }
 
 async function handleTrade(isBuy) {
   const amount = parseFloat(document.getElementById('modal-amount').value);
-  if (!(amount > 0)) return alert("Masukkan jumlah yang valid.");
+  if (!amount || amount <= 0) {
+    alert("⚠️ Masukkan jumlah yang valid.");
+    return;
+  }
 
-  const { data: wallet, error } = await supabase
+  const { data: walletData, error } = await supabase
     .from('wallets')
     .select('amount')
     .eq('user_id', currentUser.id)
-    .eq('symbol', window.selectedSymbol)
+    .eq('symbol', selectedSymbol)
     .single();
 
-  if (error || !wallet) return alert("Gagal mengambil data saldo.");
+  if (error || !walletData) {
+    alert("❌ Gagal mengambil data saldo.");
+    return;
+  }
 
-  if (!isBuy && amount > Number(wallet.amount)) {
-    return alert("Saldo tidak mencukupi untuk menjual.");
+  const currentBalance = parseFloat(walletData.amount);
+  if (!isBuy && amount > currentBalance) {
+    return alert(`❌ Anda mencoba menjual ${amount} ${selectedSymbol}, tapi saldo Anda hanya ${currentBalance}.`);
   }
 
   const { error: tradeError } = await supabase.rpc('trade_asset', {
     user_input: currentUser.id,
-    symbol_input: window.selectedSymbol,
+    symbol_input: selectedSymbol,
     amount_input: amount,
     is_buy: isBuy
   });
 
   if (tradeError) return alert("❌ Transaksi gagal: " + tradeError.message);
 
-  alert("✅ Transaksi berhasil.");
-  document.getElementById('trade-modal').classList.remove('show');
+  alert(`✅ Transaksi ${isBuy ? 'pembelian' : 'penjualan'} berhasil!`);
+  closeModal();
   loadPortfolio();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  log("DOM Ready: Memulai inisialisasi...");
+  initModalEvents();
   await initUserWallet();
-  await loadPortfolio();
-
-  document.getElementById('buy-btn').onclick = () => handleTrade(true);
-  document.getElementById('sell-btn').onclick = () => handleTrade(false);
+  setTimeout(loadPortfolio, 300);
+  document.getElementById('buy-btn').addEventListener('click', () => handleTrade(true));
+  document.getElementById('sell-btn').addEventListener('click', () => handleTrade(false));
 });
-
-window.closeModal = function () {
-  document.getElementById('trade-modal').classList.remove('show');
-};
 </script>
 </body>
 </html>
