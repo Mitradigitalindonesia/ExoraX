@@ -87,19 +87,16 @@
           throw new Error(result.message || "Login gagal");
         }
 
-        const { token, access_token, user } = result;
+        const { access_token, user } = result;
 
-        // ✅ Simpan ke localStorage
-        localStorage.setItem("authToken", token); // Opsional, JWT internal
-        localStorage.setItem("supabaseAccessToken", access_token); // ❗️Untuk client fetch ke Supabase
-        localStorage.setItem("userId", user.id || user.user_id);
+        // ✅ Simpan token Supabase ke localStorage
+        localStorage.setItem("supabaseAccessToken", access_token);
+        localStorage.setItem("userId", user.id);
         localStorage.setItem("walletAddress", user.wallet_address);
 
+        // ✅ Redirect ke dompet
         statusEl.textContent = `✅ Berhasil login sebagai ${user.wallet_address}`;
-
-        setTimeout(() => {
-          window.location.href = "dompet.html";
-        }, 1000);
+        setTimeout(() => window.location.href = "dompet.html", 1000);
 
       } catch (err) {
         console.error(err);
