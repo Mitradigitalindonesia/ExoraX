@@ -47,11 +47,9 @@
     <div id="status"></div>
   </div>
 
-  <!-- bs58 untuk encoding signature -->
-  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/dist/bs58.min.js"></script>
-
-  <!-- Supabase client module -->
+  <!-- ✅ Module script dengan bs58 + supabase -->
   <script type="module">
+    import bs58 from 'https://cdn.jsdelivr.net/npm/bs58@5.0.0/+esm';
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const backendUrl = "https://game-crypto-backend.onrender.com";
