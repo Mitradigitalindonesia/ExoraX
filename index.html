@@ -49,9 +49,11 @@
 
   <script type="module">
     import bs58 from 'https://cdn.jsdelivr.net/npm/bs58@5.0.0/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const backendUrl = "https://game-crypto-backend.onrender.com";
 
+    // Fungsi utama login
     document.getElementById("login-btn").addEventListener("click", async () => {
       const statusEl = document.getElementById("status");
 
@@ -89,12 +91,28 @@
 
         const { access_token, user } = result;
 
-        // ✅ Simpan token Supabase ke localStorage
+        // ✅ Simpan token dan info user ke localStorage
         localStorage.setItem("supabaseAccessToken", access_token);
         localStorage.setItem("userId", user.id);
         localStorage.setItem("walletAddress", user.wallet_address);
 
-        // ✅ Redirect ke dompet
+        // ✅ Inisialisasi Supabase client (opsional langsung di sini)
+        const supabase = createClient(
+          'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
+          {
+            global: {
+              headers: {
+                Authorization: `Bearer ${access_token}`
+              }
+            }
+          }
+        );
+
+        // (Opsional) cek user dari Supabase
+        const { data: authUser, error: authError } = await supabase.auth.getUser();
+        if (authError) console.error("Auth error:", authError);
+
         statusEl.textContent = `✅ Berhasil login sebagai ${user.wallet_address}`;
         setTimeout(() => window.location.href = "dompet.html", 1000);
 
