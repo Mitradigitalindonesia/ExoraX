@@ -537,39 +537,25 @@ function getAssetName(symbol) {
 
 async function initUserWallet() {
   const rawUser = localStorage.getItem("user");
-  log("Raw localStorage user:", rawUser);
-
-  if (!rawUser) {
-    alert("⚠️ Silakan login terlebih dahulu.");
-    window.location.href = "index.html";
-    return;
-  }
-
+  if (!rawUser) { alert("⚠️ Silakan login."); return window.location.href = "index.html"; }
   const savedUser = JSON.parse(rawUser);
+  const userId = savedUser.user_id || savedUser.id;
+  if (!userId) { alert("⚠️ Data login invalid."); return window.location.href = "index.html"; }
+  currentUser = { id: userId };
 
-// Gunakan fallback: id atau user_id
-const userId = savedUser.user_id || savedUser.id;
-
-if (!userId) {
-  alert("⚠️ Data login tidak valid. Silakan login ulang.");
-  window.location.href = "index.html";
-  return;
-}
-
-currentUser = { id: userId };
-log("Current user ID:", currentUser.id);
-
-  const { data: wallets, error } = await supabase
+  // 1️⃣ Cek wallets user
+  const { data: wallets, error: selectError } = await supabase
     .from('wallets')
-    .select('id')
+    .select('id, symbol')
     .eq('user_id', currentUser.id);
 
-  if (error) {
-    console.error("❌ Gagal mengambil wallet:", error.message);
+  if (selectError) {
+    console.error("❌ Gagal fetch wallets:", selectError);
     return;
   }
 
-  if (!wallets || wallets.length === 0) {
+  // 2️⃣ Jika belum ada, buat default wallets
+  if (!wallets.length) {
     const defaultWallets = ASSET_SYMBOLS.map(symbol => ({
       user_id: currentUser.id,
       symbol,
@@ -579,11 +565,15 @@ log("Current user ID:", currentUser.id);
       profit_percent: 0
     }));
 
-    const { error: insertError } = await supabase.from('wallets').insert(defaultWallets);
+    const { data: inserted, error: insertError } = await supabase
+      .from('wallets')
+      .insert(defaultWallets)
+      .select(); // <- Tambahkan .select() untuk dapat data created
+
     if (insertError) {
-      console.error("❌ Gagal membuat wallet default:", insertError.message);
+      console.error("❌ Gagal membuat wallet default:", insertError);
     } else {
-      log("✅ Wallet default berhasil dibuat.");
+      console.log("✅ Wallet default dibuat:", inserted.map(w=>w.symbol).join(', '));
     }
   }
 }
