@@ -138,74 +138,106 @@
     </a>
   </div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("supabaseAccessToken")}`
-          }
+  const supabase = createClient(
+    'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
+    {
+      global: {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("supabaseAccessToken")}`
         }
       }
-    );
+    }
+  );
 
-    const BTC_TO_IDR = 16000;
+  const BTC_TO_IDR = 16000;
 
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (!user) {
-      document.getElementById('idr').innerText = 'Gagal memuat user';
-      console.error(error);
-    } else {
-      const { data: wallets } = await supabase
+  async function loadPortfolio() {
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) {
+        document.getElementById('idr').innerText = 'Gagal memuat user';
+        console.error("User Error:", userError);
+        return;
+      }
+
+      const { data: wallets, error: walletError } = await supabase
         .from('wallets')
         .select('idr_value')
         .eq('user_id', user.id);
+
+      if (walletError) {
+        console.error("Wallet Error:", walletError);
+        document.getElementById('idr').innerText = 'Gagal memuat dompet';
+        return;
+      }
+
+      console.log("Wallets:", wallets); // Debugging output
 
       const totalIDR = wallets?.reduce((sum, w) => sum + (w.idr_value || 0), 0) || 0;
 
       document.getElementById('idr').innerText = `Rp ${totalIDR.toLocaleString('id-ID')}`;
       document.getElementById('btc').innerText = `≈ ${(totalIDR / BTC_TO_IDR).toFixed(4)} BTC`;
       document.getElementById('return').innerText = `+Rp ${Math.round(totalIDR * 0.05).toLocaleString('id-ID')}`;
+    } catch (err) {
+      console.error("Fatal Error:", err);
+      document.getElementById('idr').innerText = '❌ Error mengambil data';
     }
-    // Berita dari CoinTelegraph
-    fetch('https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss')
-      .then(response => response.json())
-      .then(data => {
-        const container = document.getElementById('berita-container');
-        container.innerHTML = '';
-        data.items.slice(0, 8).forEach(item => {
-          const img = item.enclosure?.link || '';
-          const div = document.createElement('div');
-          div.style = `
-            background: rgba(255,255,255,0.05);
-            color: #fff;
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 12px;
-            display: flex;
-            gap: 10px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-            backdrop-filter: blur(6px);
-          `;
-          div.innerHTML = `
-            <img src="${img}" style="width: 100px; height: 70px; object-fit: cover; border-radius: 6px;">
-            <div style="flex-grow: 1;">
-              <h3 style="margin:0 0 6px; font-size: 14px;"><a href="${item.link}" target="_blank" style="color:#38bdf8;text-decoration:none;">${item.title}</a></h3>
-              <div style="font-size: 11px; color: #aaa; margin-bottom: 4px;">${new Date(item.pubDate).toLocaleString('id-ID')}</div>
-              <div style="font-size:13px; color:#ccc;">${item.description.slice(0, 100)}...</div>
-            </div>
-          `;
-          container.appendChild(div);
-        });
-      })
-      .catch(err => {
-        document.getElementById('berita-container').innerText = '❌ Gagal memuat berita.';
-        console.error(err);
+  }
+
+  loadPortfolio();
+
+  // Update BTC Live Price (opsional)
+  const ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@trade');
+  ws.onmessage = event => {
+    const data = JSON.parse(event.data);
+    const priceUSD = parseFloat(data.p);
+    const priceIDR = priceUSD * BTC_TO_IDR;
+    document.getElementById('btc-live').innerText = `Live: Rp ${priceIDR.toLocaleString('id-ID')}`;
+  };
+
+  // Berita CoinTelegraph
+  fetch('https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss')
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById('berita-container');
+      container.innerHTML = '';
+      data.items.slice(0, 8).forEach(item => {
+        const img = item.enclosure?.link || '';
+        const div = document.createElement('div');
+        div.style = `
+          background: rgba(255,255,255,0.05);
+          color: #fff;
+          border-radius: 12px;
+          padding: 12px;
+          margin-bottom: 12px;
+          display: flex;
+          gap: 10px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+          backdrop-filter: blur(6px);
+        `;
+        div.innerHTML = `
+          <img src="${img}" style="width: 100px; height: 70px; object-fit: cover; border-radius: 6px;">
+          <div style="flex-grow: 1;">
+            <h3 style="margin:0 0 6px; font-size: 14px;"><a href="${item.link}" target="_blank" style="color:#38bdf8;text-decoration:none;">${item.title}</a></h3>
+            <div style="font-size: 11px; color: #aaa;">${new Date(item.pubDate).toLocaleString('id-ID')}</div>
+            <div style="font-size:13px; color:#ccc;">${item.description.slice(0, 100)}...</div>
+          </div>
+        `;
+        container.appendChild(div);
       });
+    })
+    .catch(err => {
+      document.getElementById('berita-container').innerText = '❌ Gagal memuat berita.';
+      console.error(err);
+    });
   </script>
+</body>
+</html>
+  
 </body>
 </html>
