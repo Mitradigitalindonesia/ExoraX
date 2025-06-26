@@ -2,828 +2,125 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - Game Crypto</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login dengan Solana</title>
   <style>
     body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #1e3a8a 50%, #581c87 100%);
-  color: white;
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
-
-.bg-pattern {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.1;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.particle, .shape1, .shape2, .shape3 {
-  position: absolute;
-}
-.particle {
-  width: 4px;
-  height: 4px;
-  background: #22d3ee;
-  border-radius: 50%;
-  animation: float 3s infinite ease-in-out;
-}
-.shape1 {
-  top: 80px;
-  left: 80px;
-  width: 128px;
-  height: 128px;
-  border: 2px solid #22d3ee;
-  transform: rotate(45deg);
-  animation: rotate 20s linear infinite;
-}
-.shape2 {
-  top: 160px;
-  right: 128px;
-  width: 96px;
-  height: 96px;
-  border: 2px solid #a855f7;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-.shape3 {
-  bottom: 128px;
-  left: 160px;
-  width: 160px;
-  height: 160px;
-  border: 2px solid #3b82f6;
-  border-radius: 50%;
-  animation: bounce 3s infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
-  50% { transform: translateY(-20px) rotate(180deg); opacity: 0.5; }
-}
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.7; }
-}
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
-}
-
-/* === Modal === */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 2000;
-  animation: fadeIn 0.3s ease;
-}
-#loading-spinner {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 9999; /* pastikan muncul di atas */
-  text-align: center;
-}
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.spinner-wrapper {
-  animation: spin 4s linear infinite;
-  display: inline-block;
-}
-/* === Modal (Bottom Sheet Style) === */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 2000;
-  animation: fadeIn 0.3s ease;
-}
-
-.modal-content {
-  background: rgba(30, 41, 59, 0.95); /* gelap, transparan */
-  color: white;
-  border-radius: 20px 20px 0 0;
-  padding: 24px;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-height: 80vh;
-  transform: translateY(100%);
-  animation: slideUp 0.3s ease forwards;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-}
-
-.modal-overlay.show .modal-content {
-  transform: translateY(0);
-}
-
-.modal-handle {
-  width: 40px;
-  height: 4px;
-  background: #475569;
-  border-radius: 2px;
-  margin: 0 auto 16px;
-}
-
-.modal-content h3 {
-  margin: 0 0 16px 0;
-  font-size: 20px;
-  text-align: center;
-}
-
-.modal-price {
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  color: #22d3ee;
-}
-
-.modal-content input {
-  width: 100%;
-  padding: 16px;
-  margin: 12px 0 24px 0;
-  border-radius: 12px;
-  border: 2px solid #334155;
-  font-size: 16px;
-  box-sizing: border-box;
-  background: #1e293b;
-  color: white;
-}
-
-.modal-content input:focus {
-  outline: none;
-  border-color: #22d3ee;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.modal-actions button {
-  flex: 1;
-  padding: 16px;
-  border: none;
-  border-radius: 12px;
-  font-weight: bold;
-  font-size: 16px;
-  cursor: pointer;
-  transition: transform 0.1s ease;
-}
-
-.modal-actions button:active {
-  transform: scale(0.98);
-}
-
-.btn-buy {
-  background: #22d3ee;
-  color: #0f172a;
-}
-.btn-buy:hover {
-  background: #0ea5e9;
-}
-
-.btn-sell {
-  background: #a855f7;
-  color: white;
-}
-.btn-sell:hover {
-  background: #9333ea;
-}
-
-.btn-close {
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  position: absolute;
-  top: 16px;
-  right: 20px;
-  color: #94a3b8;
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-}
-.btn-close:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-
-@keyframes slideDown {
-  from { transform: translateY(0); }
-  to { transform: translateY(100%); }
-}
-
-.modal-content.closing {
-  animation: slideDown 0.3s ease forwards;
-}
-
-/* === Summary & Asset Cards === */
-.container {
-  max-width: 700px;
-  margin: auto;
-  padding: 16px;
-  padding-bottom: 80px;
-}
-.summary-card {
-  background: rgba(30, 41, 59, 0.85); /* cocok dengan background utama */
-  border-radius: 16px;
-  padding: 20px;
-  text-align: center;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  color: white;
-  backdrop-filter: blur(6px); /* opsional untuk efek kaca */
-}
-.summary-card h1 {
-  font-size: 28px;
-  margin: 0;
-}
-.summary-card small {
-  color: #ccc;
-}
-.summary-stats {
-  margin-top: 12px;
-  font-size: 18px;
-  color: #ccc;
-}
-.btn-group {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 16px;
-}
-.btn-group button {
-  flex: 1;
-  margin: 0 4px;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  background: #007bff;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
-.btn-group button:nth-child(2) {
-  background: white;
-  color: #007bff;
-  border: 1px solid #007bff;
-}
-.btn-group button:nth-child(3) {
-  background: #28a745;
-}
-
-/* === Asset Card === */
-.asset-card {
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-}
-.asset-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-.asset-left {
-  display: flex;
-  align-items: center;
-}
-.asset-left svg {
-  width: 36px;
-  height: 36px;
-  margin-right: 12px;
-}
-.asset-info {
-  font-size: 14px;
-}
-.asset-info .symbol {
-  font-weight: bold;
-}
-.asset-right {
-  text-align: right;
-  font-size: 14px;
-}
-
-/* === Bottom Navigation === */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.6);
-  border-top: 1px solid #334155;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-}
-
-.bottom-nav a {
-  color: #94a3b8;
-  text-align: center;
-  font-size: 12px;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.bottom-nav a svg {
-  width: 20px;
-  height: 20px;
-  margin-bottom: 4px;
-  fill: #94a3b8;
-  transition: fill 0.2s ease;
-}
-
-.bottom-nav a.active,
-.bottom-nav a:hover {
-  color: #38bdf8;
-}
-
-.bottom-nav a.active svg,
-.bottom-nav a:hover svg {
-  fill: #38bdf8;
-}
+      font-family: sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      text-align: center;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    button {
+      padding: 10px 20px;
+      background: #8c52ff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #6e3ee7;
+    }
+    #status {
+      margin-top: 1rem;
+      font-size: 14px;
+      color: #333;
+    }
   </style>
 </head>
 <body>
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-  <!-- Modal -->
-  <div id="trade-modal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-handle"></div>
-      <button class="btn-close" onclick="closeModal()"></button>
-      <h3 id="modal-title">Trade</h3>
-      <div class="modal-price" id="modal-price">-</div>
-<div id="chart" style="margin-bottom: 16px;"></div>
-<input type="number" id="modal-amount" placeholder="Masukkan jumlah..." />
-      <div class="modal-actions">
-        <button id="buy-btn" class="btn-buy">Beli</button>
-        <button id="sell-btn" class="btn-sell">Jual</button>
-      </div>
-    </div>
-  </div>
-
   <div class="container">
-    <div class="summary-card">
-      <h1 id="idr">Loading...</h1>
-      <small id="btc">≈ Loading BTC</small>
-      <div class="summary-stats">
-        Return Value (1D): <strong id="return">Loading...</strong>
-      </div>
-      <div class="btn-group">
-        <button>Deposit</button>
-        <button style="background:#fff; color:#007bff; border:1px solid #007bff;">Withdraw</button>
-        <button style="background:#28a745;">Earn</button>
-      </div>
-    </div>
-
-    <div id="asset-list">
-      <div id="loading-spinner">
-        <div class="spinner-wrapper">
-          <svg width="240" height="240" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <!-- Background -->
-            <circle cx="50" cy="50" r="48" fill="url(#bgGradient)" stroke="#0ff" stroke-width="2"/>
-
-            <!-- Simbol bergaya futuristik -->
-            <g transform="translate(50,50)">
-              <polygon points="0,-30 26,15 -26,15" fill="url(#coreGradient)" stroke="#00ffff" stroke-width="1.5" />
-              <polygon points="0,30 -26,-15 26,-15" fill="url(#coreGradient2)" stroke="#00ffff" stroke-width="1.5" />
-              <circle cx="0" cy="0" r="6" fill="#00ffff" stroke="#fff" stroke-width="1"/>
-            </g>
-
-            <!-- Gradien -->
-            <defs>
-              <radialGradient id="bgGradient" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#001f3f" />
-                <stop offset="100%" stop-color="#000814" />
-              </radialGradient>
-              <linearGradient id="coreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#00ffff" />
-                <stop offset="100%" stop-color="#0066ff" />
-              </linearGradient>
-              <linearGradient id="coreGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#00ccff" />
-                <stop offset="100%" stop-color="#0033ff" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-      </div>
-      <!-- Asset list akan dimuat di sini -->
-    </div>
+    <h2>Login dengan Solana Wallet</h2>
+    <button id="login-btn">Login</button>
+    <div id="status"></div>
   </div>
 
-  <!-- Navigasi bawah dipisahkan dari container -->
-  <div class="bottom-nav">
-    <a href="index.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Home</span>
-    </a>
-    <a href="market.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Market</span>
-    </a>
-    <a href="market.html" class="active">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Dompet</span>
-    </a>
-    <a href="mining.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Mining</span>
-    </a>
-    <a href="mitra.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2m8-6a4 4 0 00-8 0m8-10a4 4 0 11-8 0" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Mitra</span>
-    </a>
-  </div>
-</body>
-</html>
+  <script type="module">
+    import bs58 from 'https://cdn.jsdelivr.net/npm/bs58@5.0.0/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const backendUrl = "https://game-crypto-backend.onrender.com";
 
-  const supabase = createClient(
-    'https://ocfjkltbtwqrbiucrkyq.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
-  );
+    // Fungsi utama login
+    document.getElementById("login-btn").addEventListener("click", async () => {
+      const statusEl = document.getElementById("status");
 
-let currentUser = null;
-let selectedSymbol = null;
-let selectedWallet = null;
-let selectedPrice = 0;
-
-const ASSET_SYMBOLS = ['IDR', 'USDT', 'EXR', 'CX', 'MX', 'GX', 'LX', 'SX'];
-const BTC_TO_IDR = 850_000_000;
-const SYMBOL_NAMES = {
-  IDR: 'Rupiah', USDT: 'Tether', EXR: 'Exora',
-  CX: 'Coin CX', MX: 'Coin MX', GX: 'Coin GX',
-  LX: 'Coin LX', SX: 'Coin SX'
-};
-
-// ========== MODAL ==========
-function showModal() {
-  const modal = document.getElementById('trade-modal');
-  modal.style.display = 'flex';
-  setTimeout(() => modal.classList.add('show'), 10);
-}
-
-function closeModal() {
-  const modal = document.getElementById('trade-modal');
-  const content = modal.querySelector('.modal-content');
-  content.classList.add('closing');
-  setTimeout(() => {
-    modal.style.display = 'none';
-    modal.classList.remove('show');
-    content.classList.remove('closing');
-  }, 300);
-}
-
-function initModalEvents() {
-  document.getElementById('trade-modal').addEventListener('click', e => {
-    if (e.target.id === 'trade-modal') closeModal();
-  });
-}
-
-// ========== CHART ==========
-async function renderPriceChart(symbol) {
-  const { data, error } = await supabase
-    .from('price_history')
-    .select('timestamp, open, high, low, close')
-    .eq('symbol', symbol)
-    .order('timestamp', { ascending: true })
-    .limit(50);
-
-  if (error || !data || data.length === 0) {
-    console.warn("❌ Gagal memuat data harga:", error?.message);
-    document.getElementById('chart').innerHTML = '<small style="color:#ccc">Grafik tidak tersedia.</small>';
-    return;
-  }
-
-  const series = [{
-    data: data.map(d => ({
-      x: new Date(d.timestamp),
-      y: [d.open, d.high, d.low, d.close]
-    }))
-  }];
-
-  const options = {
-  chart: {
-    type: 'candlestick',
-    height: 320,
-    background: 'transparent',
-    toolbar: { show: false },
-    zoom: { enabled: false },
-    animations: { enabled: false }
-  },
-  plotOptions: {
-    candlestick: {
-      colors: {
-        upward: '#0ecb81',
-        downward: '#f6465d'
-      },
-      wick: {
-        useFillColor: true
-      },
-      bar: {
-        columnWidth: '50%' // ⬅️ spacing antar candle
+      if (!window.solana || !window.solana.isPhantom) {
+        statusEl.textContent = "Phantom Wallet tidak ditemukan. Silakan install Phantom terlebih dahulu.";
+        return;
       }
-    }
-  },
-  xaxis: {
-    type: 'datetime',
-    labels: {
-      style: {
-        colors: '#888',
-        fontSize: '11px'
-      },
-      datetimeFormatter: {
-        hour: 'HH:mm',
-        day: 'dd MMM'
+
+      try {
+        const resp = await window.solana.connect();
+        const walletAddress = resp.publicKey.toString();
+        const timestamp = Date.now();
+        const message = `Sign this message to log in.\nWallet: ${walletAddress}\nTimestamp: ${timestamp}`;
+        const encodedMessage = new TextEncoder().encode(message);
+
+        if (!window.solana.signMessage) {
+          statusEl.textContent = "Wallet tidak mendukung signMessage.";
+          return;
+        }
+
+        const signedMessage = await window.solana.signMessage(encodedMessage, "utf8");
+        const signature = bs58.encode(signedMessage.signature);
+
+        const res = await fetch(`${backendUrl}/login-wallet`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ wallet: walletAddress, message, signature })
+        });
+
+        const result = await res.json();
+
+        if (!result.success) {
+          throw new Error(result.message || "Login gagal");
+        }
+
+        const { access_token, user } = result;
+
+        // ✅ Simpan token dan info user ke localStorage
+        localStorage.setItem("supabaseAccessToken", access_token);
+        localStorage.setItem("userId", user.id);
+        localStorage.setItem("walletAddress", user.wallet_address);
+
+        // ✅ Inisialisasi Supabase client (opsional langsung di sini)
+        const supabase = createClient(
+          'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
+          {
+            global: {
+              headers: {
+                Authorization: `Bearer ${access_token}`
+              }
+            }
+          }
+        );
+
+        // (Opsional) cek user dari Supabase
+        const { data: authUser, error: authError } = await supabase.auth.getUser();
+        if (authError) console.error("Auth error:", authError);
+
+        statusEl.textContent = `✅ Berhasil login sebagai ${user.wallet_address}`;
+        setTimeout(() => window.location.href = "dompet.html", 1000);
+
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "❌ Gagal login: " + (err.message || "Unknown error");
       }
-    },
-    axisBorder: { show: false },
-    axisTicks: { show: false },
-    tooltip: { enabled: false }
-  },
-  yaxis: {
-    opposite: true,
-    labels: {
-      formatter: val => `Rp ${Math.round(val).toLocaleString('id-ID')}`,
-      style: { colors: '#888', fontSize: '11px' }
-    },
-    axisBorder: { show: false },
-    axisTicks: { show: false }
-  },
-  grid: {
-    show: true,
-    borderColor: '#2a2e39',
-    strokeDashArray: 2
-  },
-  tooltip: {
-    theme: 'dark',
-    shared: true,
-    custom: ({ series, seriesIndex, dataPointIndex, w }) => {
-      const d = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
-      const [o, h, l, c] = d.y;
-      return `
-        <div style="padding: 6px 10px; font-size: 13px; color: #eee;">
-          <div><strong>${d.x.toLocaleString()}</strong></div>
-          <div>Open: Rp ${Math.round(o).toLocaleString('id-ID')}</div>
-          <div>High: Rp ${Math.round(h).toLocaleString('id-ID')}</div>
-          <div>Low: Rp ${Math.round(l).toLocaleString('id-ID')}</div>
-          <div>Close: Rp ${Math.round(c).toLocaleString('id-ID')}</div>
-        </div>
-      `;
-    }
-  }
-};
-  const chartEl = document.getElementById("chart");
-  chartEl.innerHTML = '';
-  const chart = new ApexCharts(chartEl, { series, ...options });
-  chart.render();
-}
-// ========== WALLET ==========
-async function createDefaultWallets(userId) {
-  const defaults = ASSET_SYMBOLS.map(sym => ({
-    user_id: userId,
-    symbol: sym,
-    name: SYMBOL_NAMES[sym] || sym,
-    amount: 0,
-    idr_value: 0
-  }));
-
-  const { error } = await supabase
-    .from('wallets')
-    .upsert(defaults, { onConflict: ['user_id', 'symbol'] });
-
-  if (error) {
-    console.error('❌ Gagal upsert dompet:', error);
-    alert('Gagal membuat dompet default: ' + error.message);
-  } else {
-    console.log('✅ Dompet default berhasil dibuat/diabaikan jika sudah ada.');
-  }
-}
-
-async function initUserWallet() {
-  const { data: authUser, error: authError } = await supabase.auth.getUser();
-  if (authError || !authUser.user) {
-    console.error("❌ Gagal mendapatkan pengguna:", authError?.message);
-    return;
-  }
-
-  currentUser = authUser.user;
-  console.log("👤 Pengguna yang login:", currentUser.id);
-
-  // Cek apakah user sudah ada di tabel public.users
-  const { data: userRow, error: userErr } = await supabase
-    .from('users')
-    .select('id')
-    .eq('id', currentUser.id)
-    .single();
-
-  if (userErr || !userRow) {
-    console.warn("⚠️ Pengguna belum ada di tabel 'users'. Melewati pembuatan wallet.");
-    return; // Exit lebih awal karena relasi akan gagal jika lanjut
-  }
-
-  // Ambil wallet yang sudah ada
-  const { data: existingWallets, error: fetchErr } = await supabase
-    .from('wallets')
-    .select('symbol')
-    .eq('user_id', currentUser.id);
-
-  if (fetchErr) {
-    console.error("❌ Gagal memeriksa wallet:", fetchErr.message);
-    return;
-  }
-
-  const existingSymbols = (existingWallets || []).map(w => w.symbol);
-  const missingSymbols = ASSET_SYMBOLS.filter(sym => !existingSymbols.includes(sym));
-
-  if (missingSymbols.length === 0) {
-    console.log("✅ Semua wallet sudah ada.");
-    return;
-  }
-
-  // Insert hanya wallet yang belum ada
-  const newWallets = missingSymbols.map(sym => ({
-    user_id: currentUser.id,
-    symbol: sym,
-    name: SYMBOL_NAMES[sym] || sym,
-    amount: 0,
-    idr_value: 0
-  }));
-
-  const { error: insertErr } = await supabase
-    .from('wallets')
-    .insert(newWallets);
-
-  if (insertErr) {
-    console.error("❌ Gagal menambahkan wallet:", insertErr.message);
-  } else {
-    console.log("✅ Wallet yang hilang berhasil ditambahkan.");
-  }
-}
-
-// ========== PORTFOLIO ==========
-async function loadPortfolio() {
-  if (!currentUser?.id) return;
-
-  const [{ data: wallets }, { data: prices }] = await Promise.all([
-    supabase.from('wallets').select('*').eq('user_id', currentUser.id),
-    supabase.from('price_pool').select('symbol, last_price, logo_svg')
-  ]);
-
-  if (!wallets || !prices) {
-    alert("⚠️ Gagal mengambil data portofolio.");
-    return;
-  }
-
-  const priceMap = Object.fromEntries(prices.map(p => [p.symbol, p]));
-  let total = 0;
-  let html = '';
-
-  ASSET_SYMBOLS.forEach(symbol => {
-    const wallet = wallets.find(w => w.symbol === symbol) || {
-      symbol, amount: 0, idr_value: 0
-    };
-    const priceData = priceMap[symbol];
-    const latestPrice = priceData?.last_price || 0;
-    const idrValue = wallet.amount * latestPrice;
-
-    html += `
-      <div class="asset-card" data-symbol="${symbol}" data-wallet-id="${wallet.id || ''}">
-        <div class="asset-left">
-          ${priceData?.logo_svg || '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#ccc"/></svg>'}
-          <div class="asset-info">
-            <div class="symbol">${symbol}</div>
-            <div>Saldo: ${wallet.amount}</div>
-          </div>
-        </div>
-        <div class="asset-right">
-          Rp ${idrValue.toLocaleString('id-ID')}
-          <div style="font-size: 12px;">Harga: Rp ${latestPrice.toLocaleString('id-ID')}</div>
-        </div>
-      </div>
-    `;
-
-    total += idrValue;
-  });
-
-  document.getElementById('asset-list').innerHTML = html;
-  document.getElementById('idr').innerText = `Rp ${total.toLocaleString('id-ID')}`;
-  document.getElementById('btc').innerText = `≈ ${(total / BTC_TO_IDR).toFixed(4)} BTC`;
-  document.getElementById('return').innerText = `+Rp ${Math.round(total * 0.05).toLocaleString('id-ID')}`;
-
-  // Bind card click handler
-  document.querySelectorAll('.asset-card').forEach(card => {
-    card.addEventListener('click', () => {
-      selectedSymbol = card.dataset.symbol;
-      selectedWallet = { id: card.dataset.walletId };
-      selectedPrice = priceMap[selectedSymbol]?.last_price || 0;
-
-      document.getElementById('modal-title').innerText = `Trade ${selectedSymbol}`;
-      document.getElementById('modal-price').innerText = `Rp ${selectedPrice.toLocaleString('id-ID')}`;
-      document.getElementById('modal-amount').value = '';
-
-      renderPriceChart(selectedSymbol);
-      showModal();
     });
-  });
-}
-
-// ========== TRADE ==========
-async function handleTrade(isBuy) {
-  const amount = parseFloat(document.getElementById('modal-amount').value);
-  if (!amount || amount <= 0) return alert("⚠️ Masukkan jumlah yang valid.");
-  if (!selectedWallet?.id) return alert("❌ Wallet tidak ditemukan.");
-
-  if (!isBuy) {
-    const { data: walletData, error: walletErr } = await supabase
-      .from('wallets')
-      .select('amount')
-      .eq('id', selectedWallet.id)
-      .single();
-
-    if (walletErr || !walletData) return alert("❌ Gagal mengambil saldo.");
-    if (amount > walletData.amount) {
-      return alert(`❌ Anda mencoba menjual ${amount} ${selectedSymbol}, tapi saldo hanya ${walletData.amount}.`);
-    }
-  }
-
-  const { error } = await supabase.rpc('trade', {
-    p_wallet_id: selectedWallet.id,
-    p_symbol: selectedSymbol,
-    p_amount: amount,
-    p_type: isBuy ? 'buy' : 'sell'
-  });
-
-  if (error) {
-    console.error("❌ Trade error:", error.message);
-    alert('❌ Transaksi gagal: ' + error.message);
-  } else {
-    alert('✅ Transaksi berhasil!');
-    closeModal();
-    loadPortfolio();
-  }
-}
-
-// ========== ENTRY POINT ==========
-document.addEventListener('DOMContentLoaded', async () => {
-  initModalEvents();
-
-  await initUserWallet(); // Buat wallet jika belum ada
-  await loadPortfolio();
-
-  document.getElementById('buy-btn').addEventListener('click', () => handleTrade(true));
-  document.getElementById('sell-btn').addEventListener('click', () => handleTrade(false));
-});
-</script>
+  </script>
 </body>
 </html>
