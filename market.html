@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EXORA Market - EXR</title>
+  <title>EXORA Marketplace</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -11,36 +11,42 @@
       color: white;
       margin: 0;
       padding: 0;
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
     }
-    h1 { margin-top: 24px; }
+
+    h1 { margin: 24px 0 16px; }
+
     .table-container {
       width: 90%;
       max-width: 800px;
-      margin: 24px auto;
       overflow-x: auto;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       background: rgba(255,255,255,0.05);
       border: 1px solid #334155;
     }
+
     th, td {
       padding: 12px 8px;
       text-align: left;
       border-bottom: 1px solid #334155;
       font-size: 14px;
     }
+
     th {
       background: rgba(0,0,0,0.2);
     }
+
     tr:hover {
       background: rgba(56,189,248,0.1);
     }
+
     .btn-buy {
       background: #22d3ee;
       color: #0f172a;
@@ -50,9 +56,11 @@
       font-weight: bold;
       cursor: pointer;
     }
+
     .btn-buy:hover {
       background: #0ea5e9;
     }
+
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -66,6 +74,7 @@
       backdrop-filter: blur(8px);
       z-index: 1000;
     }
+
     .bottom-nav a {
       color: #94a3b8;
       text-decoration: none;
@@ -74,31 +83,45 @@
       flex-direction: column;
       align-items: center;
     }
+
     .bottom-nav a svg {
       width: 20px;
       height: 20px;
       margin-bottom: 4px;
       fill: #94a3b8;
-      transition: fill 0.2s ease;
     }
+
     .bottom-nav a:hover, .bottom-nav a.active {
       color: #38bdf8;
     }
+
     .bottom-nav a:hover svg, .bottom-nav a.active svg {
       fill: #38bdf8;
+    }
+
+    #notif {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #0ea5e9;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 9999;
     }
   </style>
 </head>
 <body>
-  <h1>Market EXORA</h1>
+  <h1>Marketplace EXORA</h1>
   <div class="table-container">
-    <table id="itemsTable">
+    <table id="marketTable">
       <thead>
         <tr>
-          <th>Nama Item</th>
+          <th>Item</th>
           <th>Hashrate</th>
           <th>Power (W)</th>
-          <th>Biaya Maint.</th>
           <th>Harga (EXR)</th>
           <th>Aksi</th>
         </tr>
@@ -115,17 +138,19 @@
     <a href="mitra.html"><svg><!-- Mitra icon --></svg><span>Mitra</span></a>
   </div>
 
+  <div id="notif"></div>
+
   <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const userId = localStorage.getItem("userId");
-const token = localStorage.getItem("supabaseAccessToken");
+    const token = localStorage.getItem("supabaseAccessToken");
+    const userId = localStorage.getItem("userId");
 
-if (!userId || !token) {
-  alert("Sesi login tidak ditemukan. Silakan login ulang.");
-  window.location.href = "index.html";
-  throw new Error("User belum login.");
-}
+    if (!token || !userId) {
+      showNotif("Silakan login terlebih dahulu.");
+      window.location.href = "index.html";
+      throw new Error("Unauthorized");
+    }
 
 const supabase = createClient(
   'https://ocfjkltbtwqrbiucrkyq.supabase.co',
@@ -133,71 +158,79 @@ const supabase = createClient(
   {
     global: {
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${localStorage.getItem("supabaseAccessToken")}`
       }
     }
   }
 );
 
-const itemsTable = document.querySelector('#itemsTable tbody');
+    const tableBody = document.querySelector('#marketTable tbody');
 
-async function loadItems() {
-  const { data, error } = await supabase
-    .from('items')
-    .select('id, item_name, hashrate, power_usage, maintenance_cost, price_exr');
+    function showNotif(msg) {
+      const notif = document.getElementById('notif');
+      notif.innerText = msg;
+      notif.style.display = 'block';
+      setTimeout(() => notif.style.display = 'none', 3000);
+    }
 
-  if (error) {
-    console.error('Error memuat item:', error);
-    itemsTable.innerHTML = `<tr><td colspan="6">Gagal memuat data.</td></tr>`;
-    return;
-  }
+    async function loadListings() {
+      const { data, error } = await supabase
+        .from('market_listings')
+        .select('id, item_name, hashrate, power_usage, price_exr');
 
-  itemsTable.innerHTML = '';
-  data.forEach(item => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${item.item_name}</td>
-      <td>${item.hashrate ?? 0} H/s</td>
-      <td>${item.power_usage} W</td>
-      <td>${item.maintenance_cost.toFixed(2)} EXR</td>
-      <td>${item.price_exr} EXR</td>
-      <td><button class="btn-buy" data-id="${item.id}" data-price="${item.price_exr}">Beli</button></td>
-    `;
-    itemsTable.appendChild(tr);
-  });
+      if (error) {
+        console.error("Error load listings:", error.message);
+        tableBody.innerHTML = `<tr><td colspan="5">Gagal memuat data</td></tr>`;
+        return;
+      }
 
-  document.querySelectorAll('.btn-buy').forEach(button => {
-    button.addEventListener('click', async () => {
-      button.disabled = true;
-      await buyItem(button.dataset.id, button.dataset.price, button);
+      tableBody.innerHTML = '';
+      data.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.item_name}</td>
+          <td>${item.hashrate} H/s</td>
+          <td>${item.power_usage} W</td>
+          <td>${item.price_exr} EXR</td>
+          <td><button class="btn-buy" data-id="${item.id}" data-price="${item.price_exr}">Beli</button></td>
+        `;
+        tableBody.appendChild(tr);
+      });
+
+      document.querySelectorAll('.btn-buy').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          await buyItem(btn.dataset.id, btn.dataset.price, btn);
+        });
+      });
+    }
+
+    async function buyItem(listingId, price, button) {
+      const { data, error } = await supabase.rpc('rpc_buy_market_item', {
+        p_user_id: userId,
+        p_listing_id: listingId,
+        p_price_exr: parseFloat(price)
+      });
+
+      button.disabled = false;
+
+      if (error) {
+        showNotif("❌ Gagal beli: " + error.message);
+        return;
+      }
+
+      if (!data?.success) {
+        showNotif("❌ Pembelian gagal.");
+        return;
+      }
+
+      showNotif(`✅ Berhasil membeli item! Sisa saldo: ${data.new_balance.toFixed(4)} EXR`);
+      loadListings();
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadListings();
     });
-  });
-}
-
-async function buyItem(itemId, priceExr, button) {
-  const { data, error } = await supabase.rpc('rpc_buy_item', {
-    p_user_id: userId,
-    p_item_id: itemId,
-    p_price_exr: parseFloat(priceExr)
-  });
-
-  button.disabled = false;
-
-  if (error) {
-    console.error('RPC Error:', error);
-    return alert('Gagal membeli item: ' + error.message);
-  }
-
-  if (!data.success) {
-    return alert('Pembelian gagal: ' + (data.error || 'Saldo tidak cukup'));
-  }
-
-  alert(`Berhasil membeli! Sisa saldo: ${data.new_balance.toFixed(4)} EXR`);
-}
-
-window.addEventListener('DOMContentLoaded', async () => {
-  await loadItems();
-});
-</script>
+  </script>
 </body>
 </html>
