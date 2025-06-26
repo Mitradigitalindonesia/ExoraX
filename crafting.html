@@ -202,117 +202,23 @@ const supabase = createClient(
     }
   }
 );
+          const user_id = localStorage.getItem("user_id");
+if (!user_id) {
+  alert("User ID tidak ditemukan. Silakan login ulang.");
+  throw new Error("User ID missing");
+}
 
-    let fuseSlots = [null, null, null];
-    let selectedSlotIndex = null;
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      loadEXRBalance();
-      loadItems();
-    }
-
-    async function loadEXRBalance() {
-      const { data, error } = await supabase
-        .from('wallets')
-        .select('amount')
-        .eq('user_id', user.id)
-        .eq('symbol', 'EXR')
-        .single();
-
-      document.getElementById('exr-value').innerText =
-        error || !data ? 'Gagal memuat saldo' : `${data.amount.toLocaleString('id-ID')} EXR`;
-    }
-
-    function selectSlot(i) {
-      selectedSlotIndex = i;
-      openModal();
-    }
-
-    function openModal() {
-      document.getElementById("itemModal").style.display = "flex";
-      loadInventoryItems();
-    }
-
-    function closeModal() {
-      document.getElementById("itemModal").style.display = "none";
-    }
-
-    async function loadInventoryItems() {
-      const { data, error } = await supabase
-        .from("user_items")
-        .select("id, item_id, items(item_name, icon_url)")
-        .eq("user_id", user.id);
-
-      const inventoryList = document.getElementById("inventory-list");
-      inventoryList.innerHTML = "";
-
-      data.forEach(inv => {
-        const div = document.createElement("div");
-        div.className = "item-card";
-        div.innerHTML = `
-          <img src="${inv.items.icon_url}" />
-          <div><strong>${inv.items.item_name}</strong></div>
-        `;
-        div.onclick = () => {
-          fuseSlots[selectedSlotIndex] = inv.id;
-          updateSlotDisplay();
-          closeModal();
-        };
-        inventoryList.appendChild(div);
-      });
-    }
-
-    function updateSlotDisplay() {
-      fuseSlots.forEach((id, index) => {
-        const slot = document.querySelectorAll(".fuse-slot")[index];
-        if (!id) {
-          slot.innerHTML = `Slot ${index + 1}`;
-          return;
-        }
-
-        supabase
-          .from("user_items")
-          .select("items(item_name, icon_url)")
-          .eq("id", id)
-          .single()
-          .then(({ data }) => {
-            if (data && data.items) {
-              slot.innerHTML = `<img src="${data.items.icon_url}" width="40" style="border-radius:8px;" />`;
-            }
-          });
-      });
-    }
-
-    async function handleGacha() {
-  const { data, error } = await supabase.rpc('gacha_item', { p_user_id: user.id });
-
-  if (error) {
-    console.error('Gacha RPC error:', error);
-    alert('Gagal gacha: ' + error.message);
-    return;
-  }
-
-  if (data.status === 'error') {
-    alert(data.message || 'Gagal melakukan gacha.');
-    return;
-  }
-
-  // Jika sukses
 let fuseSlots = [null, null, null];
 let selectedSlotIndex = null;
 
-const { data: { user } } = await supabase.auth.getUser();
-if (user) {
-  loadEXRBalance();
-  loadItems();
-}
+loadEXRBalance();
+loadItems();
 
 async function loadEXRBalance() {
   const { data, error } = await supabase
     .from('wallets')
     .select('amount')
-    .eq('user_id', user.id)
+    .eq('user_id', user_id)
     .eq('symbol', 'EXR')
     .single();
 
@@ -338,12 +244,12 @@ async function loadInventoryItems() {
   const { data, error } = await supabase
     .from("user_items")
     .select("id, item_id, items(item_name, icon_url)")
-    .eq("user_id", user.id);
+    .eq("user_id", user_id);
 
   const inventoryList = document.getElementById("inventory-list");
   inventoryList.innerHTML = "";
 
-  data.forEach(inv => {
+  data?.forEach(inv => {
     const div = document.createElement("div");
     div.className = "item-card";
     div.innerHTML = `
@@ -381,7 +287,7 @@ function updateSlotDisplay() {
 }
 
 async function handleGacha() {
-  const { data, error } = await supabase.rpc('gacha_item', { p_user_id: user.id });
+  const { data, error } = await supabase.rpc('gacha_item', { p_user_id: user_id });
 
   if (error) {
     console.error('Gacha RPC error:', error);
@@ -406,12 +312,12 @@ async function handleFuse() {
   if (selectedIds.length !== 3) return alert('Pilih 3 item dulu untuk fuse');
 
   const { data, error } = await supabase.rpc('fuse_item', {
-    p_user_id: user.id,
+    p_user_id: user_id,
     p_item_ids: selectedIds
   });
 
   if (error) {
-    console.error('Fuse RPC error:', error);
+    console.error('Fuse error:', error);
     alert('Fuse gagal: ' + error.message);
     return;
   }
@@ -447,15 +353,11 @@ async function loadItems() {
 
 async function buyItem(itemId) {
   const { data, error } = await supabase.rpc('buy_item', {
-    p_user_id: user.id,
+    p_user_id: user_id,
     p_item_id: itemId
   });
 
-  if (error) {
-    console.error('Buy RPC error:', error);
-    alert('❌ Gagal membeli item: ' + error.message);
-    return;
-  }
+  if (error) return alert('❌ Gagal membeli item: ' + error.message);
 
   document.getElementById('notif').innerText = `🛒 Berhasil membeli: ${data.item_name}`;
   document.getElementById('notif').style.display = 'block';
@@ -467,6 +369,6 @@ async function buyItem(itemId) {
   loadItems();
   loadEXRBalance();
 }
-  </script>
+</script>
 </body>
 </html>
