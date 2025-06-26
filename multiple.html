@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EXORA Game - Limbo</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b, #1e3a8a, #581c87);
+      color: white;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    h2 {
+      margin-top: 24px;
+      font-size: 22px;
+    }
+
+    .balance {
+      margin-top: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+
+    .game-container {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      margin-top: 24px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+      border: 1px solid #334155;
+    }
+
+    .game-container input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      margin: 8px 0;
+      background: #0f172a;
+      color: white;
+      font-size: 14px;
+    }
+
+    .game-container button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      background: #22d3ee;
+      color: #0f172a;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .game-container button:hover {
+      background: #0ea5e9;
+    }
+
+    .result {
+      margin-top: 16px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.6);
+      border-top: 1px solid #334155;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      backdrop-filter: blur(8px);
+    }
+
+    .bottom-nav a {
+      color: #94a3b8;
+      text-align: center;
+      font-size: 12px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .bottom-nav a.active,
+    .bottom-nav a:hover {
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎲 Limbo Game</h2>
+  <div class="balance" id="exrBalance">0.0000 EXR</div>
+
+  <div class="game-container">
+    <input type="number" id="betAmount" placeholder="Jumlah Taruhan (EXR)" min="0.01" step="0.01" />
+    <input type="number" id="targetMultiplier" placeholder="Target Multiplier (misal 2.0)" min="1.01" step="0.01" />
+    <button id="playButton">Mainkan!</button>
+    <div class="result" id="resultText"></div>
+  </div>
+
+  <!-- Navigasi bawah -->
+  <div class="bottom-nav">
+    <a href="Home.html">
+      <span>Home</span>
+    </a>
+    <a href="market.html">
+      <span>Market</span>
+    </a>
+    <a href="dompet.html">
+      <span>Dompet</span>
+    </a>
+    <a href="mining.html">
+      <span>Mining</span>
+    </a>
+    <a href="game.html" class="active">
+      <span>Game</span>
+    </a>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("supabaseAccessToken");
+
+    if (!userId || !token) {
+      alert("Sesi login tidak ditemukan.");
+      window.location.href = "index.html";
+      throw new Error("User tidak login.");
+    }
+
+    const supabase = createClient(
+  'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
+  {
+    global: {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("supabaseAccessToken")}`
+      }
+    }
+  }
+);
+
+    async function loadBalance() {
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('amount')
+        .eq('user_id', userId)
+        .eq('symbol', 'EXR')
+        .single();
+
+      const amount = parseFloat(data?.amount ?? 0);
+      document.getElementById('exrBalance').textContent = amount.toFixed(4) + ' EXR';
+    }
+
+    document.getElementById('playButton').addEventListener('click', async () => {
+      const amount = parseFloat(document.getElementById('betAmount').value);
+      const multiplier = parseFloat(document.getElementById('targetMultiplier').value);
+      const resultText = document.getElementById('resultText');
+
+      if (isNaN(amount) || isNaN(multiplier) || amount <= 0 || multiplier < 1.01) {
+        resultText.textContent = "❌ Input tidak valid";
+        return;
+      }
+
+      resultText.textContent = "⏳ Memproses...";
+
+      const { data, error } = await supabase.rpc('rpc_play_limbo', {
+        p_user_id: userId,
+        p_bet: amount,
+        p_target_multiplier: multiplier
+      });
+
+      if (error) {
+        resultText.textContent = "❌ " + error.message;
+        return;
+      }
+
+      if (data.win) {
+        resultText.textContent = `✅ Menang! Multiplier: ${data.multiplier}x, Payout: ${data.payout} EXR`;
+      } else {
+        resultText.textContent = `💥 Kalah. Crash pada ${data.multiplier}x`;
+      }
+
+      loadBalance();
+    });
+
+    window.addEventListener('DOMContentLoaded', loadBalance);
+  </script>
+</body>
+</html>
