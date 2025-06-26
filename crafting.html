@@ -13,19 +13,19 @@
       padding: 16px;
     }
     .exr-balance-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid #334155;
-  border-radius: 16px;
-  padding: 12px 20px;
-  margin-bottom: 20px;
-  display: inline-flex;
-  align-items: center;
-  font-weight: bold;
-  font-size: 16px;
-  color: #38bdf8;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
-  backdrop-filter: blur(6px);
-}
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 12px 20px;
+      margin-bottom: 20px;
+      display: inline-flex;
+      align-items: center;
+      font-weight: bold;
+      font-size: 16px;
+      color: #38bdf8;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      backdrop-filter: blur(6px);
+    }
     .section {
       margin-bottom: 32px;
       padding: 16px;
@@ -96,65 +96,65 @@
       justify-content: center;
       color: #ccc;
     }
-    /* === Bottom Navigation === */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.6);
-  border-top: 1px solid #334155;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-}
-
-.bottom-nav a {
-  color: #94a3b8;
-  text-align: center;
-  font-size: 12px;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.bottom-nav a svg {
-  width: 20px;
-  height: 20px;
-  margin-bottom: 4px;
-  fill: #94a3b8;
-  transition: fill 0.2s ease;
-}
-
-.bottom-nav a.active,
-.bottom-nav a:hover {
-  color: #38bdf8;
-}
-
-.bottom-nav a.active svg,
-.bottom-nav a:hover svg {
-  fill: #38bdf8;
-}
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.6);
+      border-top: 1px solid #334155;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+    }
+    .bottom-nav a {
+      color: #94a3b8;
+      text-align: center;
+      font-size: 12px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .bottom-nav a svg {
+      width: 20px;
+      height: 20px;
+      margin-bottom: 4px;
+      fill: #94a3b8;
+      transition: fill 0.2s ease;
+    }
+    .bottom-nav a.active,
+    .bottom-nav a:hover {
+      color: #38bdf8;
+    }
+    .bottom-nav a.active svg,
+    .bottom-nav a:hover svg {
+      fill: #38bdf8;
+    }
   </style>
 </head>
 <body>
-    <div id="exr-balance" class="exr-balance-card">
-  <img src="https://cryptologos.cc/logos/solana-sol-logo.svg?v=032" width="24" style="vertical-align:middle; margin-right:8px;">
-  <span id="exr-value">Loading EXR...</span>
-</div>
+  <div id="exr-balance" class="exr-balance-card">
+    <img src="https://cryptologos.cc/logos/solana-sol-logo.svg?v=032" width="24" style="vertical-align:middle; margin-right:8px;">
+    <span id="exr-value">Loading EXR...</span>
+  </div>
+
   <div class="section">
     <h2>🎲 Crafting / Gacha</h2>
     <div style="text-align:center;">
       <button onclick="handleGacha()">Gacha 50 EXR</button>
       <div id="gacha-result" style="margin-top: 16px;"></div>
     </div>
-  </div>  <div class="section">
+  </div>
+
+  <div class="section">
     <h2>🛒 Toko Item</h2>
     <div id="shop-list" class="item-grid">Memuat item...</div>
-  </div>  <div class="section">
+  </div>
+
+  <div class="section">
     <h2>🧬 Fuse Item</h2>
     <div class="fuse-container">
       <div class="fuse-slots">
@@ -165,48 +165,30 @@
       <button onclick="handleFuse()">Fuse Item</button>
       <div id="fuse-result" style="margin-top: 12px;"></div>
     </div>
-  </div>  
-    <!-- Navigasi bawah dipisahkan dari container -->
-  <div class="bottom-nav">
-    <a href="home.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Home</span>
-    </a>
-    <a href="market.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Market</span>
-    </a>
-    <a href="dompet.html" class="active">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Dompet</span>
-    </a>
-    <a href="mining.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Mining</span>
-    </a>
-    <a href="mitra.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2m8-6a4 4 0 00-8 0m8-10a4 4 0 11-8 0" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Mitra</span>
-    </a>
   </div>
-  <div id="notif" style="
-  position: fixed;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #22d3ee;
-  color: #0f172a;
-  padding: 12px 20px;
-  border-radius: 12px;
-  font-weight: bold;
-  display: none;
-  z-index: 9999;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  transition: all 0.3s ease;
-"></div>
-</body>
-</html>
-  <script type="module">
+
+  <!-- Modal Pilih Item -->
+  <div id="itemModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: rgba(30, 41, 59, 0.95); padding: 20px; border-radius: 16px; max-width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 4px 14px rgba(0,0,0,0.4);">
+      <h3 style="color:#38bdf8; text-align:center;">Pilih Item</h3>
+      <div id="inventory-list" class="item-grid"></div>
+      <div style="text-align:center; margin-top:12px;">
+        <button onclick="closeModal()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="home.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg><span>Home</span></a>
+    <a href="market.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg><span>Market</span></a>
+    <a href="dompet.html" class="active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg><span>Dompet</span></a>
+    <a href="mining.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg><span>Mining</span></a>
+    <a href="mitra.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2m8-6a4 4 0 00-8 0m8-10a4 4 0 11-8 0" stroke="currentColor" stroke-width="2"/></svg><span>Mitra</span></a>
+  </div>
+
+  <div id="notif" style="position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #22d3ee; color: #0f172a; padding: 12px 20px; border-radius: 12px; font-weight: bold; display: none; z-index: 9999; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease;"></div>
+
+<script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(
@@ -220,39 +202,119 @@ const supabase = createClient(
     }
   }
 );
-async function loadEXRBalance() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    document.getElementById('exr-value').innerText = 'User tidak ditemukan';
-    return;
-  }
 
-  const { data, error } = await supabase
-    .from('wallets')
-    .select('amount')
-    .eq('user_id', user.id)
-    .eq('symbol', 'EXR')
-    .single();
-
-  if (error || !data) {
-    document.getElementById('exr-value').innerText = 'Gagal memuat saldo';
-  } else {
-    document.getElementById('exr-value').innerText = `${data.amount.toLocaleString('id-ID')} EXR`;
-  }
-}
-
-loadEXRBalance();
-    let currentUser = null;
+    let fuseSlots = [null, null, null];
+    let selectedSlotIndex = null;
 
     const { data: { user } } = await supabase.auth.getUser();
-    currentUser = user;
+    if (user) {
+      loadEXRBalance();
+      loadItems();
+    }
 
-    // Load items into shop
+    async function loadEXRBalance() {
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('amount')
+        .eq('user_id', user.id)
+        .eq('symbol', 'EXR')
+        .single();
+
+      document.getElementById('exr-value').innerText =
+        error || !data ? 'Gagal memuat saldo' : `${data.amount.toLocaleString('id-ID')} EXR`;
+    }
+
+    function selectSlot(i) {
+      selectedSlotIndex = i;
+      openModal();
+    }
+
+    function openModal() {
+      document.getElementById("itemModal").style.display = "flex";
+      loadInventoryItems();
+    }
+
+    function closeModal() {
+      document.getElementById("itemModal").style.display = "none";
+    }
+
+    async function loadInventoryItems() {
+      const { data, error } = await supabase
+        .from("user_items")
+        .select("id, item_id, items(item_name, icon_url)")
+        .eq("user_id", user.id);
+
+      const inventoryList = document.getElementById("inventory-list");
+      inventoryList.innerHTML = "";
+
+      data.forEach(inv => {
+        const div = document.createElement("div");
+        div.className = "item-card";
+        div.innerHTML = `
+          <img src="${inv.items.icon_url}" />
+          <div><strong>${inv.items.item_name}</strong></div>
+        `;
+        div.onclick = () => {
+          fuseSlots[selectedSlotIndex] = inv.id;
+          updateSlotDisplay();
+          closeModal();
+        };
+        inventoryList.appendChild(div);
+      });
+    }
+
+    function updateSlotDisplay() {
+      fuseSlots.forEach((id, index) => {
+        const slot = document.querySelectorAll(".fuse-slot")[index];
+        if (!id) {
+          slot.innerHTML = `Slot ${index + 1}`;
+          return;
+        }
+
+        supabase
+          .from("user_items")
+          .select("items(item_name, icon_url)")
+          .eq("id", id)
+          .single()
+          .then(({ data }) => {
+            if (data && data.items) {
+              slot.innerHTML = `<img src="${data.items.icon_url}" width="40" style="border-radius:8px;" />`;
+            }
+          });
+      });
+    }
+
+    async function handleGacha() {
+      const { data, error } = await supabase.rpc('gacha_item', { p_user_id: user.id });
+      if (error) return alert('Gagal gacha: ' + error.message);
+      document.getElementById('gacha-result').innerText = `🎉 Anda mendapatkan: ${data.item_name}`;
+      loadEXRBalance();
+    }
+
+    async function handleFuse() {
+      const selectedIds = fuseSlots.filter(id => id !== null);
+      if (selectedIds.length !== 3) return alert('Pilih 3 item dulu untuk fuse');
+
+      const { data, error } = await supabase.rpc('fuse_item', {
+        p_user_id: user.id,
+        p_item_ids: selectedIds
+      });
+
+      if (error) return alert('Fuse gagal: ' + error.message);
+
+      document.getElementById('fuse-result').innerText = data.success
+        ? `🔥 Berhasil fuse: ${data.new_item_name}`
+        : '❌ Fuse gagal, item tidak cukup atau tidak valid';
+
+      fuseSlots = [null, null, null];
+      updateSlotDisplay();
+      loadEXRBalance();
+    }
+
     async function loadItems() {
       const { data: items } = await supabase.from('items').select('*');
       const shop = document.getElementById('shop-list');
       shop.innerHTML = '';
-
       items.forEach(item => {
         const div = document.createElement('div');
         div.className = 'shop-item';
@@ -269,24 +331,24 @@ loadEXRBalance();
       });
     }
 
-    loadItems();
+    async function buyItem(itemId) {
+      const { data, error } = await supabase.rpc('buy_item', {
+        p_user_id: user.id,
+        p_item_id: itemId
+      });
 
-    // Stub: Replace with RPC
-    window.handleGacha = async () => {
-      alert('🔒 Gacha akan dipanggil melalui RPC di server.');
-    }
+      if (error) return alert('❌ Gagal membeli item: ' + error.message);
 
-    window.handleFuse = async () => {
-      alert('🔒 Fuse akan diproses melalui RPC di server.');
-    }
+      document.getElementById('notif').innerText = `🛒 Berhasil membeli: ${data.item_name}`;
+      document.getElementById('notif').style.display = 'block';
 
-    window.buyItem = async (itemId) => {
-      alert(`🔒 Beli item ID: ${itemId} akan dikirim ke RPC.`);
-    }
+      setTimeout(() => {
+        document.getElementById('notif').style.display = 'none';
+      }, 3000);
 
-    window.selectSlot = (i) => {
-      alert(`Klik slot ${i+1}, nanti akan muncul modal pilih item.`);
+      loadItems();
+      loadEXRBalance();
     }
   </script>
-  </body>
+</body>
 </html>
