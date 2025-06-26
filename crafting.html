@@ -285,20 +285,26 @@ const supabase = createClient(
     }
 
     async function handleGacha() {
-      const { data, error } = await supabase.rpc('gacha_item', { p_user_id: user.id });
-      if (error) return alert('Gagal gacha: ' + error.message);
-      document.getElementById('gacha-result').innerText = `🎉 Anda mendapatkan: ${data.item_name}`;
-      loadEXRBalance();
+  const { data, error } = await supabase.rpc('gacha_item', { p_user_id: user.id });
+
+  if (error) {
+    console.error('Gacha RPC error:', error);
+    alert('Gagal gacha: ' + error.message);
+    return;
+  }
+
+  if (data.status === 'error') {
+    alert(data.message || 'Gagal melakukan gacha.');
+    return;
+  }
+
+  // Jika sukses
+  document.getElementById('gacha-result').innerHTML = `
+    🎉 Anda mendapatkan: <strong>${data.item_name}</strong> (${data.rarity})
+    <br><img src="${data.icon_url}" width="60" style="margin-top:8px; border-radius:8px;">
+  `;
+  loadEXRBalance();
     }
-
-    async function handleFuse() {
-      const selectedIds = fuseSlots.filter(id => id !== null);
-      if (selectedIds.length !== 3) return alert('Pilih 3 item dulu untuk fuse');
-
-      const { data, error } = await supabase.rpc('fuse_item', {
-        p_user_id: user.id,
-        p_item_ids: selectedIds
-      });
 
       if (error) return alert('Fuse gagal: ' + error.message);
 
