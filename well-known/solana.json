@@ -1,0 +1,10 @@
+{
+  "name": "EXORA",
+  "description": "Game crypto berbasis Solana dengan simulasi DCA dan mining.",
+  "icon": "https://exora-peach.vercel.app/icon512.png",
+  "website": "https://exora-peach.vercel.app",
+  "redirect": {
+    "success": "https://exora-peach.vercel.app/dompet.html",
+    "failure": "https://exora-peach.vercel.app/login-failed.html"
+  }
+}
