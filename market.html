@@ -207,10 +207,9 @@ const supabase = createClient(
 
     async function buyItem(listingId, price, button) {
       const { data, error } = await supabase.rpc('rpc_buy_market_item', {
-        p_user_id: userId,
-        p_listing_id: listingId,
-        p_price_exr: parseFloat(price)
-      });
+  p_buyer_id: user.id,
+  p_listing_id: listingId
+});
 
       button.disabled = false;
 
