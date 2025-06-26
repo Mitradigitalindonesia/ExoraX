@@ -481,6 +481,21 @@
       <span>Mitra</span>
     </a>
   </div>
+  <div id="notif" style="
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #22d3ee;
+  color: #0f172a;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: bold;
+  display: none;
+  z-index: 9999;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+"></div>
 </body>
 </html>
 
@@ -688,6 +703,17 @@ async function loadPortfolio() {
 }
 
 // ========== TRADE ==========
+function showNotif(message = 'Berhasil!', duration = 3000) {
+  const el = document.getElementById('notif');
+  el.innerText = message;
+  el.style.display = 'block';
+  el.style.opacity = 1;
+
+  setTimeout(() => {
+    el.style.opacity = 0;
+    setTimeout(() => el.style.display = 'none', 500);
+  }, duration);
+}
 async function handleTrade(isBuy) {
   const amount = parseFloat(document.getElementById('modal-amount').value);
   if (!amount || amount <= 0) return alert("⚠️ Masukkan jumlah yang valid.");
@@ -717,7 +743,7 @@ async function handleTrade(isBuy) {
     console.error("❌ Trade error:", error.message);
     alert('❌ Transaksi gagal: ' + error.message);
   } else {
-    alert('✅ Transaksi berhasil!');
+    showNotif('✅ Transaksi berhasil!');
     closeModal();
     loadPortfolio();
   }
@@ -732,6 +758,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('buy-btn').addEventListener('click', () => handleTrade(true));
   document.getElementById('sell-btn').addEventListener('click', () => handleTrade(false));
+  
 });
 </script>
 </body>
