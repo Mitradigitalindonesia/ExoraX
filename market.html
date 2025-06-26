@@ -206,26 +206,35 @@ const supabase = createClient(
     }
 
     async function buyItem(listingId, price, button) {
-      const { data, error } = await supabase.rpc('rpc_buy_market_item', {
-  p_buyer_id: user.id,
-  p_listing_id: listingId
-});
+  button.disabled = true;
 
-      button.disabled = false;
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  const user = userData?.user;
 
-      if (error) {
-        showNotif("❌ Gagal beli: " + error.message);
-        return;
-      }
+  if (!user || userError) {
+    showNotif('User belum login atau token expired.', 'error');
+    return;
+  }
 
-      if (!data?.success) {
-        showNotif("❌ Pembelian gagal.");
-        return;
-      }
+  const { data, error } = await supabase.rpc('rpc_buy_market_item', {
+    p_buyer_id: user.id,
+    p_listing_id: listingId
+  });
 
-      showNotif(`✅ Berhasil membeli item! Sisa saldo: ${data.new_balance.toFixed(4)} EXR`);
-      loadListings();
-    }
+  button.disabled = false;
+
+  if (error) {
+    console.error('RPC Error:', error);
+    return showNotif('Gagal membeli item: ' + error.message, 'error');
+  }
+
+  if (!data.success) {
+    return showNotif('Pembelian gagal: ' + (data.error || 'Saldo tidak cukup'), 'error');
+  }
+
+  showNotif('✅ Pembelian berhasil! 🎉', 'success');
+  await loadListings();
+}
 
     window.addEventListener("DOMContentLoaded", () => {
       loadListings();
