@@ -145,91 +145,136 @@
       }
     );
 
+    async function loadBalance() {
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('amount')
+        .eq('user_id', userId)
+        .eq('symbol', 'EXR')
+        .single();
+
+      const amount = parseFloat(data?.amount ?? 0);
+      document.getElementById('exrBalance').textContent = amount.toFixed(4) + ' EXR';
+    }
+
+    // Statistik
     let autoPlay = false;
-let currentStreak = 0;
-let winStreak = 0;
-let loseStreak = 0;
-let initialBet = 0;
-let roundsPlayed = 0;
-let totalWon = 0;
+    let currentStreak = 0;
+    let winStreak = 0;
+    let loseStreak = 0;
+    let initialBet = 0;
+    let roundsPlayed = 0;
+    let totalWon = 0;
 
-const wsEl = document.createElement('div');
-const lsEl = document.createElement('div');
-const statsEl = document.createElement('div');
+    const wsEl = document.createElement('div');
+    const lsEl = document.createElement('div');
+    const statsEl = document.createElement('div');
 
-wsEl.style.marginTop = '10px';
-lsEl.style.marginTop = '4px';
-statsEl.style.marginTop = '8px';
-document.querySelector('.game-container').appendChild(wsEl);
-document.querySelector('.game-container').appendChild(lsEl);
-document.querySelector('.game-container').appendChild(statsEl);
+    wsEl.style.marginTop = '10px';
+    lsEl.style.marginTop = '4px';
+    statsEl.style.marginTop = '8px';
 
-// Tombol tambahan
-const autoBtn = document.createElement('button');
-autoBtn.textContent = "🔁 Auto Play";
-document.querySelector('.game-container').appendChild(autoBtn);
+    document.querySelector('.game-container').appendChild(wsEl);
+    document.querySelector('.game-container').appendChild(lsEl);
+    document.querySelector('.game-container').appendChild(statsEl);
 
-autoBtn.addEventListener('click', () => {
-  if (autoPlay) {
-    autoPlay = false;
+    const autoBtn = document.createElement('button');
     autoBtn.textContent = "🔁 Auto Play";
-  } else {
-    autoPlay = true;
-    autoBtn.textContent = "⏸️ Stop";
-    initialBet = parseFloat(document.getElementById('betAmount').value);
-    startAutoPlay(initialBet);
-  }
-});
+    document.querySelector('.game-container').appendChild(autoBtn);
 
-async function startAutoPlay(baseBet) {
-  let currentBet = baseBet;
-
-  while (autoPlay) {
-    const multiplier = parseFloat(document.getElementById('targetMultiplier').value);
-    const resultText = document.getElementById('resultText');
-    const clientSeed = crypto.randomUUID();
-
-    const { data, error } = await supabase.rpc('rpc_play_limbo', {
-      p_user_id: userId,
-      p_client_seed: clientSeed,
-      p_bet: currentBet,
-      p_target_multiplier: multiplier
+    autoBtn.addEventListener('click', () => {
+      if (autoPlay) {
+        autoPlay = false;
+        autoBtn.textContent = "🔁 Auto Play";
+      } else {
+        autoPlay = true;
+        autoBtn.textContent = "⏸️ Stop";
+        initialBet = parseFloat(document.getElementById('betAmount').value);
+        startAutoPlay(initialBet);
+      }
     });
 
-    if (error) {
-      resultText.textContent = "❌ " + error.message;
-      autoPlay = false;
-      autoBtn.textContent = "🔁 Auto Play";
-      return;
+    async function startAutoPlay(baseBet) {
+      let currentBet = baseBet;
+
+      while (autoPlay) {
+        const multiplier = parseFloat(document.getElementById('targetMultiplier').value);
+        const resultText = document.getElementById('resultText');
+        const clientSeed = crypto.randomUUID();
+
+        const { data, error } = await supabase.rpc('rpc_play_limbo', {
+          p_user_id: userId,
+          p_client_seed: clientSeed,
+          p_bet: currentBet,
+          p_target_multiplier: multiplier
+        });
+
+        if (error) {
+          resultText.textContent = "❌ " + error.message;
+          autoPlay = false;
+          autoBtn.textContent = "🔁 Auto Play";
+          return;
+        }
+
+        roundsPlayed++;
+
+        if (data.win) {
+          resultText.textContent = `✅ Menang! Crash: ${data.multiplier.toFixed(2)}x | Payout: ${data.payout.toFixed(4)} EXR`;
+          currentBet = baseBet;
+          currentStreak++;
+          winStreak = Math.max(winStreak, currentStreak);
+          loseStreak = 0;
+          totalWon += data.payout;
+        } else {
+          resultText.textContent = `💥 Kalah. Crash di ${data.multiplier.toFixed(2)}x`;
+          currentStreak = 0;
+          loseStreak++;
+          currentBet *= 2;
+        }
+
+        updateStatsUI();
+        await loadBalance();
+        await new Promise(r => setTimeout(r, 1000));
+      }
     }
 
-    roundsPlayed++;
-
-    if (data.win) {
-      resultText.textContent = `✅ Menang! Crash: ${data.multiplier.toFixed(2)}x | Payout: ${data.payout.toFixed(4)} EXR`;
-      currentBet = baseBet;
-      currentStreak++;
-      winStreak = Math.max(winStreak, currentStreak);
-      loseStreak = 0;
-      totalWon += data.payout;
-    } else {
-      resultText.textContent = `💥 Kalah. Crash di ${data.multiplier.toFixed(2)}x`;
-      currentBet *= 2;
-      currentStreak = 0;
-      loseStreak++;
+    function updateStatsUI() {
+      wsEl.textContent = `🔥 Win Streak: ${winStreak}`;
+      lsEl.textContent = `💔 Lose Streak: ${loseStreak}`;
+      statsEl.textContent = `🎮 Ronde: ${roundsPlayed} | 💰 Total Menang: ${totalWon.toFixed(4)} EXR`;
     }
 
-    updateStatsUI();
-    await loadBalance();
-    await new Promise(r => setTimeout(r, 1000)); // Delay 1 detik
-  }
-}
+    // Mode Manual
+    document.getElementById('playButton').addEventListener('click', async () => {
+      const amount = parseFloat(document.getElementById('betAmount').value);
+      const multiplier = parseFloat(document.getElementById('targetMultiplier').value);
+      const resultText = document.getElementById('resultText');
+      const clientSeed = crypto.randomUUID();
 
-function updateStatsUI() {
-  wsEl.textContent = `🔥 Win Streak: ${winStreak}`;
-  lsEl.textContent = `💔 Lose Streak: ${loseStreak}`;
-  statsEl.textContent = `🎮 Ronde: ${roundsPlayed} | 💰 Total Menang: ${totalWon.toFixed(4)} EXR`;
-}
+      if (isNaN(amount) || isNaN(multiplier) || amount <= 0 || multiplier < 1.01) {
+        resultText.textContent = "❌ Input tidak valid";
+        return;
+      }
+
+      resultText.textContent = "⏳ Memproses...";
+
+      const { data, error } = await supabase.rpc('rpc_play_limbo', {
+        p_user_id: userId,
+        p_client_seed: clientSeed,
+        p_bet: amount,
+        p_target_multiplier: multiplier
+      });
+
+      if (error) {
+        resultText.textContent = "❌ " + error.message;
+        return;
+      }
+
+      if (data.win) {
+        resultText.textContent = `✅ Menang! Crash: ${data.multiplier.toFixed(2)}x | Payout: ${data.payout.toFixed(4)} EXR`;
+      } else {
+        resultText.textContent = `💥 Kalah. Crash terjadi di ${data.multiplier.toFixed(2)}x`;
+      }
 
       document.getElementById('betAmount').value = '';
       document.getElementById('targetMultiplier').value = '';
