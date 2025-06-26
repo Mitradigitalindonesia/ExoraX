@@ -167,18 +167,27 @@
 
       const { data: wallets, error: walletError } = await supabase
         .from('wallets')
-        .select('idr_value')
+        .select('symbol, amount')
         .eq('user_id', user.id);
 
-      if (walletError) {
-        console.error("Wallet Error:", walletError);
-        document.getElementById('idr').innerText = 'Gagal memuat dompet';
+      const { data: prices, error: priceError } = await supabase
+        .from('price_pool')
+        .select('symbol, last_price');
+
+      if (walletError || priceError || !wallets || !prices) {
+        console.error("Error mengambil data:", walletError, priceError);
+        document.getElementById('idr').innerText = 'Gagal memuat data aset';
         return;
       }
 
-      console.log("Wallets:", wallets); // Debugging output
+      const priceMap = Object.fromEntries(prices.map(p => [p.symbol, p.last_price]));
+      let totalIDR = 0;
 
-      const totalIDR = wallets?.reduce((sum, w) => sum + (w.idr_value || 0), 0) || 0;
+      wallets.forEach(w => {
+        const price = priceMap[w.symbol] || 0;
+        const idrValue = (w.amount || 0) * price;
+        totalIDR += idrValue;
+      });
 
       document.getElementById('idr').innerText = `Rp ${totalIDR.toLocaleString('id-ID')}`;
       document.getElementById('btc').innerText = `≈ ${(totalIDR / BTC_TO_IDR).toFixed(4)} BTC`;
@@ -191,7 +200,7 @@
 
   loadPortfolio();
 
-  // Update BTC Live Price (opsional)
+  // Harga BTC Live (opsional)
   const ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@trade');
   ws.onmessage = event => {
     const data = JSON.parse(event.data);
@@ -235,9 +244,6 @@
       document.getElementById('berita-container').innerText = '❌ Gagal memuat berita.';
       console.error(err);
     });
-  </script>
-</body>
-</html>
-  
+</script>
 </body>
 </html>
