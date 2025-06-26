@@ -221,21 +221,46 @@
   </svg>
 </div>
 
-<!-- Hashrate dan cooldown -->  <div class="stats-info">  
+<!-- Hashrate dan cooldown -->  
+<div class="stats-info">  
   Hashrate: <span class="highlight" id="hashrate">0 H/s</span>  
 </div>  
 <div class="cooldown" id="cooldownText">  
   Tidak ada cooldown saat ini  
 </div> 
   <div id="powerCost" style="font-size:12px; color:#fbbf24;"></div>
-</div>
 <!-- List item yang bisa dibeli -->
 <h3 style="margin-top: 32px;">Pilih Mining Item</h3>
 <div class="mining-rig-list" id="cloud-plans"></div>
-
+<!-- Modal Jual Item -->
+<div id="sellModal" style="
+  display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;
+">
+  <div style="
+    background: #1e293b; padding: 20px; border-radius: 12px; width: 90%; max-width: 360px; color: white;
+  ">
+    <h3 id="modalItemName">Jual Item</h3>
+    <p>Jumlah tersedia: <span id="modalQty"></span></p>
+    <input type="number" id="sellQuantity" min="1" style="
+      width: 100%; padding: 10px; border-radius: 6px; border: none; margin: 10px 0;
+    " />
+    <input type="number" id="sellPrice" min="0" placeholder="Harga per unit (EXR)" style="
+      width: 100%; padding: 10px; border-radius: 6px; border: none; margin-bottom: 10px;
+    " />
+    <button id="confirmSell" style="
+      background: #f43f5e; color: white; padding: 10px 16px; border: none;
+      border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%;
+    ">Jual</button>
+    <button onclick="closeSellModal()" style="
+      margin-top: 8px; background: transparent; color: #94a3b8; border: none;
+      width: 100%; cursor: pointer;
+    ">Batal</button>
+  </div>
+</div>
   <!-- Navigasi bawah dipisahkan dari container -->
   <div class="bottom-nav">
-    <a href="index.html">
+    <a href="Home.html">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg>
       <span>Home</span>
     </a>
@@ -243,11 +268,11 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg>
       <span>Market</span>
     </a>
-    <a href="market.html" class="active">
+    <a href="dompet.html">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
       <span>Dompet</span>
     </a>
-    <a href="mining.html">
+    <a href="mining.html" class="active">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
       <span>Mining</span>
     </a>
@@ -280,7 +305,54 @@ const supabase = createClient(
     }
   }
 );
+let selectedItem = null;
 
+function openSellModal(item) {
+  selectedItem = item;
+  document.getElementById("modalItemName").textContent = `Jual ${item.item_name}`;
+  document.getElementById("modalQty").textContent = item.quantity;
+  document.getElementById("sellQuantity").value = '';
+  document.getElementById("sellPrice").value = '';
+  document.getElementById("sellModal").style.display = 'flex';
+}
+
+function closeSellModal() {
+  selectedItem = null;
+  document.getElementById("sellModal").style.display = 'none';
+}
+document.getElementById('confirmSell').addEventListener('click', async () => {
+  const qtyToSell = parseInt(document.getElementById('sellQuantity').value);
+  const pricePerUnit = parseFloat(document.getElementById('sellPrice').value);
+
+  if (!selectedItem || isNaN(qtyToSell) || qtyToSell <= 0 || qtyToSell > selectedItem.quantity) {
+    alert("Jumlah tidak valid!");
+    return;
+  }
+
+  if (isNaN(pricePerUnit) || pricePerUnit <= 0) {
+    alert("Harga tidak valid!");
+    return;
+  }
+
+  const { error } = await supabase.rpc('rpc_list_item_for_sale', {
+    p_user_id: userId,
+    p_item_id: selectedItem.item_id,
+    p_item_name: selectedItem.item_name,
+    p_quantity: qtyToSell,
+    p_hashrate: selectedItem.hashrate ?? 0,
+    p_power_usage: selectedItem.power_usage ?? 0,
+    p_price_exr: pricePerUnit
+  });
+
+  if (error) {
+    alert("Gagal menjual item: " + error.message);
+    return;
+  }
+
+  alert("Item berhasil dimasukkan ke market!");
+  closeSellModal();
+  await loadInventoryRigs(userId);
+});
 const logo = document.getElementById('logoMining');
 const cooldownText = document.getElementById('cooldownText');
 const coinAmount = document.getElementById('coinAmount');
@@ -332,19 +404,21 @@ async function loadInventoryRigs(userId) {
     return;
   }
 
-  data.forEach(item => {
-    const el = document.createElement('div');
-    el.className = 'mining-rig-card';
-    el.innerHTML = `
-      <div class="mining-rig-info">
-        <strong>${item.item_name}</strong>
-        <span>Qty: ${item.quantity}</span>
-        <span>Hashrate: ${item.hashrate ?? 0} H/s</span>
-        <span>Power: ${item.power_usage ?? 0} W</span>
-      </div>
-    `;
-    rigList.appendChild(el);
-  });
+ data.forEach(item => {
+  const el = document.createElement('div');
+  el.className = 'mining-rig-card';
+  el.innerHTML = `
+    <div class="mining-rig-info">
+      <strong>${item.item_name}</strong>
+      <span>Qty: ${item.quantity}</span>
+      <span>Hashrate: ${item.hashrate ?? 0} H/s</span>
+      <span>Power: ${item.power_usage ?? 0} W</span>
+    </div>
+  `;
+  el.style.cursor = 'pointer';
+  el.onclick = () => openSellModal(item);
+  rigList.appendChild(el);
+});
 }
 
 async function runMining() {
