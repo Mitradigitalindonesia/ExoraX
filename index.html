@@ -2,8 +2,47 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login dengan Solana</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Crypto - Dompet</title>
+
+  <!-- Manifest PWA -->
+  <script type="application/manifest+json">
+    {
+      "name": "Game Crypto",
+      "short_name": "CryptoDompet",
+      "description": "Dompet aset digital berbasis Solana.",
+      "start_url": "/",
+      "display": "standalone",
+      "background_color": "#0f172a",
+      "theme_color": "#581c87",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%230014' stroke='%230ff' stroke-width='2'/%3E%3Cg transform='translate(50,50)'%3E%3Cpolygon points='0,-30 26,15 -26,15' fill='%2300ffff' stroke='%2300ffff' stroke-width='1.5'/%3E%3Cpolygon points='0,30 -26,-15 26,-15' fill='%2300ccff' stroke='%2300ffff' stroke-width='1.5'/%3E%3Ccircle cx='0' cy='0' r='6' fill='%2300ffff' stroke='%23fff' stroke-width='1'/%3E%3C/g%3E%3C/svg%3E",
+          "type": "image/svg+xml",
+          "sizes": "512x512"
+        }
+      ]
+    }
+  </script>
+
+  <!-- Favicon SVG -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDgiIGZpbGw9IiMwMDE0IiBzdHJva2U9IiMwZmYiIHN0cm9rZS13aWR0aD0iMiIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDUwLDUwKSI+PHBvbHlnb24gcG9pbnRzPSIwLC0zMCAyNiwxNSAtMjYsMTUiIGZpbGw9IiMwMGZmZmYiIHN0cm9rZT0iIzAwZmZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48cG9seWdvbiBwb2ludHM9IjAsMzAgLTI2LC0xNSAyNiwtMTUiIGZpbGw9IiMwMGNjZmYiIHN0cm9rZT0iIzAwZmZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48Y2lyY2xlIGN4PSIwIiBjeT0iMCIgcj0iNiIgZmlsbD0iIzAwZmZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEiLz48L2c+PC9zdmc+" />
+
+  <!-- OG Metadata -->
+  <meta property="og:title" content="Game Crypto - Dompet Aset" />
+  <meta property="og:description" content="Pantau aset digital dan trading menggunakan Solana Wallet (Phantom)." />
+  <meta property="og:image" content="https://exora-peach.vercel.app/og-preview.png" />
+  <meta property="og:url" content="https://exora-peach.vercel.app" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Theme & App -->
+  <meta name="theme-color" content="#581c87" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Game Crypto" />
+
+  <!-- Style -->
   <style>
     body {
       font-family: sans-serif;
@@ -53,7 +92,6 @@
 
     const backendUrl = "https://game-crypto-backend.onrender.com";
 
-    // Fungsi utama login
     document.getElementById("login-btn").addEventListener("click", async () => {
       const statusEl = document.getElementById("status");
 
@@ -85,18 +123,14 @@
 
         const result = await res.json();
 
-        if (!result.success) {
-          throw new Error(result.message || "Login gagal");
-        }
+        if (!result.success) throw new Error(result.message || "Login gagal");
 
         const { access_token, user } = result;
 
-        // ✅ Simpan token dan info user ke localStorage
         localStorage.setItem("supabaseAccessToken", access_token);
         localStorage.setItem("userId", user.id);
         localStorage.setItem("walletAddress", user.wallet_address);
 
-        // ✅ Inisialisasi Supabase client (opsional langsung di sini)
         const supabase = createClient(
           'https://ocfjkltbtwqrbiucrkyq.supabase.co',
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
@@ -109,7 +143,6 @@
           }
         );
 
-        // (Opsional) cek user dari Supabase
         const { data: authUser, error: authError } = await supabase.auth.getUser();
         if (authError) console.error("Auth error:", authError);
 
