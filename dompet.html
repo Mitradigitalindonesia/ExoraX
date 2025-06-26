@@ -568,7 +568,7 @@ async function createDefaultWallets(userId) {
 
   if (error) {
     console.error('❌ Gagal upsert dompet:', error);
-    alert('Gagal membuat dompet default: ' + error.message);
+    showNotif('Gagal membuat dompet default: ' + error.message);
   } else {
     console.log('✅ Dompet default berhasil dibuat/diabaikan jika sudah ada.');
   }
@@ -647,7 +647,7 @@ async function loadPortfolio() {
     .select('symbol, last_price, logo_svg');
 
   if (!wallets || !prices) {
-    alert("⚠️ Gagal mengambil data portofolio.");
+    show("⚠️ Gagal mengambil data portofolio.");
     return;
   }
 
@@ -716,8 +716,8 @@ function showNotif(message = 'Berhasil!', duration = 3000) {
 }
 async function handleTrade(isBuy) {
   const amount = parseFloat(document.getElementById('modal-amount').value);
-  if (!amount || amount <= 0) return alert("⚠️ Masukkan jumlah yang valid.");
-  if (!selectedWallet?.id) return alert("❌ Wallet tidak ditemukan.");
+  if (!amount || amount <= 0) return showNotif("⚠️ Masukkan jumlah yang valid.");
+  if (!selectedWallet?.id) return showNotif("❌ Wallet tidak ditemukan.");
 
   if (!isBuy) {
     const { data: walletData, error: walletErr } = await supabase
@@ -726,9 +726,9 @@ async function handleTrade(isBuy) {
       .eq('id', selectedWallet.id)
       .single();
 
-    if (walletErr || !walletData) return alert("❌ Gagal mengambil saldo.");
+    if (walletErr || !walletData) return showNotif("❌ Gagal mengambil saldo.");
     if (amount > walletData.amount) {
-      return alert(`❌ Anda mencoba menjual ${amount} ${selectedSymbol}, tapi saldo hanya ${walletData.amount}.`);
+      return showNotif(`❌ Anda mencoba menjual ${amount} ${selectedSymbol}, tapi saldo hanya ${walletData.amount}.`);
     }
   }
 
@@ -741,7 +741,7 @@ async function handleTrade(isBuy) {
 
   if (error) {
     console.error("❌ Trade error:", error.message);
-    alert('❌ Transaksi gagal: ' + error.message);
+    showNotif('❌ Transaksi gagal: ' + error.message);
   } else {
     showNotif('✅ Transaksi berhasil!');
     closeModal();
