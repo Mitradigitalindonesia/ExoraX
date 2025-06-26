@@ -256,8 +256,18 @@
       <span>Mitra</span>
     </a>
   </div>
+<!-- Script utama -->
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const userId = localStorage.getItem("userId");
+const token = localStorage.getItem("supabaseAccessToken");
+
+if (!userId || !token) {
+  alert("Sesi login tidak ditemukan. Silakan login ulang.");
+  window.location.href = "index.html";
+  throw new Error("User tidak login.");
+}
 
 const supabase = createClient(
   'https://ocfjkltbtwqrbiucrkyq.supabase.co',
@@ -265,13 +275,13 @@ const supabase = createClient(
   {
     global: {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("supabaseAccessToken")}`
+        Authorization: `Bearer ${token}`
       }
     }
   }
 );
 
-  const logo = document.getElementById('logoMining');
+const logo = document.getElementById('logoMining');
 const cooldownText = document.getElementById('cooldownText');
 const coinAmount = document.getElementById('coinAmount');
 const last24h = document.getElementById('last24h');
@@ -279,7 +289,6 @@ const totalEarning = document.getElementById('totalEarning');
 const hashrateEl = document.getElementById('hashrate');
 const rigList = document.getElementById('cloud-plans');
 
-let currentUserId = null;
 let miningInterval = null;
 
 async function loadWalletBalance(userId) {
@@ -339,9 +348,6 @@ async function loadInventoryRigs(userId) {
 }
 
 async function runMining() {
-  const { data: sessionData } = await supabase.auth.getSession();
-  if (!sessionData?.session) return alert("Session expired.");
-
   const { data, error } = await supabase.rpc('rpc_mine');
 
   if (error) {
@@ -350,6 +356,7 @@ async function runMining() {
     else cooldownText.textContent = 'Error mining';
     return;
   }
+
   if (!data.success) return;
 
   const reward = data.reward;
@@ -362,8 +369,8 @@ async function runMining() {
   last24h.textContent = (parseFloat(last24h.textContent) + reward).toFixed(6);
   totalEarning.textContent = (parseFloat(totalEarning.textContent) + reward).toFixed(6);
 
-  loadHashrate(currentUserId);
-  loadWalletBalance(currentUserId);
+  loadHashrate(userId);
+  loadWalletBalance(userId);
 
   document.getElementById('powerCost').textContent = `⚡ Biaya listrik: -${mxCost.toFixed(6)} MX`;
 }
@@ -381,17 +388,12 @@ async function stopMining() {
         const { error } = await supabase.rpc('rpc_stop_mining', {
           total_reward: reward
         });
-        if (error) {
-          console.error('Gagal menyimpan log mining:', error.message);
-        } else {
-          console.log('Mining log berhasil disimpan.');
-        }
+        if (error) console.error('Gagal simpan log mining:', error.message);
       } catch (err) {
         console.error('RPC error:', err);
       }
     }
 
-    // Reset info sesi
     last24h.textContent = '0.0000';
     document.getElementById('powerCost').textContent = '';
   }
@@ -399,20 +401,13 @@ async function stopMining() {
 
 function startMiningLoop() {
   if (miningInterval) return;
-
   logo.classList.add('active');
   cooldownText.textContent = 'Mining berjalan...';
   runMining();
-  miningInterval = setInterval(runMining, 1000); // 1 detik
+  miningInterval = setInterval(runMining, 1000);
 }
 
-// Toggle saat logo diklik
-logo.addEventListener('click', async () => {
-  if (!currentUserId) {
-    alert('User belum login.');
-    return;
-  }
-
+logo.addEventListener('click', () => {
   if (miningInterval) {
     stopMining();
   } else {
@@ -420,20 +415,10 @@ logo.addEventListener('click', async () => {
   }
 });
 
-// Init saat halaman dimuat
 window.addEventListener('DOMContentLoaded', async () => {
-  const { data: { user }, error } = await supabase.auth.getUser();
-
-  if (!user || error) {
-    alert('User belum login.');
-    return;
-  }
-
-  currentUserId = user.id;
-
-  await loadWalletBalance(currentUserId);
-  await loadHashrate(currentUserId);
-  await loadInventoryRigs(currentUserId);
+  await loadWalletBalance(userId);
+  await loadHashrate(userId);
+  await loadInventoryRigs(userId);
 });
 </script>
 </body>
