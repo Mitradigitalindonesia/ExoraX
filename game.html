@@ -198,8 +198,17 @@
 
 if (!user_id || !token) { alert("Sesi login tidak ditemukan."); window.location.href = "index.html"; }
 
-const supabase = createClient( 'https://ocfjkltbtwqrbiucrkyq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc', { global: { headers: { Authorization: Bearer ${token} } } } );
-
+const supabase = createClient(
+  'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
+  {
+    global: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  }
+);
 const tapButton = document.getElementById("tapButton"); const tapContainer = document.getElementById("tapContainer");
 
 async function triggerTap() { const { data, error } = await supabase.rpc("rpc_claim_cx", { p_user_id: user_id }); if (error) return alert("Gagal klaim CX: " + error.message);
