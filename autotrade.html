@@ -227,14 +227,21 @@
     }
 
     function updateHistory(multiplier, profit, win) {
-      let history = JSON.parse(localStorage.getItem("history") || "[]");
-      history.unshift({ multiplier, profit, win });
-      history = history.slice(0, 10);
-      localStorage.setItem("history", JSON.stringify(history));
-      document.getElementById("historyText").textContent = history
-        .map(h => `${h.win ? '✅' : '💥'} ${h.multiplier.toFixed(2)}x (${h.profit >= 0 ? '+' : ''}${h.profit.toFixed(4)})`)
-        .join(" | ");
-    }
+  let history = JSON.parse(localStorage.getItem("history") || "[]");
+  if (multiplier !== undefined && profit !== undefined && win !== undefined) {
+    history.unshift({ multiplier, profit, win });
+  }
+  history = history.slice(0, 10);
+  localStorage.setItem("history", JSON.stringify(history));
+
+  const historyText = history
+    .filter(h => h && typeof h.multiplier === 'number' && typeof h.profit === 'number')
+    .map(h =>
+      `${h.win ? '✅' : '💥'} ${h.multiplier.toFixed(2)}x (${h.profit >= 0 ? '+' : ''}${h.profit.toFixed(4)})`
+    ).join(" | ");
+
+  document.getElementById("historyText").textContent = historyText;
+}
 
     async function playRound(currentBet = baseBet) {
       if (isProcessing || userBalance < currentBet) return;
