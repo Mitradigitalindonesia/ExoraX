@@ -1,142 +1,128 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EXORA Limbo Game</title>
+  <title>EXORA Game - Limbo</title>
   <style>
     body {
-      background: #0f172a;
-      color: white;
       font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b, #1e3a8a, #581c87);
+      color: white;
       margin: 0;
       padding: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
-    .container {
-      width: 100%;
-      max-width: 400px;
-      padding: 20px;
-    }
-    .display {
+      min-height: 100vh;
       text-align: center;
-      font-size: 48px;
-      margin: 40px 0 20px;
-      color: #4ade80;
     }
-    .panel {
-      background: #1e293b;
-      border-radius: 12px;
+
+    h2 {
+      margin-top: 24px;
+      font-size: 22px;
+    }
+
+    .balance {
+      margin-top: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+
+    .game-container {
+      background: rgba(255, 255, 255, 0.05);
       padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      margin-top: 24px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+      border: 1px solid #334155;
     }
-    label {
-      font-size: 14px;
-      color: #cbd5e1;
-    }
-    input[type="number"] {
+
+    .game-container input {
       width: 100%;
-      padding: 10px;
-      border-radius: 8px;
+      padding: 12px;
+      border-radius: 10px;
       border: none;
+      margin: 8px 0;
       background: #0f172a;
       color: white;
+      font-size: 14px;
     }
-    .row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .row input {
-      flex: 1;
-    }
-    .row button {
-      padding: 10px;
-      border: none;
-      background: #334155;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .button {
-      background: #22d3ee;
-      color: black;
-      font-weight: bold;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+
+    .game-container button {
       width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      background: #22d3ee;
+      color: #0f172a;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
     }
-    .button:hover {
+
+    .game-container button:hover {
       background: #0ea5e9;
     }
-    .result, .stats {
+
+    .result {
       margin-top: 16px;
-      font-size: 14px;
-      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
     }
-    .footer {
-      margin-top: 40px;
-      font-size: 12px;
-      color: #64748b;
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.6);
+      border-top: 1px solid #334155;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      backdrop-filter: blur(8px);
+    }
+
+    .bottom-nav a {
+      color: #94a3b8;
       text-align: center;
+      font-size: 12px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .bottom-nav a.active,
+    .bottom-nav a:hover {
+      color: #38bdf8;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="display" id="displayMultiplier">1.00×</div>
-    <div class="panel">
-      <label for="betAmount">Amount</label>
-      <input type="number" id="betAmount" min="0.01" step="0.01" /><label for="payout">Payout</label>
-  <input type="number" id="payout" min="1.01" step="0.01" />
+  <h2>🎲 Limbo Game</h2>
+  <div class="balance" id="exrBalance">0.0000 EXR</div>
 
-  <label for="numberOfBets">Number of Bets</label>
-  <div class="row">
-    <button onclick="setBets(10)">10</button>
-    <button onclick="setBets(100)">100</button>
-    <button onclick="setBets(Infinity)">∞</button>
-    <input type="number" id="numberOfBets" min="1" step="1" />
+  <div class="game-container">
+    <input type="number" id="betAmount" placeholder="Jumlah Taruhan (EXR)" min="0.01" step="0.01" />
+    <input type="number" id="targetMultiplier" placeholder="Target Multiplier (misal 2.0)" min="1.01" step="0.01" />
+    <button id="playButton">Mainkan!</button>
+    <div class="result" id="resultText"></div>
   </div>
 
-  <label>On Win</label>
-  <div class="row">
-    <button onclick="resetWinStrategy()">Reset</button>
-    <input type="number" id="winIncrease" placeholder="Increase by %" />
+  <div class="bottom-nav">
+    <a href="Home.html"><span>Home</span></a>
+    <a href="market.html"><span>Market</span></a>
+    <a href="dompet.html"><span>Dompet</span></a>
+    <a href="mining.html"><span>Mining</span></a>
+    <a href="game.html" class="active"><span>Game</span></a>
   </div>
 
-  <label>On Loss</label>
-  <div class="row">
-    <button onclick="resetLossStrategy()">Reset</button>
-    <input type="number" id="lossIncrease" placeholder="Increase by %" />
-  </div>
-
-  <label>Stop on Win</label>
-  <input type="number" id="stopOnWin" min="0" step="0.01" />
-
-  <label>Stop on Loss</label>
-  <input type="number" id="stopOnLoss" min="0" step="0.01" />
-
-  <button class="button" id="startButton">Bet</button>
-  <div class="result" id="resultText"></div>
-  <div class="stats" id="stats"></div>
-</div>
-
-<div class="footer">
-  Provably Fair • EXORA 2025
-</div>
-
-  </div>  <script type="module">
+  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabase = createClient(
-      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-    );
 
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("supabaseAccessToken");
@@ -147,95 +133,193 @@
       throw new Error("User tidak login.");
     }
 
-    let winStreak = 0, loseStreak = 0, rounds = 0, totalWin = 0, totalLoss = 0;
+    const supabase = createClient(
+      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      }
+    );
 
-    async function getBalance() {
+    let autoPlay = false;
+    let isProcessing = false;
+    let currentStreak = 0;
+    let winStreak = 0;
+    let loseStreak = 0;
+    let initialBet = 0;
+    let roundsPlayed = 0;
+    let totalWon = 0;
+    let userBalance = 0;
+
+    const wsEl = document.createElement('div');
+    const lsEl = document.createElement('div');
+    const statsEl = document.createElement('div');
+    document.querySelector('.game-container').append(wsEl, lsEl, statsEl);
+
+    const autoBtn = document.createElement('button');
+    autoBtn.textContent = "🔁 Auto Play";
+    document.querySelector('.game-container').appendChild(autoBtn);
+
+    autoBtn.addEventListener('click', () => {
+      const base = parseFloat(document.getElementById('betAmount').value);
+      const resultText = document.getElementById('resultText');
+
+      if (isNaN(base) || base <= 0) {
+        resultText.textContent = "❌ Masukkan jumlah taruhan yang valid.";
+        return;
+      }
+
+      if (userBalance <= 0 || userBalance < base) {
+        resultText.textContent = "❌ Saldo habis. Auto play dihentikan.";
+        return;
+      }
+
+      if (autoPlay) {
+        autoPlay = false;
+        autoBtn.textContent = "🔁 Auto Play";
+      } else {
+        autoPlay = true;
+        autoBtn.textContent = "⏸️ Stop";
+        initialBet = base;
+        startAutoPlay(initialBet);
+      }
+    });
+
+    async function loadBalance() {
       const { data } = await supabase
         .from('wallets')
         .select('amount')
         .eq('user_id', userId)
         .eq('symbol', 'EXR')
         .single();
-      return parseFloat(data?.amount ?? 0);
+
+      userBalance = parseFloat(data?.amount ?? 0);
+      document.getElementById('exrBalance').textContent = userBalance.toFixed(4) + ' EXR';
     }
 
-    function setBets(n) {
-      document.getElementById('numberOfBets').value = n;
+    function updateStatsUI() {
+      wsEl.textContent = `🔥 Win Streak: ${winStreak}`;
+      lsEl.textContent = `💔 Lose Streak: ${loseStreak}`;
+      statsEl.textContent = `🎮 Ronde: ${roundsPlayed} | 💰 Total Menang: ${totalWon.toFixed(4)} EXR`;
     }
 
-    function resetWinStrategy() {
-      document.getElementById('winIncrease').value = 0;
+    function generateClientSeed() {
+      return crypto.randomUUID();
     }
 
-    function resetLossStrategy() {
-      document.getElementById('lossIncrease').value = 0;
-    }
+    document.getElementById('playButton').addEventListener('click', async () => {
+      if (isProcessing || autoPlay) return;
+      isProcessing = true;
 
-    function updateStats() {
-      document.getElementById("stats").textContent =
-        `🎯 Win: ${winStreak} | 💥 Loss: ${loseStreak} | 🎮 Rounds: ${rounds}`;
-    }
+      const amount = parseFloat(document.getElementById('betAmount').value);
+      const multiplier = parseFloat(document.getElementById('targetMultiplier').value);
+      const resultText = document.getElementById('resultText');
 
-    document.getElementById("startButton").addEventListener("click", async () => {
-      let betAmount = parseFloat(document.getElementById('betAmount').value);
-      let payout = parseFloat(document.getElementById('payout').value);
-      let winInc = parseFloat(document.getElementById('winIncrease').value || 0);
-      let lossInc = parseFloat(document.getElementById('lossIncrease').value || 0);
-      let maxWin = parseFloat(document.getElementById('stopOnWin').value || 0);
-      let maxLoss = parseFloat(document.getElementById('stopOnLoss').value || 0);
-      let roundsLimit = parseInt(document.getElementById('numberOfBets').value || 0);
-
-      let balance = await getBalance();
-      if (betAmount > balance || betAmount <= 0) {
-        alert("Saldo tidak cukup atau nilai tidak valid.");
+      if (isNaN(amount) || isNaN(multiplier) || amount <= 0 || multiplier < 1.01) {
+        resultText.textContent = "❌ Input tidak valid";
+        isProcessing = false;
         return;
       }
 
-      let currentBet = betAmount;
-      let currentWin = 0;
-      let currentLoss = 0;
+      if (userBalance < amount) {
+        resultText.textContent = "❌ Saldo tidak cukup.";
+        isProcessing = false;
+        return;
+      }
 
-      for (let i = 0; i < roundsLimit || roundsLimit === 0; i++) {
-        const clientSeed = crypto.randomUUID();
+      const clientSeed = generateClientSeed();
+      resultText.textContent = "⏳ Memproses...";
+
+      const { data, error } = await supabase.rpc('rpc_play_limbo', {
+        p_user_id: userId,
+        p_client_seed: clientSeed,
+        p_bet: amount,
+        p_target_multiplier: multiplier
+      });
+
+      if (error) {
+        resultText.textContent = "❌ " + error.message;
+      } else if (data.win) {
+        resultText.textContent = `✅ Menang! Crash: ${data.multiplier.toFixed(2)}x | Payout: ${data.payout.toFixed(4)} EXR`;
+      } else {
+        resultText.textContent = `💥 Kalah. Crash terjadi di ${data.multiplier.toFixed(2)}x`;
+      }
+
+      await loadBalance();
+      document.getElementById('betAmount').value = '';
+      document.getElementById('targetMultiplier').value = '';
+      isProcessing = false;
+    });
+
+    async function startAutoPlay(baseBet) {
+      let currentBet = baseBet;
+
+      while (autoPlay) {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        const multiplier = parseFloat(document.getElementById('targetMultiplier').value);
+        const resultText = document.getElementById('resultText');
+        const clientSeed = generateClientSeed();
+
+        if (userBalance < currentBet) {
+          resultText.textContent = "❌ Saldo tidak cukup untuk lanjut.";
+          autoPlay = false;
+          autoBtn.textContent = "🔁 Auto Play";
+          isProcessing = false;
+          return;
+        }
+
         const { data, error } = await supabase.rpc('rpc_play_limbo', {
           p_user_id: userId,
           p_client_seed: clientSeed,
           p_bet: currentBet,
-          p_target_multiplier: payout
+          p_target_multiplier: multiplier
         });
 
         if (error) {
-          document.getElementById("resultText").textContent = `❌ Error: ${error.message}`;
-          break;
+          resultText.textContent = "❌ " + error.message;
+          autoPlay = false;
+          autoBtn.textContent = "🔁 Auto Play";
+          isProcessing = false;
+          return;
         }
 
-        rounds++;
+        roundsPlayed++;
 
         if (data.win) {
-          winStreak++;
+          resultText.textContent = `✅ Menang! Crash: ${data.multiplier.toFixed(2)}x | Payout: ${data.payout.toFixed(4)} EXR`;
+          currentBet = baseBet;
+          currentStreak++;
+          winStreak = Math.max(winStreak, currentStreak);
           loseStreak = 0;
-          currentWin += data.payout;
-          currentLoss = 0;
-          currentBet *= (1 + winInc / 100);
+          totalWon += data.payout;
         } else {
+          resultText.textContent = `💥 Kalah. Crash di ${data.multiplier.toFixed(2)}x`;
+          currentBet *= 2;
+          currentStreak = 0;
           loseStreak++;
-          winStreak = 0;
-          currentLoss += currentBet;
-          currentBet *= (1 + lossInc / 100);
         }
 
-        document.getElementById("displayMultiplier").textContent = `${data.multiplier.toFixed(2)}×`;
-        document.getElementById("resultText").textContent = data.win
-          ? `✅ Menang ${data.payout.toFixed(4)} EXR`
-          : `💥 Kalah di ${data.multiplier.toFixed(2)}x`;
-
-        updateStats();
-
-        if (maxWin > 0 && currentWin >= maxWin) break;
-        if (maxLoss > 0 && currentLoss >= maxLoss) break;
-
+        await loadBalance();
+        updateStatsUI();
         await new Promise(r => setTimeout(r, 1000));
+        isProcessing = false;
       }
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadBalance();
+      updateStatsUI();
     });
-  </script></body>
+
+    window.addEventListener('beforeunload', () => {
+      autoPlay = false;
+    });
+  </script>
+</body>
 </html>
