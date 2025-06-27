@@ -1,100 +1,264 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EXORA Game - Limbo</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>EXORA Mining - EXR</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b, #1e3a8a, #581c87);
-      color: white; margin: 0; padding: 0;
-      display: flex; flex-direction: column;
-      align-items: center; min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #1e3a8a 50%, #581c87 100%);
+      color: white;
+      margin: 0;
+      padding: 0;
       text-align: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
     }
-    h2 { margin-top: 24px; font-size: 22px; }
-    .balance { margin-top: 8px; font-size: 18px; font-weight: bold; color: #38bdf8; }
-    #graph-container { width: 90%; max-width: 400px; margin-top: 16px; }
-    .game-container {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 20px; margin-top: 16px;
-      border-radius: 16px; width: 90%; max-width: 400px;
-      border: 1px solid #334155;
+
+    .mining-header { margin-top: 24px; }
+    .coin-amount { font-size: 32px; font-weight: bold; margin-bottom: 8px; }
+
+    .earning-info {
+      display: flex;
+      justify-content: space-between;
+      width: 80%;
+      max-width: 400px;
+      margin: 0 auto 20px;
+      font-size: 9px;
+      color: #a1a1aa;
     }
-    .game-container button {
-      width: 100%; padding: 12px; border-radius: 10px;
-      background: #22d3ee; color: #0f172a;
-      font-weight: bold; border: none; cursor: pointer;
-      margin-top: 10px;
+    .earning-info div span {
+      display: block;
+      color: #f8fafc;
+      font-weight: bold;
+      font-size: 7px;
     }
-    .game-container button:hover { background: #0ea5e9; }
-    .result, .stats { margin-top: 16px; font-size: 14px; font-weight: bold; }
-    .history {
-      margin-top: 16px;
-      display: flex; flex-direction: column;
-      gap: 8px;
-      max-height: 200px;
-      overflow-y: auto;
+
+    .logo-container {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 16px;
+      cursor: pointer;
+    }
+
+    .logo-container svg {
       width: 100%;
+      height: 100%;
+      transition: transform 0.3s ease;
     }
-    .history-entry {
+
+    .logo-container.active svg {
+      animation: spin 3s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .stats-info {
+      font-size: 14px;
+      margin-top: 12px;
+      color: #cbd5e1;
+    }
+
+    .stats-info .highlight {
+      font-weight: bold;
+      color: #38bdf8;
+    }
+
+    .cooldown {
+      font-size: 12px;
+      margin-top: 6px;
+      color: #f87171;
+    }
+
+    .mining-rig-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 400px;
+      margin: 30px auto 90px;
+      width: 90%;
+    }
+
+    .mining-rig-card {
       background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
       border: 1px solid #334155;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 13px;
-      line-height: 1.4;
+      cursor: pointer;
+    }
+
+    .mining-rig-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
       text-align: left;
     }
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); border-top: 1px solid #334155; display: flex; justify-content: space-around; padding: 10px 0; backdrop-filter: blur(8px); }
-    .bottom-nav a { color: #94a3b8; text-align: center; font-size: 12px; text-decoration: none; display: flex; flex-direction: column; align-items: center; }
-    .bottom-nav a.active, .bottom-nav a:hover { color: #38bdf8; }
-    .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); }
-    .modal-content { background: #1e293b; margin: 15% auto; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; }
-    .modal-content input { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: none; border-radius: 8px; color: white; }
-    .modal-content label { display: block; text-align: left; margin: 8px 0; font-size: 14px; }
-    .close { float: right; font-size: 24px; cursor: pointer; }
-    #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; }
-    .spinner { border: 6px solid #e5e7eb; border-top: 6px solid #22d3ee; border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .mining-rig-info strong { font-size: 16px; }
+    .mining-rig-info span { font-size: 13px; color: #cbd5e1; }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.6);
+      border-top: 1px solid #334155;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+    }
+
+    .bottom-nav a {
+      color: #94a3b8;
+      text-align: center;
+      font-size: 12px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .bottom-nav a svg {
+      width: 20px;
+      height: 20px;
+      margin-bottom: 4px;
+      fill: #94a3b8;
+      transition: fill 0.2s ease;
+    }
+
+    .bottom-nav a.active,
+    .bottom-nav a:hover {
+      color: #38bdf8;
+    }
+
+    .bottom-nav a.active svg,
+    .bottom-nav a:hover svg {
+      fill: #38bdf8;
+    }
+
+    /* Partikel */
+    .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #38bdf8, #0ea5e9);
+      pointer-events: none;
+      opacity: 0.8;
+      animation: rise 1s linear forwards;
+      z-index: 100;
+    }
+
+    @keyframes rise {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-80px) scale(0.3); opacity: 0; }
+    }
+
+    /* Modal jual */
+    #sellModal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;
+    }
+    #sellModal > div {
+      background: #1e293b; padding: 20px; border-radius: 12px; width: 90%; max-width: 360px; color: white;
+    }
+    #sellModal input {
+      width: 100%; padding: 10px; border-radius: 6px; border: none; margin: 10px 0;
+    }
   </style>
 </head>
 <body>
-  <div id="loader"><div class="spinner"></div></div>
-  <h2>🎲 Limbo Game</h2>
-  <div class="balance" id="exrBalance">0.0000 EXR</div>
-  <div id="graph-container"><canvas id="limboChart" height="100"></canvas></div>
-  <div class="game-container">
-    <button id="strategyBtn">⚙️ Atur Strategi</button>
-    <button id="autoBtn">🔁 Auto Play</button>
-    <div class="result" id="resultText"></div>
-    <div class="stats" id="statsText"></div>
-    <div class="history" id="historyText"></div>
-  </div>  <div class="modal" id="strategyModal">
-    <div class="modal-content">
-      <span class="close" id="closeModal">&times;</span>
-      <h3>Strategi</h3>
-      <input type="number" id="betAmount" placeholder="Jumlah Taruhan (EXR)" min="0.01" step="0.01" />
-      <input type="number" id="targetMultiplier" placeholder="Target Multiplier (misal 2.0)" min="1.01" step="0.01" />
-      <label><input type="checkbox" id="martingaleToggle" /> Ganda taruhan saat kalah (Martingale)</label>
-      <button id="saveStrategy">Simpan</button>
-    </div>
-  </div>  <div class="bottom-nav">
-    <a href="index.html"><span>🏠</span><span>Home</span></a>
-    <a href="market.html"><span>🛒</span><span>Market</span></a>
-    <a href="wallet.html" class="active"><span>💼</span><span>Dompet</span></a>
-    <a href="mining.html"><span>⛏️</span><span>Mining</span></a>
-    <a href="mitra.html"><span>🤝</span><span>Mitra</span></a>
-  </div>  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const userId = localStorage.getItem("userId");
-    const token = localStorage.getItem("supabaseAccessToken");
-    if (!userId || !token) {
-      alert("Sesi login tidak ditemukan.");
-      window.location.href = "index.html";
-    }
+<!-- Header -->
+<div class="mining-header">
+  <div class="coin-amount" id="coinAmount">0.0000 EXR</div>
+  <div class="earning-info">
+    <div>Last 24h <span id="last24h">0.0000</span></div>
+    <div>Total <span id="totalEarning">0.0000</span></div>
+  </div>
+</div>
+
+<!-- Logo Mining -->
+<div class="logo-container" id="logoMining">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="48" fill="url(#bgGradient)" stroke="#0ff" stroke-width="2"/>
+    <g transform="translate(50,50)">
+      <polygon points="0,-30 26,15 -26,15" fill="url(#coreGradient)" stroke="#00ffff" stroke-width="1.5" />
+      <polygon points="0,30 -26,-15 26,-15" fill="url(#coreGradient2)" stroke="#00ffff" stroke-width="1.5" />
+      <circle cx="0" cy="0" r="6" fill="#00ffff" stroke="#fff" stroke-width="1"/>
+    </g>
+    <defs>
+      <radialGradient id="bgGradient" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#001f3f" />
+        <stop offset="100%" stop-color="#000814" />
+      </radialGradient>
+      <linearGradient id="coreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#00ffff" />
+        <stop offset="100%" stop-color="#0066ff" />
+      </linearGradient>
+      <linearGradient id="coreGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#00ccff" />
+        <stop offset="100%" stop-color="#0033ff" />
+      </linearGradient>
+    </defs>
+  </svg>
+</div>
+
+<div class="stats-info">Hashrate: <span class="highlight" id="hashrate">0 H/s</span></div>
+<div class="cooldown" id="cooldownText">Tidak ada cooldown saat ini</div>
+<div id="powerCost" style="font-size:12px; color:#fbbf24;"></div>
+
+<!-- List Rig -->
+<h3 style="margin-top: 32px;">Pilih Mining Item</h3>
+<div class="mining-rig-list" id="cloud-plans"></div>
+
+<!-- Modal Jual -->
+<div id="sellModal">
+  <div>
+    <h3 id="modalItemName">Jual Item</h3>
+    <p>Jumlah tersedia: <span id="modalQty"></span></p>
+    <input type="number" id="sellQuantity" min="1" />
+    <input type="number" id="sellPrice" placeholder="Harga per unit (EXR)" min="0" />
+    <button id="confirmSell" style="background:#f43f5e; color:white; border:none; border-radius:8px; padding:10px 16px; width:100%; font-weight:bold;">Jual</button>
+    <button onclick="closeSellModal()" style="margin-top:8px; background:transparent; color:#94a3b8; border:none; width:100%;">Batal</button>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <a href="Home.html"><svg viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg><span>Home</span></a>
+  <a href="market.html"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg><span>Market</span></a>
+  <a href="dompet.html"><svg viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg><span>Dompet</span></a>
+  <a href="mining.html" class="active"><svg viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg><span>Mining</span></a>
+  <a href="mitra.html"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2m8-6a4 4 0 00-8 0m8-10a4 4 0 11-8 0" stroke="currentColor" stroke-width="2"/></svg><span>Mitra</span></a>
+</div>
+
+<!-- Script -->
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const userId = localStorage.getItem("userId");
+const token = localStorage.getItem("supabaseAccessToken");
+if (!userId || !token) {
+  alert("Sesi login tidak ditemukan. Silakan login ulang.");
+  window.location.href = "index.html";
+  throw new Error("User tidak login.");
+}
 
     const supabase = createClient(
       'https://ocfjkltbtwqrbiucrkyq.supabase.co',
@@ -102,115 +266,150 @@
       { global: { headers: { Authorization: `Bearer ${token}` } } }
     );
 
-    let userBalance = 0, autoPlay = false, isProcessing = false;
-    let winStreak = 0, loseStreak = 0, totalWon = 0, roundsPlayed = 0;
-    let betAmount = parseFloat(localStorage.getItem('betAmount') || 0.01);
-    let targetMultiplier = parseFloat(localStorage.getItem('targetMultiplier') || 2.0);
-    let martingale = localStorage.getItem("martingale") === "true";
+const logo = document.getElementById('logoMining');
+const cooldownText = document.getElementById('cooldownText');
+const coinAmount = document.getElementById('coinAmount');
+const last24h = document.getElementById('last24h');
+const totalEarning = document.getElementById('totalEarning');
+const hashrateEl = document.getElementById('hashrate');
+const rigList = document.getElementById('cloud-plans');
+let selectedItem = null;
+let miningInterval = null;
 
-    const ctx = document.getElementById("limboChart").getContext("2d");
-    const graphData = { labels: [], datasets: [{ label: 'Crash Multiplier', data: [], backgroundColor: [], borderColor: [], borderWidth: 2, tension: 0.3, fill: false }] };
-    const limboChart = new Chart(ctx, { type: 'line', data: graphData, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, suggestedMax: 5 } } } });
+function spawnParticle() {
+  const particle = document.createElement('div');
+  particle.className = 'particle';
+  const rect = logo.getBoundingClientRect();
+  particle.style.left = rect.left + Math.random() * rect.width + 'px';
+  particle.style.top = rect.top + Math.random() * rect.height + 'px';
+  document.body.appendChild(particle);
+  setTimeout(() => particle.remove(), 1000);
+}
 
-    async function loadBalance() {
-      const { data } = await supabase.from('wallets').select('amount').eq('user_id', userId).eq('symbol', 'EXR').single();
-      userBalance = parseFloat(data?.amount || 0);
-      document.getElementById("exrBalance").textContent = userBalance.toFixed(4) + " EXR";
-      return userBalance;
-    }
+function openSellModal(item) {
+  selectedItem = item;
+  document.getElementById("modalItemName").textContent = `Jual ${item.item_name}`;
+  document.getElementById("modalQty").textContent = item.quantity;
+  document.getElementById("sellQuantity").value = '';
+  document.getElementById("sellPrice").value = '';
+  document.getElementById("sellModal").style.display = 'flex';
+}
+function closeSellModal() {
+  selectedItem = null;
+  document.getElementById("sellModal").style.display = 'none';
+}
 
-    function updateChart(multiplier, win) {
-      const label = `R${graphData.labels.length + 1}`;
-      graphData.labels.push(label);
-      graphData.datasets[0].data.push(multiplier);
-      graphData.datasets[0].backgroundColor.push(win ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)');
-      graphData.datasets[0].borderColor.push(win ? 'rgb(34,197,94)' : 'rgb(239,68,68)');
-      if (graphData.labels.length > 20) {
-        graphData.labels.shift();
-        graphData.datasets[0].data.shift();
-        graphData.datasets[0].backgroundColor.shift();
-        graphData.datasets[0].borderColor.shift();
-      }
-      limboChart.update();
-    }
-
-    function updateHistory(multiplier, win, balance) {
-      let history = JSON.parse(localStorage.getItem("history") || "[]");
-      const profit = win ? (betAmount * targetMultiplier - betAmount) : -betAmount;
-      history.unshift({ multiplier, win, bet: betAmount, profit, balance });
-      history = history.slice(0, 10);
-      localStorage.setItem("history", JSON.stringify(history));
-      renderHistory();
-    }
-
-    function renderHistory() {
-      const history = JSON.parse(localStorage.getItem("history") || "[]");
-      const container = document.getElementById("historyText");
-      container.innerHTML = "";
-      history.forEach(h => {
-        const entry = document.createElement("div");
-        entry.className = "history-entry";
-        entry.innerHTML = `[Bet: ${h.bet?.toFixed(2)} | Hasil Taruhan: ${h.multiplier?.toFixed(2)} | Profit: ${(h.profit >= 0 ? '+' : '') + h.profit?.toFixed(4)} | Total Balance: ${h.balance?.toFixed(4)}]`;
-        container.appendChild(entry);
-      });
-    }
-
-    function updateUI(multiplier, win, balance) {
-      const gain = win ? (betAmount * targetMultiplier - betAmount) : 0;
-      totalWon += gain;
-      win ? winStreak++ : (winStreak = 0, loseStreak++);
-      roundsPlayed++;
-      document.getElementById('resultText').textContent = win ? `✅ Menang! Crash: ${multiplier.toFixed(2)}x | +${gain.toFixed(4)} EXR` : `💥 Kalah. Crash di ${multiplier.toFixed(2)}x`;
-      document.getElementById('statsText').textContent = `🎮 ${roundsPlayed} ronde | 💰 ${totalWon.toFixed(4)} EXR | 🔥 WS: ${winStreak} | 💔 LS: ${loseStreak}`;
-      updateChart(multiplier, win);
-      updateHistory(multiplier, win, balance);
-    }
-
-    async function playRound() {
-      if (isProcessing || userBalance < betAmount) return;
-      isProcessing = true;
-      const clientSeed = crypto.randomUUID();
-      const { data, error } = await supabase.rpc("rpc_play_limbo", { p_user_id: userId, p_client_seed: clientSeed, p_bet: betAmount, p_target_multiplier: targetMultiplier });
-      if (data) {
-        const balanceNow = await loadBalance();
-        updateUI(data.multiplier, data.win, balanceNow);
-        if (autoPlay) {
-          if (data.win) betAmount = parseFloat(localStorage.getItem('betAmount'));
-          else if (martingale) betAmount *= 2;
-        }
-      }
-      isProcessing = false;
-    }
-
-    document.getElementById("autoBtn").onclick = async () => {
-      autoPlay = !autoPlay;
-      document.getElementById("autoBtn").textContent = autoPlay ? "⏸️ Stop" : "🔁 Auto Play";
-      while (autoPlay) {
-        await playRound();
-        await new Promise(r => setTimeout(r, 1000));
-      }
-    };
-
-    document.getElementById("strategyBtn").onclick = () => document.getElementById("strategyModal").style.display = "block";
-    document.getElementById("closeModal").onclick = () => document.getElementById("strategyModal").style.display = "none";
-    document.getElementById("saveStrategy").onclick = () => {
-      betAmount = parseFloat(document.getElementById("betAmount").value);
-      targetMultiplier = parseFloat(document.getElementById("targetMultiplier").value);
-      martingale = document.getElementById("martingaleToggle").checked;
-      localStorage.setItem("betAmount", betAmount);
-      localStorage.setItem("targetMultiplier", targetMultiplier);
-      localStorage.setItem("martingale", martingale);
-      document.getElementById("strategyModal").style.display = "none";
-    };
-
-    window.addEventListener("DOMContentLoaded", async () => {
-  document.getElementById("loader").style.display = "flex";
-  document.getElementById("betAmount").value = betAmount;
-  document.getElementById("targetMultiplier").value = targetMultiplier;
-  document.getElementById("martingaleToggle").checked = martingale;
-  await loadBalance();
-  renderHistory();
-  document.getElementById("loader").style.display = "none";
+document.getElementById('confirmSell').addEventListener('click', async () => {
+  const qty = parseInt(document.getElementById('sellQuantity').value);
+  const price = parseFloat(document.getElementById('sellPrice').value);
+  if (!selectedItem || isNaN(qty) || qty <= 0 || qty > selectedItem.quantity || isNaN(price) || price <= 0) {
+    alert("Input tidak valid.");
+    return;
+  }
+  const { error } = await supabase.rpc('rpc_list_item_for_sale', {
+    p_user_id: userId,
+    p_item_id: selectedItem.item_id,
+    p_item_name: selectedItem.item_name,
+    p_quantity: qty,
+    p_hashrate: selectedItem.hashrate ?? 0,
+    p_power_usage: selectedItem.power_usage ?? 0,
+    p_price_exr: price
+  });
+  if (error) {
+    alert("Gagal menjual: " + error.message);
+  } else {
+    alert("Item berhasil dijual.");
+    closeSellModal();
+    loadInventoryRigs(userId);
+  }
 });
-  </script></body>
+
+async function loadWalletBalance(uid) {
+  const { data } = await supabase.from('wallets').select('amount').eq('user_id', uid).eq('symbol', 'EXR').single();
+  const amount = parseFloat(data?.amount ?? 0);
+  coinAmount.textContent = isNaN(amount) ? '0.0000 EXR' : amount.toFixed(4) + ' EXR';
+}
+
+async function loadHashrate(uid) {
+  const { data } = await supabase.from('inventory').select('hashrate').eq('user_id', uid);
+  const total = data?.reduce((acc, i) => acc + (parseFloat(i.hashrate) || 0), 0) || 0;
+  hashrateEl.textContent = `${total.toFixed(0)} H/s`;
+}
+
+async function loadInventoryRigs(uid) {
+  const { data } = await supabase.from('inventory').select('quantity, item_id, item_name, hashrate, power_usage').eq('user_id', uid);
+  rigList.innerHTML = '';
+  if (!data || data.length === 0) {
+    rigList.innerHTML = '<p style="color:#f87171;">Tidak ada rig terpasang</p>';
+    return;
+  }
+  data.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'mining-rig-card';
+    el.innerHTML = `<div class="mining-rig-info">
+      <strong>${item.item_name}</strong>
+      <span>Qty: ${item.quantity}</span>
+      <span>Hashrate: ${item.hashrate ?? 0} H/s</span>
+      <span>Power: ${item.power_usage ?? 0} W</span>
+    </div>`;
+    el.onclick = () => openSellModal(item);
+    rigList.appendChild(el);
+  });
+}
+
+async function runMining() {
+  const { data, error } = await supabase.rpc('rpc_mine');
+  if (error) {
+    cooldownText.textContent = error.message.includes('NO_MX') ? 'Saldo MX tidak cukup!' :
+                               error.message.includes('COOLDOWN') ? `Cooldown ${error.details} detik` :
+                               'Error mining';
+    stopMining();
+    return;
+  }
+  if (!data.success) return;
+
+  const { reward, new_amount, mx_cost } = data;
+  coinAmount.textContent = new_amount.toFixed(6) + ' EXR';
+  cooldownText.textContent = `+${reward.toFixed(6)} EXR, -${mx_cost.toFixed(6)} MX`;
+  document.getElementById('powerCost').textContent = `⚡ Biaya listrik: -${mx_cost.toFixed(6)} MX`;
+  last24h.textContent = (parseFloat(last24h.textContent) + reward).toFixed(6);
+  totalEarning.textContent = (parseFloat(totalEarning.textContent) + reward).toFixed(6);
+  loadWalletBalance(userId);
+  loadHashrate(userId);
+  spawnParticle();
+}
+
+function stopMining() {
+  if (miningInterval) {
+    clearInterval(miningInterval);
+    miningInterval = null;
+    logo.classList.remove('active');
+    cooldownText.textContent = '⛔ Mining dihentikan';
+    last24h.textContent = '0.0000';
+    document.getElementById('powerCost').textContent = '';
+  }
+}
+
+function startMiningLoop() {
+  if (miningInterval) return;
+  logo.classList.add('active');
+  cooldownText.textContent = 'Mining berjalan...';
+  runMining();miningInterval = setInterval(runMining, 1000);
+}
+
+logo.addEventListener('click', () => {
+  if (miningInterval) {
+    stopMining();
+  } else {
+    startMiningLoop();
+  }
+});
+
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadWalletBalance(userId);
+  await loadHashrate(userId);
+  await loadInventoryRigs(userId);
+});
+</script>
+</body>
 </html>
