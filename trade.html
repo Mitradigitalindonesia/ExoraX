@@ -1,0 +1,270 @@
+<!DOCTYPE html><html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EXORA Trade</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b, #1e3a8a, #581c87);
+      color: white;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .top-balance {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 16px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid #334155;
+    }
+    .top-balance div {
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+    .chart-container {
+      height: calc(100vh - 230px);
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #334155;
+      border-bottom: 1px solid #334155;
+      border-radius: 10px;
+      margin: 0 12px;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .trade-panel {
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .volume-control {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .volume-input {
+      width: 100px;
+      text-align: center;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #64748b;
+      background: #1e293b;
+      color: white;
+      height: 32px;
+    }
+    .swap-btn {
+      background: #334155;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .buy-sell {
+      display: flex;
+      gap: 12px;
+    }
+    .buy-btn, .sell-btn {
+      flex: 1;
+      padding: 12px;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .buy-btn { background: #22c55e; color: white; }
+    .sell-btn { background: #ef4444; color: white; }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.6);
+      border-top: 1px solid #334155;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+    }
+    .bottom-nav a {
+      color: #94a3b8;
+      text-align: center;
+      font-size: 12px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .bottom-nav a svg {
+      width: 20px;
+      height: 20px;
+      margin-bottom: 4px;
+      fill: #94a3b8;
+      transition: fill 0.2s ease;
+    }
+    .bottom-nav a.active,
+    .bottom-nav a:hover {
+      color: #38bdf8;
+    }
+    .bottom-nav a.active svg,
+    .bottom-nav a:hover svg {
+      fill: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-balance">
+    <div id="balanceUsdt">USDT: 0.00</div>
+    <div id="balanceAsset">BTC: 0.0000</div>
+  </div>
+  <div class="chart-container">
+    <iframe src="https://s.tradingview.com/embed-widget/advanced-chart/?symbol=BINANCE:BTCUSDT&theme=dark&autosize=true" allowfullscreen></iframe>
+  </div>
+  <div class="trade-panel">
+    <div class="volume-control">
+      <button id="minusBtn">-</button>
+      <input type="number" id="volume" class="volume-input" value="0.01" step="0.01" min="0.01">
+      <button id="plusBtn">+</button>
+      <button class="swap-btn" id="switchMode">🔁 USDT</button>
+    </div>
+    <div class="buy-sell">
+      <button class="sell-btn" id="sellBtn">Jual</button>
+      <button class="buy-btn" id="buyBtn">Beli</button>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <a href="index.html">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="market.html">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg>
+      <span>Market</span>
+    </a>
+    <a href="#" class="active">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
+      <span>Dompet</span>
+    </a>
+    <a href="mining.html">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
+      <span>Mining</span>
+    </a>
+    <a href="mitra.html">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2m8-6a4 4 0 00-8 0m8-10a4 4 0 11-8 0" stroke="currentColor" stroke-width="2"/></svg>
+      <span>Mitra</span>
+    </a>
+  </div>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';const token = localStorage.getItem("supabaseAccessToken");
+const user_id = localStorage.getItem("userId");
+
+if (!user_id || !token) {
+  alert("Sesi login tidak ditemukan.");
+  window.location.href = "index.html";
+}
+
+const supabase = createClient(
+  'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
+  {
+    global: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  }
+);
+
+const params = new URLSearchParams(window.location.search);
+const symbol = params.get("symbol") || "BTCUSDT";
+const assetSymbol = symbol.replace("USDT", "").toUpperCase();
+const price = parseFloat(params.get("price")) || 32000;
+
+const usdtEl = document.getElementById("balanceUsdt");
+const assetEl = document.getElementById("balanceAsset");
+const volumeInput = document.getElementById("volume");
+const switchBtn = document.getElementById("switchMode");
+
+let inputMode = "asset";
+let balances = { USDT: 0, ASSET: 0 };
+
+async function fetchBalance() {
+  const { data, error } = await supabase
+    .from("wallets")
+    .select("symbol, amount")
+    .eq("user_id", user_id);
+
+  if (error) {
+    console.error("Gagal mengambil balance:", error.message);
+    return;
+  }
+
+  data.forEach((w) => {
+    if (w.symbol === "USDT") balances.USDT = parseFloat(w.amount || 0);
+    if (w.symbol === assetSymbol) balances.ASSET = parseFloat(w.amount || 0);
+  });
+
+  updateBalanceUI();
+}
+
+function updateBalanceUI() {
+  usdtEl.textContent = `USDT: ${balances.USDT.toFixed(2)}`;
+  assetEl.textContent = `${assetSymbol}: ${balances.ASSET.toFixed(4)}`;
+}
+
+switchBtn.onclick = () => {
+  inputMode = inputMode === "asset" ? "usdt" : "asset";
+  switchBtn.textContent = inputMode === "asset" ? `${assetSymbol}` : "USDT";
+};
+
+async function handleTrade(type) {
+  const inputVal = parseFloat(volumeInput.value);
+  if (isNaN(inputVal) || inputVal < 0.01) return alert("⚠️ Minimal transaksi 0.01");
+
+  let tradeAmount = inputMode === "usdt" ? (inputVal / price) : inputVal;
+  const totalUSDT = tradeAmount * price * 1.005;
+
+  if (type === "buy" && totalUSDT > balances.USDT)
+    return alert("❌ Saldo USDT tidak cukup");
+  if (type === "sell" && tradeAmount > balances.ASSET)
+    return alert("❌ Saldo aset tidak cukup");
+
+  const { error } = await supabase.rpc("rpc_crypto_trade", {
+    _user_id: user_id,
+    _symbol: assetSymbol,
+    _type: type,
+    _amount: tradeAmount,
+    _price: price,
+  });
+
+  if (error) {
+    alert("❌ Gagal transaksi: " + error.message);
+    return;
+  }
+
+  alert(`✅ ${type === "buy" ? "Beli" : "Jual"} ${tradeAmount.toFixed(4)} ${assetSymbol} berhasil`);
+  await fetchBalance();
+}
+
+document.getElementById("buyBtn").onclick = () => handleTrade("buy");
+document.getElementById("sellBtn").onclick = () => handleTrade("sell");
+
+fetchBalance();
+
+  </script>
+</body>
+</html>
