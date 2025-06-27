@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="id">
+<!DOCTYPE html><html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -30,13 +29,10 @@
       margin-top: 10px;
     }
     .game-container button:hover { background: #0ea5e9; }
-
     .result, .stats { margin-top: 16px; font-size: 14px; font-weight: bold; }
-
     .history {
       margin-top: 16px;
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
       gap: 8px;
       max-height: 200px;
       overflow-y: auto;
@@ -51,65 +47,21 @@
       line-height: 1.4;
       text-align: left;
     }
-
-    .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: rgba(0, 0, 0, 0.6);
-      border-top: 1px solid #334155;
-      display: flex; justify-content: space-around; padding: 10px 0;
-      backdrop-filter: blur(8px);
-    }
-    .bottom-nav a {
-      color: #94a3b8; text-align: center; font-size: 12px;
-      text-decoration: none; display: flex;
-      flex-direction: column; align-items: center;
-    }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); border-top: 1px solid #334155; display: flex; justify-content: space-around; padding: 10px 0; backdrop-filter: blur(8px); }
+    .bottom-nav a { color: #94a3b8; text-align: center; font-size: 12px; text-decoration: none; display: flex; flex-direction: column; align-items: center; }
     .bottom-nav a.active, .bottom-nav a:hover { color: #38bdf8; }
-
-    .modal {
-      display: none; position: fixed; z-index: 100;
-      left: 0; top: 0; width: 100%; height: 100%;
-      overflow: auto; background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
-    }
-    .modal-content {
-      background: #1e293b; margin: 15% auto; padding: 20px;
-      border-radius: 12px; width: 90%; max-width: 400px;
-    }
-    .modal-content input {
-      width: 100%; padding: 10px; margin: 6px 0;
-      background: #0f172a; border: none;
-      border-radius: 8px; color: white;
-    }
-    .modal-content label {
-      display: block; text-align: left;
-      margin: 8px 0; font-size: 14px;
-    }
+    .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); }
+    .modal-content { background: #1e293b; margin: 15% auto; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; }
+    .modal-content input { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: none; border-radius: 8px; color: white; }
+    .modal-content label { display: block; text-align: left; margin: 8px 0; font-size: 14px; }
     .close { float: right; font-size: 24px; cursor: pointer; }
-
-    #loader {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-    .spinner {
-      border: 6px solid #e5e7eb;
-      border-top: 6px solid #22d3ee;
-      border-radius: 50%;
-      width: 48px; height: 48px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; }
+    .spinner { border: 6px solid #e5e7eb; border-top: 6px solid #22d3ee; border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
+  <div id="loader"><div class="spinner"></div></div>
   <h2>🎲 Limbo Game</h2>
   <div class="balance" id="exrBalance">0.0000 EXR</div>
   <div id="graph-container"><canvas id="limboChart" height="100"></canvas></div>
@@ -119,9 +71,7 @@
     <div class="result" id="resultText"></div>
     <div class="stats" id="statsText"></div>
     <div class="history" id="historyText"></div>
-  </div>
-
-  <div class="modal" id="strategyModal">
+  </div>  <div class="modal" id="strategyModal">
     <div class="modal-content">
       <span class="close" id="closeModal">&times;</span>
       <h3>Strategi</h3>
@@ -130,34 +80,13 @@
       <label><input type="checkbox" id="martingaleToggle" /> Ganda taruhan saat kalah (Martingale)</label>
       <button id="saveStrategy">Simpan</button>
     </div>
-  </div>
-
-  <div id="loader"><div class="spinner"></div></div>
-
-  <div class="bottom-nav">
-    <a href="index.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Home</span>
-    </a>
-    <a href="market.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Market</span>
-    </a>
-    <a href="market.html" class="active">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Dompet</span>
-    </a>
-    <a href="mining.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Mining</span>
-    </a>
-    <a href="mitra.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2m8-6a4 4 0 00-8 0m8-10a4 4 0 11-8 0" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Mitra</span>
-    </a>
-  </div>
-
-  <script type="module">
+  </div>  <div class="bottom-nav">
+    <a href="index.html"><span>🏠</span><span>Home</span></a>
+    <a href="market.html"><span>🛒</span><span>Market</span></a>
+    <a href="wallet.html" class="active"><span>💼</span><span>Dompet</span></a>
+    <a href="mining.html"><span>⛏️</span><span>Mining</span></a>
+    <a href="mitra.html"><span>🤝</span><span>Mitra</span></a>
+  </div>  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const userId = localStorage.getItem("userId");
@@ -173,7 +102,6 @@
       { global: { headers: { Authorization: `Bearer ${token}` } } }
     );
 
-
     let userBalance = 0, autoPlay = false, isProcessing = false;
     let winStreak = 0, loseStreak = 0, totalWon = 0, roundsPlayed = 0;
     let betAmount = parseFloat(localStorage.getItem('betAmount') || 0.01);
@@ -183,6 +111,13 @@
     const ctx = document.getElementById("limboChart").getContext("2d");
     const graphData = { labels: [], datasets: [{ label: 'Crash Multiplier', data: [], backgroundColor: [], borderColor: [], borderWidth: 2, tension: 0.3, fill: false }] };
     const limboChart = new Chart(ctx, { type: 'line', data: graphData, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, suggestedMax: 5 } } } });
+
+    async function loadBalance() {
+      const { data } = await supabase.from('wallets').select('amount').eq('user_id', userId).eq('symbol', 'EXR').single();
+      userBalance = parseFloat(data?.amount || 0);
+      document.getElementById("exrBalance").textContent = userBalance.toFixed(4) + " EXR";
+      return userBalance;
+    }
 
     function updateChart(multiplier, win) {
       const label = `R${graphData.labels.length + 1}`;
@@ -199,21 +134,10 @@
       limboChart.update();
     }
 
-    function updateUI(multiplier, win) {
-      const gain = win ? (betAmount * targetMultiplier - betAmount) : 0;
-      totalWon += gain;
-      win ? winStreak++ : loseStreak++;
-      roundsPlayed++;
-      document.getElementById('resultText').textContent = win ? `✅ Menang! Crash: ${multiplier.toFixed(2)}x | +${gain.toFixed(4)} EXR` : `💥 Kalah. Crash di ${multiplier.toFixed(2)}x`;
-      document.getElementById('statsText').textContent = `🎮 ${roundsPlayed} ronde | 💰 ${totalWon.toFixed(4)} EXR | 🔥 WS: ${winStreak} | 💔 LS: ${loseStreak}`;
-      updateChart(multiplier, win);
-      updateHistory(multiplier, win);
-    }
-
-    function updateHistory(multiplier, win) {
+    function updateHistory(multiplier, win, balance) {
       let history = JSON.parse(localStorage.getItem("history") || "[]");
       const profit = win ? (betAmount * targetMultiplier - betAmount) : -betAmount;
-      history.unshift({ multiplier, win, bet: betAmount, profit, balance: userBalance });
+      history.unshift({ multiplier, win, bet: betAmount, profit, balance });
       history = history.slice(0, 10);
       localStorage.setItem("history", JSON.stringify(history));
       renderHistory();
@@ -226,46 +150,38 @@
       history.forEach(h => {
         const entry = document.createElement("div");
         entry.className = "history-entry";
-        entry.innerHTML = `
-          <strong>${h.win ? '✅ MENANG' : '💥 KALAH'}</strong><br>
-          Bet: ${h.bet.toFixed(2)} EXR | Crash: ${h.multiplier.toFixed(2)}x<br>
-          Profit: ${h.profit >= 0 ? '+' : ''}${h.profit.toFixed(4)} EXR<br>
-          Total Balance: ${h.balance.toFixed(4)} EXR
-        `;
+        entry.innerHTML = `[Bet: ${h.bet?.toFixed(2)} | Hasil Taruhan: ${h.multiplier?.toFixed(2)} | Profit: ${(h.profit >= 0 ? '+' : '') + h.profit?.toFixed(4)} | Total Balance: ${h.balance?.toFixed(4)}]`;
         container.appendChild(entry);
       });
+    }
+
+    function updateUI(multiplier, win, balance) {
+      const gain = win ? (betAmount * targetMultiplier - betAmount) : 0;
+      totalWon += gain;
+      win ? winStreak++ : (winStreak = 0, loseStreak++);
+      roundsPlayed++;
+      document.getElementById('resultText').textContent = win ? `✅ Menang! Crash: ${multiplier.toFixed(2)}x | +${gain.toFixed(4)} EXR` : `💥 Kalah. Crash di ${multiplier.toFixed(2)}x`;
+      document.getElementById('statsText').textContent = `🎮 ${roundsPlayed} ronde | 💰 ${totalWon.toFixed(4)} EXR | 🔥 WS: ${winStreak} | 💔 LS: ${loseStreak}`;
+      updateChart(multiplier, win);
+      updateHistory(multiplier, win, balance);
     }
 
     async function playRound() {
       if (isProcessing || userBalance < betAmount) return;
       isProcessing = true;
       document.getElementById("loader").style.display = "flex";
-
       const clientSeed = crypto.randomUUID();
-      const { data } = await supabase.rpc("rpc_play_limbo", {
-        p_user_id: userId,
-        p_client_seed: clientSeed,
-        p_bet: betAmount,
-        p_target_multiplier: targetMultiplier
-      });
-
+      const { data, error } = await supabase.rpc("rpc_play_limbo", { p_user_id: userId, p_client_seed: clientSeed, p_bet: betAmount, p_target_multiplier: targetMultiplier });
       if (data) {
-        updateUI(data.multiplier, data.win);
+        const balanceNow = await loadBalance();
+        updateUI(data.multiplier, data.win, balanceNow);
         if (autoPlay) {
           if (data.win) betAmount = parseFloat(localStorage.getItem('betAmount'));
           else if (martingale) betAmount *= 2;
         }
       }
-
-      await loadBalance();
       document.getElementById("loader").style.display = "none";
       isProcessing = false;
-    }
-
-    async function loadBalance() {
-      const { data } = await supabase.from('wallets').select('amount').eq('user_id', userId).eq('symbol', 'EXR').single();
-      userBalance = parseFloat(data?.amount || 0);
-      document.getElementById("exrBalance").textContent = userBalance.toFixed(4) + " EXR";
     }
 
     document.getElementById("autoBtn").onclick = async () => {
@@ -296,6 +212,5 @@
       await loadBalance();
       renderHistory();
     });
-  </script>
-</body>
+  </script></body>
 </html>
