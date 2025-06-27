@@ -261,11 +261,20 @@
     }
 
     function renderHistory() {
-      const history = JSON.parse(localStorage.getItem("history") || "[]");
-      document.getElementById("historyText").textContent = history
-        .map(h => `${h.win ? '✅' : '💥'} ${h.multiplier.toFixed(2)}x`)
-        .join(" | ");
-    }
+  let history;
+  try {
+    history = JSON.parse(localStorage.getItem("history") || "[]");
+    if (!Array.isArray(history)) throw new Error("Invalid history data");
+  } catch (e) {
+    history = [];
+    localStorage.setItem("history", JSON.stringify(history));
+  }
+
+  const valid = history.filter(h => h && typeof h.multiplier === 'number' && typeof h.win === 'boolean');
+  document.getElementById("historyText").textContent = valid
+    .map(h => `${h.win ? '✅' : '💥'} ${h.multiplier.toFixed(2)}x`)
+    .join(" | ");
+}
 
     async function playRound() {
       if (isProcessing || userBalance < betAmount) return;
