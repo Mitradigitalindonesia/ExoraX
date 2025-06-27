@@ -13,9 +13,36 @@
       padding-bottom: 80px;
     }
 
-    h2 {
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
       text-align: center;
-      margin: 16px 0;
+      padding: 12px 0 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .search-box {
+      width: 95%;
+      max-width: 600px;
+      margin: 8px auto 12px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background-color: rgba(255, 255, 255, 0.05);
+      color: white;
+      font-size: 14px;
     }
 
     .market-list {
@@ -125,7 +152,13 @@
   </style>
 </head>
 <body>
-  <h2>Warung Crypto</h2>
+  <header>
+    <h2>Warung Crypto</h2>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Cari coin... (cth: BTC, ethereum)">
+    </div>
+  </header>
+
   <div id="marketList" class="market-list">Loading...</div>
 
   <div class="bottom-nav">
@@ -152,46 +185,59 @@
   </div>  
 
   <script>
+    let allCoins = [];
+
     async function loadMarkets() {
       try {
         const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false');
-        const coins = await res.json();
-        const marketList = document.getElementById("marketList");
-
-        marketList.innerHTML = coins
-          .map((coin) => {
-            const idr = coin.current_price * 16000;
-            const change = coin.price_change_percentage_24h?.toFixed(2) || "0.00";
-            const changeClass = change < 0 ? "coin-change negative" : "coin-change";
-            const symbol = coin.symbol.toUpperCase() + "USDT";
-
-            return `
-              <div class="coin" onclick="goToTrade('${symbol}', ${coin.current_price}, '${coin.image}', '${coin.id}')">
-                <div class="coin-left">
-                  <img src="${coin.image}" alt="${coin.symbol}" />
-                  <div>
-                    <div class="coin-name">${coin.symbol.toUpperCase()}/USDT</div>
-                    <div class="coin-idr">Rp${idr.toLocaleString(undefined, {maximumFractionDigits:2})}</div>
-                  </div>
-                </div>
-                <div class="coin-price">
-                  ${coin.current_price.toLocaleString(undefined, {minimumFractionDigits:2})}<br>
-                  <span class="${changeClass}">${change}%</span>
-                </div>
-              </div>
-            `;
-          })
-          .join("");
+        allCoins = await res.json();
+        renderCoins(allCoins);
       } catch (err) {
         document.getElementById("marketList").innerText = "❌ Gagal memuat data pasar.";
         console.error(err);
       }
     }
 
+    function renderCoins(coins) {
+      const marketList = document.getElementById("marketList");
+      marketList.innerHTML = coins
+        .map((coin) => {
+          const idr = coin.current_price * 16000;
+          const change = coin.price_change_percentage_24h?.toFixed(2) || "0.00";
+          const changeClass = change < 0 ? "coin-change negative" : "coin-change";
+          const symbol = coin.symbol.toUpperCase() + "USDT";
+
+          return `
+            <div class="coin" onclick="goToTrade('${symbol}', ${coin.current_price}, '${coin.image}', '${coin.id}')">
+              <div class="coin-left">
+                <img src="${coin.image}" alt="${coin.symbol}" />
+                <div>
+                  <div class="coin-name">${coin.symbol.toUpperCase()}/USDT</div>
+                  <div class="coin-idr">Rp${idr.toLocaleString(undefined, {maximumFractionDigits:2})}</div>
+                </div>
+              </div>
+              <div class="coin-price">
+                ${coin.current_price.toLocaleString(undefined, {minimumFractionDigits:2})}<br>
+                <span class="${changeClass}">${change}%</span>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
     function goToTrade(symbol, price, image, coin_id) {
       const url = `trade.html?symbol=${symbol}&price=${price}&image=${encodeURIComponent(image)}&coin_id=${coin_id}`;
       window.location.href = url;
     }
+
+    document.getElementById('searchInput').addEventListener('input', function () {
+      const keyword = this.value.toLowerCase();
+      const filtered = allCoins.filter((c) =>
+        c.name.toLowerCase().includes(keyword) || c.symbol.toLowerCase().includes(keyword)
+      );
+      renderCoins(filtered);
+    });
 
     loadMarkets();
   </script>
