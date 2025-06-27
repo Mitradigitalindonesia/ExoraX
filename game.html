@@ -156,6 +156,25 @@
     .bottom-nav a:hover, .bottom-nav a.active {
       color: #38bdf8;
     }
+
+    #loader {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 6px solid rgba(255,255,255,0.1);
+      border-top: 6px solid #38bdf8;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 0.8s linear infinite;
+      z-index: 2000;
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -202,88 +221,97 @@
     <a href="mining.html" class="active">💎 Mining</a>
   </div>
 
+  <div id="loader" style="display: none;"></div>
+
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const token = localStorage.getItem("supabaseAccessToken");
-const user_id = localStorage.getItem("userId");
+  const token = localStorage.getItem("supabaseAccessToken");
+  const user_id = localStorage.getItem("userId");
 
-if (!user_id || !token) {
-  alert("Sesi login tidak ditemukan.");
-  window.location.href = "index.html";
-}
+  if (!user_id || !token) {
+    alert("Sesi login tidak ditemukan.");
+    window.location.href = "index.html";
+  }
 
-const supabase = createClient(
-  'https://ocfjkltbtwqrbiucrkyq.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
-  {
-    global: {
-      headers: {
-        Authorization: `Bearer ${token}`,
+  const supabase = createClient(
+    'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
+    {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    },
-  }
-);
+    }
+  );
 
-const tapButton = document.getElementById("tapButton");
-const tapContainer = document.getElementById("tapContainer");
-const upgradeBtn = document.getElementById("upgradeBtn");
-const upgradeResult = document.getElementById("upgradeResult");
+  const tapButton = document.getElementById("tapButton");
+  const tapContainer = document.getElementById("tapContainer");
+  const upgradeBtn = document.getElementById("upgradeBtn");
+  const upgradeResult = document.getElementById("upgradeResult");
 
-tapButton.addEventListener("click", async () => {
-  const { data, error } = await supabase.rpc("rpc_claim_cx", { p_user_id: user_id });
-  if (error) return alert("Gagal klaim CX: " + error.message);
+  function triggerParticles() {
+    for (let i = 0; i < 10; i++) {
+      const particle = document.createElement("div");
+      particle.className = "particle";
+      particle.innerText = "💎";
 
-  const result = data[0];
-  document.getElementById("cxAmount").innerText = result.final_amount.toFixed(7) + " CX";
-  document.getElementById("hashrate").innerText = (result.final_level * 12) + " H/s";
-  document.getElementById("last24h").innerText = result.reward.toFixed(4);
-  document.getElementById("totalEarning").innerText = result.reward.toFixed(4);
-  triggerParticles();
-});
+      const angle = Math.random() * 2 * Math.PI;
+      const distance = 50 + Math.random() * 30;
+      const x = Math.cos(angle) * distance;
+      const y = Math.sin(angle) * distance;
 
-upgradeBtn.addEventListener("click", async () => {
-  console.log("Tombol upgrade diklik");
-  const { data, error } = await supabase.rpc("rpc_upgrade_level", { p_user_id: user_id });
+      particle.style.setProperty("--x", `${x}px`);
+      particle.style.setProperty("--y", `${y}px`);
+      particle.style.left = "50%";
+      particle.style.top = "50%";
+      particle.style.transform = "translate(-50%, -50%)";
 
-  if (error) {
-    console.error("❌ RPC error:", error);
-    upgradeResult.innerText = "Upgrade gagal: " + error.message;
-    upgradeResult.className = "upgrade-fail";
-    return;
+      tapContainer.appendChild(particle);
+      setTimeout(() => particle.remove(), 1000);
+    }
   }
 
-  const result = data[0];
-  document.getElementById("cxAmount").innerText = parseFloat(result.final_amount).toFixed(7) + " CX";
-  document.getElementById("hashrate").innerText = (result.final_level * 12) + " H/s";
-
-  upgradeResult.innerText = result.message;
-  upgradeResult.className = result.success ? "upgrade-success" : "upgrade-fail";
-
-  triggerParticles();
-});
-
-function triggerParticles() {
-  for (let i = 0; i < 10; i++) {
-    const particle = document.createElement("div");
-    particle.className = "particle";
-    particle.innerText = "💎";
-
-    const angle = Math.random() * 2 * Math.PI;
-    const distance = 50 + Math.random() * 30;
-    const x = Math.cos(angle) * distance;
-    const y = Math.sin(angle) * distance;
-
-    particle.style.setProperty("--x", `${x}px`);
-    particle.style.setProperty("--y", `${y}px`);
-    particle.style.left = "50%";
-    particle.style.top = "50%";
-    particle.style.transform = "translate(-50%, -50%)";
-
-    tapContainer.appendChild(particle);
-    setTimeout(() => particle.remove(), 1000);
+  function showLoader() {
+    document.getElementById("loader").style.display = "block";
   }
-}
+
+  function hideLoader() {
+    document.getElementById("loader").style.display = "none";
+  }
+
+  tapButton.addEventListener("click", async () => {
+    showLoader();
+    const { data, error } = await supabase.rpc("rpc_claim_cx", { p_user_id: user_id });
+    hideLoader();
+    if (error) return alert("Gagal klaim CX: " + error.message);
+
+    const result = data[0];
+    document.getElementById("cxAmount").innerText = result.final_amount.toFixed(7) + " CX";
+    document.getElementById("hashrate").innerText = (result.final_level * 12) + " H/s";
+    document.getElementById("last24h").innerText = result.reward.toFixed(4);
+    document.getElementById("totalEarning").innerText = result.reward.toFixed(4);
+    triggerParticles();
+  });
+
+  upgradeBtn.addEventListener("click", async () => {
+    showLoader();
+    const { data, error } = await supabase.rpc("rpc_upgrade_level", { p_user_id: user_id });
+    hideLoader();
+    if (error) {
+      upgradeResult.innerText = "Upgrade gagal: " + error.message;
+      upgradeResult.className = "upgrade-fail";
+      return;
+    }
+
+    const result = data[0];
+    document.getElementById("cxAmount").innerText = parseFloat(result.final_amount).toFixed(7) + " CX";
+    document.getElementById("hashrate").innerText = (result.final_level * 12) + " H/s";
+    upgradeResult.innerText = result.message;
+    upgradeResult.className = result.success ? "upgrade-success" : "upgrade-fail";
+    triggerParticles();
+  });
 </script>
 </body>
 </html>
