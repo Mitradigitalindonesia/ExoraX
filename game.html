@@ -203,7 +203,7 @@
   </div>
 
 <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const token = localStorage.getItem("supabaseAccessToken");
 const user_id = localStorage.getItem("userId");
@@ -225,57 +225,65 @@ const supabase = createClient(
   }
 );
 
-    const tapButton = document.getElementById("tapButton");
-    const tapContainer = document.getElementById("tapContainer");
-    const upgradeBtn = document.getElementById("upgradeBtn");
-    const upgradeResult = document.getElementById("upgradeResult");
+const tapButton = document.getElementById("tapButton");
+const tapContainer = document.getElementById("tapContainer");
+const upgradeBtn = document.getElementById("upgradeBtn");
+const upgradeResult = document.getElementById("upgradeResult");
 
-    tapButton.addEventListener("click", async () => {
-      const { data, error } = await supabase.rpc("rpc_claim_cx", { p_user_id: user_id });
-      if (error) return alert("Gagal klaim CX: " + error.message);
+tapButton.addEventListener("click", async () => {
+  const { data, error } = await supabase.rpc("rpc_claim_cx", { p_user_id: user_id });
+  if (error) return alert("Gagal klaim CX: " + error.message);
 
-      const result = data[0];
-      document.getElementById("cxAmount").innerText = result.final_amount.toFixed(7) + " CX";
-      document.getElementById("hashrate").innerText = (result.final_level * 12) + " H/s";
-      document.getElementById("last24h").innerText = result.reward.toFixed(4);
-      document.getElementById("totalEarning").innerText = result.reward.toFixed(4);
+  const result = data[0];
+  document.getElementById("cxAmount").innerText = result.final_amount.toFixed(7) + " CX";
+  document.getElementById("hashrate").innerText = (result.final_level * 12) + " H/s";
+  document.getElementById("last24h").innerText = result.reward.toFixed(4);
+  document.getElementById("totalEarning").innerText = result.reward.toFixed(4);
+  triggerParticles();
+});
 
-      triggerParticles();
-    });
+upgradeBtn.addEventListener("click", async () => {
+  console.log("Tombol upgrade diklik");
+  const { data, error } = await supabase.rpc("rpc_upgrade_level", { p_user_id: user_id });
 
-    upgradeBtn.addEventListener("click", async () => {
-      const { data, error } = await supabase.rpc("rpc_upgrade_level", { p_user_id: user_id });
-      if (error) return alert("Upgrade gagal: " + error.message);
+  if (error) {
+    console.error("❌ RPC error:", error);
+    upgradeResult.innerText = "Upgrade gagal: " + error.message;
+    upgradeResult.className = "upgrade-fail";
+    return;
+  }
 
-      const result = data[0];
-      document.getElementById("cxAmount").innerText = parseFloat(result.final_amount).toFixed(7) + " CX";
-      document.getElementById("hashrate").innerText = (result.final_level * 12) + " H/s";
+  const result = data[0];
+  document.getElementById("cxAmount").innerText = parseFloat(result.final_amount).toFixed(7) + " CX";
+  document.getElementById("hashrate").innerText = (result.final_level * 12) + " H/s";
 
-      upgradeResult.innerText = result.message;
-      upgradeResult.className = result.success ? 'upgrade-success' : 'upgrade-fail';
-    });
+  upgradeResult.innerText = result.message;
+  upgradeResult.className = result.success ? "upgrade-success" : "upgrade-fail";
 
-    function triggerParticles() {
-      for (let i = 0; i < 10; i++) {
-        const particle = document.createElement("div");
-        particle.className = "particle";
-        particle.innerText = "💎";
+  triggerParticles();
+});
 
-        const angle = Math.random() * 2 * Math.PI;
-        const distance = 50 + Math.random() * 30;
-        const x = Math.cos(angle) * distance;
-        const y = Math.sin(angle) * distance;
+function triggerParticles() {
+  for (let i = 0; i < 10; i++) {
+    const particle = document.createElement("div");
+    particle.className = "particle";
+    particle.innerText = "💎";
 
-        particle.style.setProperty("--x", `${x}px`);
-        particle.style.setProperty("--y", `${y}px`);
-        particle.style.left = "50%";
-        particle.style.top = "50%";
-        particle.style.transform = "translate(-50%, -50%)";
+    const angle = Math.random() * 2 * Math.PI;
+    const distance = 50 + Math.random() * 30;
+    const x = Math.cos(angle) * distance;
+    const y = Math.sin(angle) * distance;
 
-        tapContainer.appendChild(particle);
-        setTimeout(() => particle.remove(), 1000);
-      }
-    }
-  </script>
+    particle.style.setProperty("--x", `${x}px`);
+    particle.style.setProperty("--y", `${y}px`);
+    particle.style.left = "50%";
+    particle.style.top = "50%";
+    particle.style.transform = "translate(-50%, -50%)";
+
+    tapContainer.appendChild(particle);
+    setTimeout(() => particle.remove(), 1000);
+  }
+}
+</script>
 </body>
 </html>
