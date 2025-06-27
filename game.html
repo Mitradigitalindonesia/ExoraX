@@ -194,9 +194,15 @@
   <!-- Navigation Links -->
 </div>
 <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';const token = localStorage.getItem("supabaseAccessToken"); const user_id = localStorage.getItem("userId");
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-if (!user_id || !token) { alert("Sesi login tidak ditemukan."); window.location.href = "index.html"; }
+const token = localStorage.getItem("supabaseAccessToken");
+const user_id = localStorage.getItem("userId");
+
+if (!user_id || !token) {
+  alert("Sesi login tidak ditemukan.");
+  window.location.href = "index.html";
+}
 
 const supabase = createClient(
   'https://ocfjkltbtwqrbiucrkyq.supabase.co',
@@ -209,39 +215,49 @@ const supabase = createClient(
     },
   }
 );
-const tapButton = document.getElementById("tapButton"); const tapContainer = document.getElementById("tapContainer");
 
-async function triggerTap() { const { data, error } = await supabase.rpc("rpc_claim_cx", { p_user_id: user_id }); if (error) return alert("Gagal klaim CX: " + error.message);
+const tapButton = document.getElementById("tapButton");
+const tapContainer = document.getElementById("tapContainer");
 
-const result = data[0];
-document.getElementById("cxAmount").innerText = result.cx_balance.toFixed(7) + " CX";
-document.getElementById("hashrate").innerText = (result.level * 12) + " H/s";
-document.getElementById("last24h").innerText = result.reward.toFixed(4);
-document.getElementById("totalEarning").innerText = result.reward.toFixed(4);
-triggerParticles();
+async function triggerTap() {
+  const { data, error } = await supabase.rpc("rpc_claim_cx", { p_user_id: user_id });
+  if (error) {
+    console.error(error);
+    return alert("Gagal klaim CX: " + error.message);
+  }
 
+  const result = data[0];
+  document.getElementById("cxAmount").innerText = result.final_amount.toFixed(7) + " CX";
+  document.getElementById("hashrate").innerText = (result.final_level * 12) + " H/s";
+  document.getElementById("last24h").innerText = result.reward.toFixed(4);
+  document.getElementById("totalEarning").innerText = result.reward.toFixed(4);
+
+  triggerParticles();
 }
 
 tapButton.addEventListener("click", triggerTap);
 
-function triggerParticles() { for (let i = 0; i < 10; i++) { const particle = document.createElement("div"); particle.className = "particle"; particle.innerText = "💎";
+function triggerParticles() {
+  for (let i = 0; i < 10; i++) {
+    const particle = document.createElement("div");
+    particle.className = "particle";
+    particle.innerText = "💎";
 
-const angle = Math.random() * 2 * Math.PI;
-  const distance = 50 + Math.random() * 30;
-  const x = Math.cos(angle) * distance;
-  const y = Math.sin(angle) * distance;
+    const angle = Math.random() * 2 * Math.PI;
+    const distance = 50 + Math.random() * 30;
+    const x = Math.cos(angle) * distance;
+    const y = Math.sin(angle) * distance;
 
-  particle.style.setProperty("--x", `${x}px`);
-  particle.style.setProperty("--y", `${y}px`);
-  particle.style.left = "50%";
-  particle.style.top = "50%";
-  particle.style.transform = "translate(-50%, -50%)";
+    particle.style.setProperty("--x", `${x}px`);
+    particle.style.setProperty("--y", `${y}px`);
+    particle.style.left = "50%";
+    particle.style.top = "50%";
+    particle.style.transform = "translate(-50%, -50%)";
 
-  tapContainer.appendChild(particle);
-  setTimeout(() => particle.remove(), 1000);
+    tapContainer.appendChild(particle);
+    setTimeout(() => particle.remove(), 1000);
+  }
 }
-
-} </script>
-
+</script>
 </body>
 </html>
