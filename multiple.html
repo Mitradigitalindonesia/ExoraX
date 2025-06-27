@@ -19,10 +19,7 @@
       text-align: center;
     }
 
-    h2 {
-      margin-top: 24px;
-      font-size: 22px;
-    }
+    h2 { margin-top: 24px; font-size: 22px; }
 
     .balance {
       margin-top: 8px;
@@ -59,9 +56,7 @@
       margin-top: 10px;
     }
 
-    .game-container button:hover {
-      background: #0ea5e9;
-    }
+    .game-container button:hover { background: #0ea5e9; }
 
     .result, .history, .stats {
       margin-top: 16px;
@@ -139,11 +134,9 @@
 <body>
   <h2>🎲 Limbo Game</h2>
   <div class="balance" id="exrBalance">0.0000 EXR</div>
-
   <div id="graph-container">
     <canvas id="limboChart" height="100"></canvas>
   </div>
-
   <div class="game-container">
     <button id="strategyBtn">⚙️ Atur Strategi</button>
     <button id="playButton">Mainkan!</button>
@@ -174,8 +167,8 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("supabaseAccessToken");
+    const userId = localStorage.getItem("userId");
 
     if (!userId || !token) {
       alert("Sesi login tidak ditemukan.");
@@ -197,6 +190,17 @@
     let roundsPlayed = 0;
     let betAmount = parseFloat(localStorage.getItem('betAmount') || 0.01);
     let targetMultiplier = parseFloat(localStorage.getItem('targetMultiplier') || 2.0);
+
+    async function loadBalance() {
+      const { data } = await supabase
+        .from('wallets')
+        .select('amount')
+        .eq('user_id', userId)
+        .eq('symbol', 'EXR')
+        .single();
+      userBalance = parseFloat(data?.amount || 0);
+      document.getElementById("exrBalance").textContent = userBalance.toFixed(4) + " EXR";
+    }
 
     const ctx = document.getElementById("limboChart").getContext("2d");
     const graphData = {
@@ -239,17 +243,10 @@
 
     function updateUI(multiplier, payout, win) {
       roundsPlayed++;
-      if (win) {
-        totalWon += payout;
-        winStreak++;
-        loseStreak = 0;
-      } else {
-        winStreak = 0;
-        loseStreak++;
-      }
-      document.getElementById('resultText').textContent = win
-        ? `✅ Menang! Crash: ${multiplier.toFixed(2)}x | +${payout.toFixed(4)} EXR`
-        : `💥 Kalah. Crash di ${multiplier.toFixed(2)}x`;
+      totalWon += win ? payout : 0;
+      if (win) { winStreak++; loseStreak = 0; }
+      else { loseStreak++; winStreak = 0; }
+      document.getElementById('resultText').textContent = win ? `✅ Menang! Crash: ${multiplier.toFixed(2)}x | +${payout.toFixed(4)} EXR` : `💥 Kalah. Crash di ${multiplier.toFixed(2)}x`;
       document.getElementById('statsText').textContent = `🎮 ${roundsPlayed} ronde | 💰 ${totalWon.toFixed(4)} EXR | 🔥 WS: ${winStreak} | 💔 LS: ${loseStreak}`;
       updateChart(multiplier, win);
       updateHistory(multiplier, payout, win);
@@ -260,18 +257,14 @@
       history.unshift({ multiplier, payout, win });
       history = history.slice(0, 10);
       localStorage.setItem("history", JSON.stringify(history));
-      document.getElementById("historyText").textContent = history.map(h => `${h.win ? '✅' : '💥'} ${h.multiplier.toFixed(2)}x`).join(" | ");
+      renderHistory();
     }
 
-    async function loadBalance() {
-      const { data } = await supabase
-        .from('wallets')
-        .select('amount')
-        .eq('user_id', userId)
-        .eq('symbol', 'EXR')
-        .single();
-      userBalance = parseFloat(data?.amount || 0);
-      document.getElementById("exrBalance").textContent = userBalance.toFixed(4) + " EXR";
+    function renderHistory() {
+      const history = JSON.parse(localStorage.getItem("history") || "[]");
+      document.getElementById("historyText").textContent = history
+        .map(h => `${h.win ? '✅' : '💥'} ${h.multiplier.toFixed(2)}x`)
+        .join(" | ");
     }
 
     async function playRound() {
@@ -301,9 +294,9 @@
     };
 
     document.getElementById("strategyBtn").onclick = () => {
-      document.getElementById("strategyModal").style.display = "block";
       document.getElementById("betAmount").value = betAmount;
       document.getElementById("targetMultiplier").value = targetMultiplier;
+      document.getElementById("strategyModal").style.display = "block";
     };
 
     document.getElementById("closeModal").onclick = () => {
@@ -320,7 +313,7 @@
 
     window.addEventListener("DOMContentLoaded", async () => {
       await loadBalance();
-      updateHistory();
+      renderHistory();
     });
   </script>
 </body>
