@@ -1,0 +1,238 @@
+<!DOCTYPE html><html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EXORA Tap to Earn - CX</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #1e3a8a 50%, #581c87 100%);
+      color: white;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }.mining-header {
+  margin-top: 24px;
+}
+
+.coin-amount {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.earning-info {
+  display: flex;
+  justify-content: space-between;
+  width: 80%;
+  max-width: 400px;
+  margin: 0 auto 20px;
+  font-size: 9px;
+  color: #a1a1aa;
+}
+
+.earning-info div span {
+  display: block;
+  color: #f8fafc;
+  font-weight: bold;
+  font-size: 7px;
+}
+
+.tap-container {
+  width: 200px;
+  height: 200px;
+  margin: 24px auto;
+  position: relative;
+}
+
+.tap-button {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  outline: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+.tap-button:focus {
+  outline: none;
+}
+
+.particle {
+  position: absolute;
+  font-size: 16px;
+  animation: particleAnim 1s ease-out forwards;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+@keyframes particleAnim {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--x), var(--y)) scale(0.5);
+    opacity: 0;
+  }
+}
+
+.stats-info {
+  font-size: 14px;
+  margin-top: 12px;
+  color: #cbd5e1;
+}
+
+.stats-info .highlight {
+  font-weight: bold;
+  color: #38bdf8;
+}
+
+.cooldown {
+  font-size: 12px;
+  margin-top: 6px;
+  color: #f87171;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  border-top: 1px solid #334155;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+}
+
+.bottom-nav a {
+  color: #94a3b8;
+  text-align: center;
+  font-size: 12px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bottom-nav a svg {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 4px;
+  fill: #94a3b8;
+  transition: fill 0.2s ease;
+}
+
+.bottom-nav a.active,
+.bottom-nav a:hover {
+  color: #38bdf8;
+}
+
+.bottom-nav a.active svg,
+.bottom-nav a:hover svg {
+  fill: #38bdf8;
+}
+
+  </style>
+</head>
+<body>
+<div class="mining-header">
+  <div class="coin-amount" id="cxAmount">0.0000000 CX</div>
+  <div class="earning-info">
+    <div>Last 24h<span id="last24h">0.0000</span></div>
+    <div>Total<span id="totalEarning">0.0000</span></div>
+  </div>
+</div>
+<div class="tap-container" id="tapContainer">
+  <div class="tap-button" id="tapButton">
+    <svg width="100%" height="100%" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="futuristicGradient" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#00f0ff"/>
+          <stop offset="100%" stop-color="#001f3f"/>
+        </radialGradient>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      <circle cx="48" cy="48" r="40" fill="url(#futuristicGradient)" filter="url(#glow)" stroke="#00f0ff" stroke-width="2"/>
+      <text x="48" y="58" text-anchor="middle" font-size="36px" filter="url(#glow)">💎</text>
+    </svg>
+  </div>
+</div>
+<div class="stats-info">Hashrate: <span class="highlight" id="hashrate">0 H/s</span></div>
+<div class="cooldown" id="cooldownText">Tidak ada cooldown saat ini</div>
+<div style="margin-top: 12px;">
+  <button id="upgradeBtn" style="
+    background: linear-gradient(135deg, #22d3ee, #3b82f6);
+    border: none;
+    color: #0f172a;
+    font-weight: bold;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+    transition: all 0.2s ease;
+  ">
+    🔼 Upgrade
+  </button>
+</div>
+<div class="bottom-nav">
+  <!-- Navigation Links -->
+</div>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';const token = localStorage.getItem("supabaseAccessToken"); const user_id = localStorage.getItem("userId");
+
+if (!user_id || !token) { alert("Sesi login tidak ditemukan."); window.location.href = "index.html"; }
+
+const supabase = createClient( 'https://ocfjkltbtwqrbiucrkyq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc', { global: { headers: { Authorization: Bearer ${token} } } } );
+
+const tapButton = document.getElementById("tapButton"); const tapContainer = document.getElementById("tapContainer");
+
+async function triggerTap() { const { data, error } = await supabase.rpc("rpc_claim_cx", { p_user_id: user_id }); if (error) return alert("Gagal klaim CX: " + error.message);
+
+const result = data[0];
+document.getElementById("cxAmount").innerText = result.cx_balance.toFixed(7) + " CX";
+document.getElementById("hashrate").innerText = (result.level * 12) + " H/s";
+document.getElementById("last24h").innerText = result.reward.toFixed(4);
+document.getElementById("totalEarning").innerText = result.reward.toFixed(4);
+triggerParticles();
+
+}
+
+tapButton.addEventListener("click", triggerTap);
+
+function triggerParticles() { for (let i = 0; i < 10; i++) { const particle = document.createElement("div"); particle.className = "particle"; particle.innerText = "💎";
+
+const angle = Math.random() * 2 * Math.PI;
+  const distance = 50 + Math.random() * 30;
+  const x = Math.cos(angle) * distance;
+  const y = Math.sin(angle) * distance;
+
+  particle.style.setProperty("--x", `${x}px`);
+  particle.style.setProperty("--y", `${y}px`);
+  particle.style.left = "50%";
+  particle.style.top = "50%";
+  particle.style.transform = "translate(-50%, -50%)";
+
+  tapContainer.appendChild(particle);
+  setTimeout(() => particle.remove(), 1000);
+}
+
+} </script>
+
+</body>
+</html>
