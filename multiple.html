@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="id">
+<!DOCTYPE html><html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -18,125 +17,64 @@
       min-height: 100vh;
       text-align: center;
     }
-
     h2 { margin-top: 24px; font-size: 22px; }
-
-    .balance {
-      margin-top: 8px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #38bdf8;
-    }
-
-    #graph-container {
-      width: 90%;
-      max-width: 400px;
-      margin-top: 16px;
-    }
-
+    .balance { margin-top: 8px; font-size: 18px; font-weight: bold; color: #38bdf8; }
+    #graph-container { width: 90%; max-width: 400px; margin-top: 16px; }
     .game-container {
       background: rgba(255, 255, 255, 0.05);
-      padding: 20px;
-      margin-top: 16px;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 400px;
+      padding: 20px; margin-top: 16px;
+      border-radius: 16px; width: 90%; max-width: 400px;
       border: 1px solid #334155;
     }
-
     .game-container button {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      background: #22d3ee;
-      color: #0f172a;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
+      width: 100%; padding: 12px; border-radius: 10px;
+      background: #22d3ee; color: #0f172a;
+      font-weight: bold; border: none; cursor: pointer;
       margin-top: 10px;
     }
-
     .game-container button:hover { background: #0ea5e9; }
-
     .result, .history, .stats {
-      margin-top: 16px;
-      font-size: 14px;
-      font-weight: bold;
+      margin-top: 16px; font-size: 14px; font-weight: bold;
     }
-
     .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      position: fixed; bottom: 0; left: 0; right: 0;
       background: rgba(0, 0, 0, 0.6);
       border-top: 1px solid #334155;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
+      display: flex; justify-content: space-around; padding: 10px 0;
       backdrop-filter: blur(8px);
     }
-
     .bottom-nav a {
-      color: #94a3b8;
-      text-align: center;
-      font-size: 12px;
-      text-decoration: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      color: #94a3b8; text-align: center; font-size: 12px;
+      text-decoration: none; display: flex;
+      flex-direction: column; align-items: center;
     }
-
-    .bottom-nav a.active,
-    .bottom-nav a:hover {
-      color: #38bdf8;
-    }
-
+    .bottom-nav a.active, .bottom-nav a:hover { color: #38bdf8; }
     .modal {
-      display: none;
-      position: fixed;
-      z-index: 100;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background: rgba(0, 0, 0, 0.7);
+      display: none; position: fixed; z-index: 100;
+      left: 0; top: 0; width: 100%; height: 100%;
+      overflow: auto; background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(4px);
     }
-
     .modal-content {
-      background: #1e293b;
-      margin: 15% auto;
-      padding: 20px;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 400px;
+      background: #1e293b; margin: 15% auto; padding: 20px;
+      border-radius: 12px; width: 90%; max-width: 400px;
     }
-
     .modal-content input {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0;
-      background: #0f172a;
-      border: none;
-      border-radius: 8px;
-      color: white;
+      width: 100%; padding: 10px; margin: 6px 0;
+      background: #0f172a; border: none;
+      border-radius: 8px; color: white;
     }
-
-    .close {
-      float: right;
-      font-size: 24px;
-      cursor: pointer;
+    .modal-content label {
+      display: block; text-align: left;
+      margin: 8px 0; font-size: 14px;
     }
+    .close { float: right; font-size: 24px; cursor: pointer; }
   </style>
 </head>
 <body>
   <h2>🎲 Limbo Game</h2>
   <div class="balance" id="exrBalance">0.0000 EXR</div>
-  <div id="graph-container">
-    <canvas id="limboChart" height="100"></canvas>
-  </div>
+  <div id="graph-container"><canvas id="limboChart" height="100"></canvas></div>
   <div class="game-container">
     <button id="strategyBtn">⚙️ Atur Strategi</button>
     <button id="playButton">Mainkan!</button>
@@ -144,32 +82,26 @@
     <div class="result" id="resultText"></div>
     <div class="stats" id="statsText"></div>
     <div class="history" id="historyText"></div>
-  </div>
-
-  <div class="modal" id="strategyModal">
+  </div>  <div class="modal" id="strategyModal">
     <div class="modal-content">
       <span class="close" id="closeModal">&times;</span>
       <h3>Strategi</h3>
       <input type="number" id="betAmount" placeholder="Jumlah Taruhan (EXR)" min="0.01" step="0.01" />
       <input type="number" id="targetMultiplier" placeholder="Target Multiplier (misal 2.0)" min="1.01" step="0.01" />
+      <label><input type="checkbox" id="martingaleToggle" /> Ganda taruhan saat kalah (Martingale)</label>
       <button id="saveStrategy">Simpan</button>
     </div>
-  </div>
-
-  <div class="bottom-nav">
+  </div>  <div class="bottom-nav">
     <a href="Home.html"><span>Home</span></a>
     <a href="market.html"><span>Market</span></a>
     <a href="dompet.html"><span>Dompet</span></a>
     <a href="mining.html"><span>Mining</span></a>
     <a href="game.html" class="active"><span>Game</span></a>
-  </div>
-
-  <script type="module">
+  </div>  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const token = localStorage.getItem("supabaseAccessToken");
     const userId = localStorage.getItem("userId");
-
+    const token = localStorage.getItem("supabaseAccessToken");
     if (!userId || !token) {
       alert("Sesi login tidak ditemukan.");
       window.location.href = "index.html";
@@ -181,50 +113,15 @@
       { global: { headers: { Authorization: `Bearer ${token}` } } }
     );
 
-    let userBalance = 0;
-    let autoPlay = false;
-    let isProcessing = false;
-    let winStreak = 0;
-    let loseStreak = 0;
-    let totalWon = 0;
-    let roundsPlayed = 0;
+    let userBalance = 0, autoPlay = false, isProcessing = false;
+    let winStreak = 0, loseStreak = 0, totalWon = 0, roundsPlayed = 0;
     let betAmount = parseFloat(localStorage.getItem('betAmount') || 0.01);
     let targetMultiplier = parseFloat(localStorage.getItem('targetMultiplier') || 2.0);
-
-    async function loadBalance() {
-      const { data } = await supabase
-        .from('wallets')
-        .select('amount')
-        .eq('user_id', userId)
-        .eq('symbol', 'EXR')
-        .single();
-      userBalance = parseFloat(data?.amount || 0);
-      document.getElementById("exrBalance").textContent = userBalance.toFixed(4) + " EXR";
-    }
+    let martingale = localStorage.getItem("martingale") === "true";
 
     const ctx = document.getElementById("limboChart").getContext("2d");
-    const graphData = {
-      labels: [],
-      datasets: [{
-        label: 'Crash Multiplier',
-        data: [],
-        backgroundColor: [],
-        borderColor: [],
-        borderWidth: 2,
-        tension: 0.3,
-        fill: false
-      }]
-    };
-
-    const limboChart = new Chart(ctx, {
-      type: 'line',
-      data: graphData,
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, suggestedMax: 5 } }
-      }
-    });
+    const graphData = { labels: [], datasets: [{ label: 'Crash Multiplier', data: [], backgroundColor: [], borderColor: [], borderWidth: 2, tension: 0.3, fill: false }] };
+    const limboChart = new Chart(ctx, { type: 'line', data: graphData, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, suggestedMax: 5 } } } });
 
     function updateChart(multiplier, win) {
       const label = `R${graphData.labels.length + 1}`;
@@ -241,58 +138,53 @@
       limboChart.update();
     }
 
-    function updateUI(multiplier, payout, win) {
+    function updateUI(multiplier, win) {
+      const gain = win ? (betAmount * targetMultiplier - betAmount) : 0;
+      totalWon += gain;
+      win ? winStreak++ : loseStreak++;
       roundsPlayed++;
-      totalWon += win ? payout : 0;
-      if (win) { winStreak++; loseStreak = 0; }
-      else { loseStreak++; winStreak = 0; }
-      document.getElementById('resultText').textContent = win ? `✅ Menang! Crash: ${multiplier.toFixed(2)}x | +${payout.toFixed(4)} EXR` : `💥 Kalah. Crash di ${multiplier.toFixed(2)}x`;
+      document.getElementById('resultText').textContent = win ? `✅ Menang! Crash: ${multiplier.toFixed(2)}x | +${gain.toFixed(4)} EXR` : `💥 Kalah. Crash di ${multiplier.toFixed(2)}x`;
       document.getElementById('statsText').textContent = `🎮 ${roundsPlayed} ronde | 💰 ${totalWon.toFixed(4)} EXR | 🔥 WS: ${winStreak} | 💔 LS: ${loseStreak}`;
       updateChart(multiplier, win);
-      updateHistory(multiplier, payout, win);
+      updateHistory(multiplier, win);
     }
 
-    function updateHistory(multiplier, payout, win) {
+    function updateHistory(multiplier, win) {
       let history = JSON.parse(localStorage.getItem("history") || "[]");
-      history.unshift({ multiplier, payout, win });
+      history.unshift({ multiplier, win });
       history = history.slice(0, 10);
       localStorage.setItem("history", JSON.stringify(history));
       renderHistory();
     }
 
     function renderHistory() {
-  let history;
-  try {
-    history = JSON.parse(localStorage.getItem("history") || "[]");
-    if (!Array.isArray(history)) throw new Error("Invalid history data");
-  } catch (e) {
-    history = [];
-    localStorage.setItem("history", JSON.stringify(history));
-  }
-
-  const valid = history.filter(h => h && typeof h.multiplier === 'number' && typeof h.win === 'boolean');
-  document.getElementById("historyText").textContent = valid
-    .map(h => `${h.win ? '✅' : '💥'} ${h.multiplier.toFixed(2)}x`)
-    .join(" | ");
-}
+      const history = JSON.parse(localStorage.getItem("history") || "[]");
+      document.getElementById("historyText").textContent = history.map(h => `${h.win ? '✅' : '💥'} ${h.multiplier.toFixed(2)}x`).join(" | ");
+    }
 
     async function playRound() {
       if (isProcessing || userBalance < betAmount) return;
       isProcessing = true;
       const clientSeed = crypto.randomUUID();
-      const { data, error } = await supabase.rpc("rpc_play_limbo", {
-        p_user_id: userId,
-        p_client_seed: clientSeed,
-        p_bet: betAmount,
-        p_target_multiplier: targetMultiplier
-      });
-      if (!error && data) updateUI(data.multiplier, data.win ? data.payout : 0, data.win);
+      const { data } = await supabase.rpc("rpc_play_limbo", { p_user_id: userId, p_client_seed: clientSeed, p_bet: betAmount, p_target_multiplier: targetMultiplier });
+      if (data) {
+        updateUI(data.multiplier, data.win);
+        if (autoPlay) {
+          if (data.win) betAmount = parseFloat(localStorage.getItem('betAmount'));
+          else if (martingale) betAmount *= 2;
+        }
+      }
       await loadBalance();
       isProcessing = false;
     }
 
-    document.getElementById("playButton").onclick = playRound;
+    async function loadBalance() {
+      const { data } = await supabase.from('wallets').select('amount').eq('user_id', userId).eq('symbol', 'EXR').single();
+      userBalance = parseFloat(data?.amount || 0);
+      document.getElementById("exrBalance").textContent = userBalance.toFixed(4) + " EXR";
+    }
 
+    document.getElementById("playButton").onclick = playRound;
     document.getElementById("autoBtn").onclick = async () => {
       autoPlay = !autoPlay;
       document.getElementById("autoBtn").textContent = autoPlay ? "⏸️ Stop" : "🔁 Auto Play";
@@ -302,28 +194,24 @@
       }
     };
 
-    document.getElementById("strategyBtn").onclick = () => {
-      document.getElementById("betAmount").value = betAmount;
-      document.getElementById("targetMultiplier").value = targetMultiplier;
-      document.getElementById("strategyModal").style.display = "block";
-    };
-
-    document.getElementById("closeModal").onclick = () => {
-      document.getElementById("strategyModal").style.display = "none";
-    };
-
+    document.getElementById("strategyBtn").onclick = () => document.getElementById("strategyModal").style.display = "block";
+    document.getElementById("closeModal").onclick = () => document.getElementById("strategyModal").style.display = "none";
     document.getElementById("saveStrategy").onclick = () => {
       betAmount = parseFloat(document.getElementById("betAmount").value);
       targetMultiplier = parseFloat(document.getElementById("targetMultiplier").value);
+      martingale = document.getElementById("martingaleToggle").checked;
       localStorage.setItem("betAmount", betAmount);
       localStorage.setItem("targetMultiplier", targetMultiplier);
+      localStorage.setItem("martingale", martingale);
       document.getElementById("strategyModal").style.display = "none";
     };
 
     window.addEventListener("DOMContentLoaded", async () => {
+      document.getElementById("betAmount").value = betAmount;
+      document.getElementById("targetMultiplier").value = targetMultiplier;
+      document.getElementById("martingaleToggle").checked = martingale;
       await loadBalance();
       renderHistory();
     });
-  </script>
-</body>
+  </script></body>
 </html>
