@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Terima Aset - EXORA Wallet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #0f172a;
+      color: #f1f5f9;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 30px;
+    }
+
+    h2 {
+      color: #38bdf8;
+      margin-bottom: 10px;
+    }
+
+    #address {
+      word-break: break-all;
+      background: #1e293b;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #38bdf8;
+      color: #0f172a;
+      font-weight: bold;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0ea5e9;
+    }
+
+    img {
+      margin-top: 20px;
+      background: #fff;
+      padding: 8px;
+      border-radius: 16px;
+    }
+
+    .small {
+      font-size: 14px;
+      margin-top: 8px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <h2>Terima Aset EXR</h2>
+
+  <div id="address">Memuat alamat...</div>
+  <button id="copy-btn">Salin Alamat</button>
+
+  <div class="small">Scan QR untuk mengirim ke alamat ini:</div>
+  <div id="qrcode"></div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const token = localStorage.getItem("supabaseAccessToken");
+    const user_id = localStorage.getItem("userId");
+
+    if (!user_id || !token) {
+      alert("Sesi login tidak ditemukan.");
+      window.location.href = "index.html";
+    }
+
+    const supabase = createClient(
+      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
+      {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      }
+    );
+
+    const addressDiv = document.getElementById("address");
+    const copyBtn = document.getElementById("copy-btn");
+    const qrDiv = document.getElementById("qrcode");
+
+    // Load address
+    const { data, error } = await supabase
+      .from('wallets')
+      .select('address')
+      .eq('user_id', user_id)
+      .eq('symbol', 'EXR')
+      .single();
+
+    if (error || !data) {
+      addressDiv.textContent = "❌ Gagal memuat alamat.";
+      copyBtn.disabled = true;
+    } else {
+      const address = data.address;
+      addressDiv.textContent = address;
+
+      // QR Code
+      const qrImg = document.createElement("img");
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(address)}`;
+      qrDiv.appendChild(qrImg);
+
+      // Salin ke clipboard
+      copyBtn.onclick = () => {
+        navigator.clipboard.writeText(address).then(() => {
+          copyBtn.innerText = "✅ Disalin!";
+          setTimeout(() => copyBtn.innerText = "Salin Alamat", 2000);
+        });
+      };
+    }
+  </script>
+</body>
+</html>
