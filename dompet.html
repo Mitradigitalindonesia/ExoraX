@@ -683,31 +683,46 @@ async function loadPortfolio() {
   }
 
   let total = 0;
-  let html = '';
+let assetList = [];
 
-  for (const wallet of wallets) {
-    const data = priceMap[wallet.symbol];
-    if (!data) continue;
+// Buat array dari data wallet + harga
+for (const wallet of wallets) {
+  const data = priceMap[wallet.symbol];
+  if (!data) continue;
 
-    const value = wallet.amount * data.price;
-    total += value;
+  const value = wallet.amount * data.price;
+  total += value;
 
-    html += `
-      <div class="asset-card" data-symbol="${wallet.symbol}" data-wallet-id="${wallet.id}">
-        <div class="asset-left">
-          ${data.logo || '<div style="width:36px;height:36px;background:#ccc;border-radius:50%;"></div>'}
-          <div class="asset-info">
-            <div class="symbol">${wallet.symbol}</div>
-            <div>Saldo: ${wallet.amount}</div>
-          </div>
-        </div>
-        <div class="asset-right">
-          Rp ${value.toLocaleString('id-ID')}
-          <div style="font-size: 12px;">Harga: Rp ${Math.round(data.price).toLocaleString('id-ID')}</div>
+  assetList.push({
+    ...wallet,
+    value,
+    price: data.price,
+    logo: data.logo
+  });
+}
+
+// Urutkan berdasarkan nilai tertinggi
+assetList.sort((a, b) => b.value - a.value);
+
+// Buat HTML
+let html = '';
+for (const asset of assetList) {
+  html += `
+    <div class="asset-card" data-symbol="${asset.symbol}" data-wallet-id="${asset.id}">
+      <div class="asset-left">
+        ${asset.logo || '<div style="width:36px;height:36px;background:#ccc;border-radius:50%;"></div>'}
+        <div class="asset-info">
+          <div class="symbol">${asset.symbol}</div>
+          <div>Saldo: ${asset.amount}</div>
         </div>
       </div>
-    `;
-  }
+      <div class="asset-right">
+        Rp ${asset.value.toLocaleString('id-ID')}
+        <div style="font-size: 12px;">Harga: Rp ${Math.round(asset.price).toLocaleString('id-ID')}</div>
+      </div>
+    </div>
+  `;
+}
 
   document.getElementById('asset-list').innerHTML = html;
   document.getElementById('idr').innerText = `Rp ${Math.round(total).toLocaleString('id-ID')}`;
