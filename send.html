@@ -17,16 +17,46 @@
       color: #38bdf8;
     }
 
-    input {
+    .input-with-icon {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .input-with-icon input {
       width: 100%;
-      padding: 12px;
-      margin: 10px 0;
+      padding: 12px 44px 12px 12px;
       border: none;
       border-radius: 8px;
       font-size: 16px;
     }
 
-    button {
+    .input-with-icon button {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .input-with-icon img {
+      width: 24px;
+      height: 24px;
+      filter: invert(1);
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button.send {
+      width: 100%;
       padding: 12px;
       background-color: #38bdf8;
       color: #0f172a;
@@ -35,12 +65,17 @@
       border-radius: 8px;
       font-size: 16px;
       cursor: pointer;
-      width: 100%;
       margin-top: 10px;
     }
 
-    button:hover {
+    button.send:hover {
       background-color: #0ea5e9;
+    }
+
+    #balance-info {
+      font-weight: bold;
+      margin-bottom: 16px;
+      color: #a5f3fc;
     }
 
     .status {
@@ -59,19 +94,35 @@
       color: #f87171;
     }
 
-    #balance-info {
-      margin: 8px 0 12px;
-      font-weight: bold;
-      color: #a5f3fc;
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 99;
+      flex-direction: column;
+    }
+
+    .modal.hidden {
+      display: none;
     }
 
     #reader {
-      margin-top: 20px;
       width: 100%;
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-      display: none;
+      max-width: 350px;
+    }
+
+    #close-scan {
+      margin-top: 20px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 8px;
     }
   </style>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -82,17 +133,23 @@
   <div id="balance-info">Saldo: ...</div>
 
   <label for="send-to">Alamat Tujuan</label>
-  <input type="text" id="send-to" placeholder="Contoh: 0xABC123..." />
-
-  <button id="scan-btn">📷 Scan QR</button>
+  <div class="input-with-icon">
+    <input type="text" id="send-to" placeholder="Contoh: 0xABC123..." />
+    <button id="icon-scan"><img src="https://icons.getbootstrap.com/assets/icons/camera.svg" alt="Scan" /></button>
+  </div>
 
   <label for="send-amount">Jumlah EXR</label>
   <input type="number" id="send-amount" placeholder="Masukkan jumlah" />
 
-  <button id="send-btn">Kirim</button>
+  <button class="send" id="send-btn">Kirim</button>
 
-  <div id="reader"></div>
-  <div id="status" class="status" style="display: none;"></div>
+  <div class="status" id="status" style="display: none;"></div>
+
+  <!-- Modal kamera QR -->
+  <div id="scan-modal" class="modal hidden">
+    <div id="reader"></div>
+    <button id="close-scan">✖ Tutup</button>
+  </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -118,25 +175,25 @@
     );
 
     const sendBtn = document.getElementById("send-btn");
-    const scanBtn = document.getElementById("scan-btn");
+    const scanBtn = document.getElementById("icon-scan");
+    const closeScan = document.getElementById("close-scan");
     const statusDiv = document.getElementById("status");
-    const balanceInfo = document.getElementById("balance-info");
     const readerDiv = document.getElementById("reader");
+    const scanModal = document.getElementById("scan-modal");
+    const balanceInfo = document.getElementById("balance-info");
 
     let fromAddress = "";
     let currentBalance = 0;
 
-    // Load saldo
     async function loadBalance() {
-      const { data: wallets, error: walletErr } = await supabase
-        .from('wallets')
-        .select('address, amount')
-        .eq('user_id', user_id)
-        .eq('symbol', 'EXR');
+      const { data: wallets, error } = await supabase
+        .from("wallets")
+        .select("address, amount")
+        .eq("user_id", user_id)
+        .eq("symbol", "EXR");
 
-      if (walletErr || !wallets || wallets.length === 0) {
+      if (error || !wallets || wallets.length === 0) {
         showStatus("❌ Wallet tidak ditemukan.", "error");
-        sendBtn.disabled = true;
         return;
       }
 
@@ -147,7 +204,6 @@
 
     await loadBalance();
 
-    // Kirim transaksi
     sendBtn.onclick = async () => {
       const to = document.getElementById("send-to").value.trim();
       const amount = parseFloat(document.getElementById("send-amount").value);
@@ -158,52 +214,55 @@
       }
 
       if (isNaN(amount) || amount <= 0) {
-        showStatus("⚠️ Jumlah harus lebih besar dari 0.", "error");
+        showStatus("⚠️ Jumlah tidak valid.", "error");
         return;
       }
 
       if (amount > currentBalance) {
-        showStatus(`❌ Saldo tidak cukup. Saldo kamu: ${currentBalance} EXR`, "error");
+        showStatus(`❌ Saldo tidak cukup. Sisa: ${currentBalance}`, "error");
         return;
       }
 
-      const { data, error: txErr } = await supabase.rpc('simulate_transfer', {
+      const { data, error } = await supabase.rpc("simulate_transfer", {
         from_address: fromAddress,
         to_address: to,
         amount,
-        symbol: 'EXR'
+        symbol: "EXR",
       });
 
-      if (txErr) {
-        showStatus("❌ Gagal mengirim: " + txErr.message, "error");
+      if (error) {
+        showStatus("❌ Gagal kirim: " + error.message, "error");
       } else {
-        showStatus("✅ Transaksi berhasil!\nTX ID: " + data[0].tx_hash, "success");
+        showStatus("✅ Transaksi berhasil!\nTX: " + data[0].tx_hash, "success");
         document.getElementById("send-to").value = "";
         document.getElementById("send-amount").value = "";
-        await loadBalance(); // refresh saldo
+        await loadBalance();
       }
     };
 
-    // QR Scan
     scanBtn.onclick = () => {
-      readerDiv.style.display = "block";
+      scanModal.classList.remove("hidden");
       const html5QrCode = new Html5Qrcode("reader");
 
       html5QrCode.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
-        (decodedText, decodedResult) => {
+        (decodedText) => {
           document.getElementById("send-to").value = decodedText;
           showStatus("✅ Alamat berhasil dipindai.", "success");
           html5QrCode.stop();
-          readerDiv.style.display = "none";
+          scanModal.classList.add("hidden");
         },
-        (errorMessage) => {
-          // do nothing for now
-        }
+        (errorMessage) => {}
       ).catch((err) => {
-        showStatus("❌ Kamera gagal diakses: " + err, "error");
+        showStatus("❌ Kamera gagal: " + err, "error");
+        scanModal.classList.add("hidden");
       });
+
+      closeScan.onclick = () => {
+        html5QrCode.stop();
+        scanModal.classList.add("hidden");
+      };
     };
 
     function showStatus(message, type) {
