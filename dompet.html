@@ -673,14 +673,20 @@ async function loadPortfolio() {
   }
 
   // Masukkan harga crypto
-  for (const item of cryptoAssets) {
-    priceMap[item.symbol.toUpperCase()] = {
-      symbol: item.symbol.toUpperCase(),
-      price: (item.price_usd || 0) * BTC_TO_IDR / 70000, // Konversi USD ke IDR (asumsi 1 BTC ≈ $70,000)
+  // Masukkan harga crypto
+for (const item of cryptoAssets) {
+  const symbol = item.symbol.toUpperCase();
+
+  // Jika sudah ada di price_pool (misalnya USDT), jangan timpa
+  if (!priceMap[symbol]) {
+    priceMap[symbol] = {
+      symbol,
+      price: (item.price_usd || 0) * BTC_TO_IDR / 105000,
       logo: `<img src="${item.logo_url}" alt="${item.symbol}" width="36" height="36" style="border-radius:50%;">`,
       isCrypto: true
     };
   }
+}
 
   let total = 0;
 let assetList = [];
