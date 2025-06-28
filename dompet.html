@@ -635,7 +635,6 @@ async function initUserWallet() {
 }
 // ========== LOAD PORTFOLIO ==========
 async function loadPortfolio() {
-async function loadPortfolio() {
   if (!currentUser?.id) return;
 
   const { data: wallets, error: walletError } = await supabase
