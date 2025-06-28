@@ -36,6 +36,7 @@
       font-size: 16px;
       cursor: pointer;
       width: 100%;
+      margin-top: 10px;
     }
 
     button:hover {
@@ -63,7 +64,17 @@
       font-weight: bold;
       color: #a5f3fc;
     }
+
+    #reader {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      display: none;
+    }
   </style>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
   <h2>Kirim Aset EXR</h2>
@@ -73,16 +84,19 @@
   <label for="send-to">Alamat Tujuan</label>
   <input type="text" id="send-to" placeholder="Contoh: 0xABC123..." />
 
+  <button id="scan-btn">📷 Scan QR</button>
+
   <label for="send-amount">Jumlah EXR</label>
   <input type="number" id="send-amount" placeholder="Masukkan jumlah" />
 
   <button id="send-btn">Kirim</button>
 
+  <div id="reader"></div>
   <div id="status" class="status" style="display: none;"></div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    
+
     const token = localStorage.getItem("supabaseAccessToken");
     const user_id = localStorage.getItem("userId");
 
@@ -104,13 +118,15 @@
     );
 
     const sendBtn = document.getElementById("send-btn");
+    const scanBtn = document.getElementById("scan-btn");
     const statusDiv = document.getElementById("status");
     const balanceInfo = document.getElementById("balance-info");
+    const readerDiv = document.getElementById("reader");
 
     let fromAddress = "";
     let currentBalance = 0;
 
-    // Load saldo saat halaman dibuka
+    // Load saldo
     async function loadBalance() {
       const { data: wallets, error: walletErr } = await supabase
         .from('wallets')
@@ -126,12 +142,12 @@
 
       fromAddress = wallets[0].address;
       currentBalance = parseFloat(wallets[0].amount || 0);
-
       balanceInfo.innerText = `Saldo: ${currentBalance.toLocaleString("id-ID")} EXR`;
     }
 
     await loadBalance();
 
+    // Kirim transaksi
     sendBtn.onclick = async () => {
       const to = document.getElementById("send-to").value.trim();
       const amount = parseFloat(document.getElementById("send-amount").value);
@@ -151,7 +167,6 @@
         return;
       }
 
-      // Kirim RPC
       const { data, error: txErr } = await supabase.rpc('simulate_transfer', {
         from_address: fromAddress,
         to_address: to,
@@ -165,8 +180,30 @@
         showStatus("✅ Transaksi berhasil!\nTX ID: " + data[0].tx_hash, "success");
         document.getElementById("send-to").value = "";
         document.getElementById("send-amount").value = "";
-        await loadBalance(); // Refresh saldo
+        await loadBalance(); // refresh saldo
       }
+    };
+
+    // QR Scan
+    scanBtn.onclick = () => {
+      readerDiv.style.display = "block";
+      const html5QrCode = new Html5Qrcode("reader");
+
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText, decodedResult) => {
+          document.getElementById("send-to").value = decodedText;
+          showStatus("✅ Alamat berhasil dipindai.", "success");
+          html5QrCode.stop();
+          readerDiv.style.display = "none";
+        },
+        (errorMessage) => {
+          // do nothing for now
+        }
+      ).catch((err) => {
+        showStatus("❌ Kamera gagal diakses: " + err, "error");
+      });
     };
 
     function showStatus(message, type) {
