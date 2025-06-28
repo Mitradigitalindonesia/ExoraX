@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kirim Aset - EXORA Wallet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #0f172a;
+      color: #f1f5f9;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      color: #38bdf8;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px;
+      background-color: #38bdf8;
+      color: #0f172a;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #0ea5e9;
+    }
+
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .status.success {
+      background: #16a34a33;
+      color: #22c55e;
+    }
+
+    .status.error {
+      background: #dc262633;
+      color: #f87171;
+    }
+  </style>
+</head>
+<body>
+  <h2>Kirim Aset EXR</h2>
+
+  <label for="send-to">Alamat Tujuan</label>
+  <input type="text" id="send-to" placeholder="Contoh: 0xABC123..." />
+
+  <label for="send-amount">Jumlah EXR</label>
+  <input type="number" id="send-amount" placeholder="Masukkan jumlah" />
+
+  <button id="send-btn">Kirim</button>
+
+  <div id="status" class="status" style="display: none;"></div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';const token = localStorage.getItem("supabaseAccessToken");
+const user_id = localStorage.getItem("userId");
+
+if (!user_id || !token) {
+  alert("Sesi login tidak ditemukan.");
+  window.location.href = "index.html";
+}
+
+const supabase = createClient(
+  'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
+  {
+    global: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  }
+);
+
+    const sendBtn = document.getElementById("send-btn");
+    const statusDiv = document.getElementById("status");
+
+    sendBtn.onclick = async () => {
+      const to = document.getElementById("send-to").value.trim();
+      const amount = parseFloat(document.getElementById("send-amount").value);
+
+      if (!to.startsWith("0x") || to.length < 10) {
+        showStatus("⚠️ Alamat tujuan tidak valid.", "error");
+        return;
+      }
+
+      if (isNaN(amount) || amount <= 0) {
+        showStatus("⚠️ Jumlah harus lebih besar dari 0.", "error");
+        return;
+      }
+
+      // Ambil alamat pengirim dari wallet user
+      const { data: wallets, error: walletErr } = await supabase
+        .from('wallets')
+        .select('address')
+        .eq('user_id', user_id)
+        .eq('symbol', 'EXR');
+
+      if (walletErr || !wallets || wallets.length === 0) {
+        showStatus("❌ Wallet pengirim tidak ditemukan.", "error");
+        return;
+      }
+
+      const from = wallets[0].address;
+
+      // Kirim transaksi ke backend
+      const { data, error: txErr } = await supabase.rpc('simulate_transfer', {
+        from_address: from,
+        to_address: to,
+        amount,
+        symbol: 'EXR'
+      });
+
+      if (txErr) {
+        showStatus("❌ Gagal mengirim: " + txErr.message, "error");
+      } else {
+        showStatus("✅ Transaksi berhasil!\nTX ID: " + data[0].tx_hash, "success");
+        document.getElementById("send-to").value = "";
+        document.getElementById("send-amount").value = "";
+      }
+    };
+
+    function showStatus(message, type) {
+      statusDiv.innerText = message;
+      statusDiv.className = `status ${type}`;
+      statusDiv.style.display = "block";
+    }
+  </script>
+</body>
+</html>
