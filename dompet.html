@@ -635,19 +635,21 @@ async function initUserWallet() {
 }
 // ========== LOAD PORTFOLIO ==========
 async function loadPortfolio() {
+async function loadPortfolio() {
   if (!currentUser?.id) return;
 
-  const { data: wallets } = await supabase
+  const { data: wallets, error: walletError } = await supabase
     .from('wallets')
     .select('*')
     .eq('user_id', currentUser.id);
 
-  const { data: prices } = await supabase
+  const { data: prices, error: priceError } = await supabase
     .from('price_pool')
     .select('symbol, last_price, logo_svg');
 
-  if (!wallets || !prices) {
-    show("⚠️ Gagal mengambil data portofolio.");
+  if (walletError || priceError || !wallets || !prices) {
+    console.error("❌ Gagal mengambil data:", walletError || priceError);
+    showNotif("⚠️ Gagal mengambil data portofolio.");
     return;
   }
 
@@ -655,11 +657,8 @@ async function loadPortfolio() {
   let total = 0;
   let html = '';
 
-  ASSET_SYMBOLS.forEach(symbol => {
-    const wallet = wallets.find(w => w.symbol === symbol) || {
-      symbol, amount: 0, idr_value: 0
-    };
-
+  wallets.forEach(wallet => {
+    const symbol = wallet.symbol;
     const priceData = priceMap[symbol];
     const latestPrice = priceData?.last_price || 0;
     const idrValue = wallet.amount * latestPrice;
@@ -679,6 +678,7 @@ async function loadPortfolio() {
         </div>
       </div>
     `;
+
     total += idrValue;
   });
 
