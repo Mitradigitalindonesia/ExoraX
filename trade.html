@@ -252,7 +252,7 @@
 
     async function handleTrade(type) {
       const inputVal = parseFloat(volumeInput.value);
-      if (isNaN(inputVal) || inputVal < 0.01) return alert("⚠️ Minimal transaksi 0.01");
+      if (isNaN(inputVal) || inputVal < 0.000000001) return alert("⚠️ Minimal transaksi 0.000000001");
       let tradeAmount = inputMode === "usdt" ? (inputVal / price) : inputVal;
       const totalUSDT = tradeAmount * price * 1.005;
       if (type === "buy" && totalUSDT > balances.USDT) return alert("❌ Saldo USDT tidak cukup");
