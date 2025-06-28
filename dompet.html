@@ -637,60 +637,89 @@ async function initUserWallet() {
 async function loadPortfolio() {
   if (!currentUser?.id) return;
 
+  // Ambil data wallet pengguna
   const { data: wallets, error: walletError } = await supabase
     .from('wallets')
     .select('*')
     .eq('user_id', currentUser.id);
 
-  const { data: prices, error: priceError } = await supabase
+  // Ambil harga aset lokal dari price_pool
+  const { data: localPrices, error: localErr } = await supabase
     .from('price_pool')
     .select('symbol, last_price, logo_svg');
 
-  if (walletError || priceError || !wallets || !prices) {
-    console.error("❌ Gagal mengambil data:", walletError || priceError);
+  // Ambil harga crypto dari crypto_assets
+  const { data: cryptoAssets, error: cryptoErr } = await supabase
+    .from('crypto_assets')
+    .select('symbol, price_usd, logo_url');
+
+  if (walletError || localErr || cryptoErr) {
+    console.error("❌ Gagal ambil data:", walletError || localErr || cryptoErr);
     showNotif("⚠️ Gagal mengambil data portofolio.");
     return;
   }
 
-  const priceMap = Object.fromEntries(prices.map(p => [p.symbol, p]));
+  const BTC_TO_IDR = 850000000;
+  const priceMap = {};
+
+  // Masukkan harga lokal
+  for (const item of localPrices) {
+    priceMap[item.symbol] = {
+      symbol: item.symbol,
+      price: item.last_price,
+      logo: item.logo_svg,
+      isCrypto: false
+    };
+  }
+
+  // Masukkan harga crypto
+  for (const item of cryptoAssets) {
+    priceMap[item.symbol.toUpperCase()] = {
+      symbol: item.symbol.toUpperCase(),
+      price: (item.price_usd || 0) * BTC_TO_IDR / 70000, // Konversi USD ke IDR (asumsi 1 BTC ≈ $70,000)
+      logo: `<img src="${item.logo_url}" alt="${item.symbol}" width="36" height="36" style="border-radius:50%;">`,
+      isCrypto: true
+    };
+  }
+
   let total = 0;
   let html = '';
 
-  wallets.forEach(wallet => {
-    const symbol = wallet.symbol;
-    const priceData = priceMap[symbol];
-    const latestPrice = priceData?.last_price || 0;
-    const idrValue = wallet.amount * latestPrice;
+  for (const wallet of wallets) {
+    const data = priceMap[wallet.symbol];
+    if (!data) continue;
+
+    const value = wallet.amount * data.price;
+    total += value;
 
     html += `
-      <div class="asset-card" data-symbol="${symbol}" data-wallet-id="${wallet.id || ''}">
+      <div class="asset-card" data-symbol="${wallet.symbol}" data-wallet-id="${wallet.id}">
         <div class="asset-left">
-          ${priceData?.logo_svg || '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#ccc"/></svg>'}
+          ${data.logo || '<div style="width:36px;height:36px;background:#ccc;border-radius:50%;"></div>'}
           <div class="asset-info">
-            <div class="symbol">${symbol}</div>
+            <div class="symbol">${wallet.symbol}</div>
             <div>Saldo: ${wallet.amount}</div>
           </div>
         </div>
         <div class="asset-right">
-          Rp ${idrValue.toLocaleString('id-ID')}
-          <div style="font-size: 12px;">Harga: Rp ${latestPrice.toLocaleString('id-ID')}</div>
+          Rp ${value.toLocaleString('id-ID')}
+          <div style="font-size: 12px;">Harga: Rp ${Math.round(data.price).toLocaleString('id-ID')}</div>
         </div>
       </div>
     `;
-
-    total += idrValue;
-  });
+  }
 
   document.getElementById('asset-list').innerHTML = html;
-  document.getElementById('idr').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+  document.getElementById('idr').innerText = `Rp ${Math.round(total).toLocaleString('id-ID')}`;
   document.getElementById('btc').innerText = `≈ ${(total / BTC_TO_IDR).toFixed(4)} BTC`;
   document.getElementById('return').innerText = `+Rp ${Math.round(total * 0.05).toLocaleString('id-ID')}`;
 
+  // Tambahkan event untuk modal
   document.querySelectorAll('.asset-card').forEach(card => {
     card.addEventListener('click', () => {
       selectedSymbol = card.getAttribute('data-symbol');
       selectedWallet = { id: card.getAttribute('data-wallet-id') };
-      selectedPrice = priceMap[selectedSymbol]?.last_price || 0;
+      selectedPrice = priceMap[selectedSymbol]?.price || 0;
 
       document.getElementById('modal-title').innerText = `Trade ${selectedSymbol}`;
       document.getElementById('modal-price').innerText = `Rp ${selectedPrice.toLocaleString('id-ID')}`;
