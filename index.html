@@ -78,80 +78,67 @@
     </div>
   </div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  <!-- ... HEAD sama persis seperti sebelumnya ... -->
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
-    );
+  const supabase = createClient(
+    'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+  );
 
-    let isSignup = false;
+  let isSignup = false;
 
-    const title = document.getElementById("form-title");
-    const toggleContainer = document.querySelector(".toggle");
-    const submitBtn = document.getElementById("submit-btn");
+  const title = document.getElementById("form-title");
+  const toggleContainer = document.querySelector(".toggle");
+  const submitBtn = document.getElementById("submit-btn");
 
-    function renderToggleLink() {
-      toggleContainer.innerHTML = isSignup
-        ? `Sudah punya akun? <a id="toggle-link">Masuk</a>`
-        : `Belum punya akun? <a id="toggle-link">Daftar</a>`;
-      document.getElementById("toggle-link").addEventListener("click", toggleMode);
+  function renderToggleLink() {
+    toggleContainer.innerHTML = isSignup
+      ? `Sudah punya akun? <a id="toggle-link">Masuk</a>`
+      : `Belum punya akun? <a id="toggle-link">Daftar</a>`;
+    document.getElementById("toggle-link").addEventListener("click", toggleMode);
+  }
+
+  function toggleMode() {
+    isSignup = !isSignup;
+    title.innerText = isSignup ? "Daftar" : "Masuk";
+    submitBtn.innerText = isSignup ? "Daftar" : "Masuk";
+    renderToggleLink();
+  }
+
+  renderToggleLink(); // Initial render
+
+  submitBtn.addEventListener("click", async () => {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    if (!email || !password) return alert("Isi email dan password!");
+
+    let result;
+    if (isSignup) {
+      result = await supabase.auth.signUp({ email, password });
+    } else {
+      result = await supabase.auth.signInWithPassword({ email, password });
     }
 
-    function toggleMode() {
-      isSignup = !isSignup;
-      title.innerText = isSignup ? "Daftar" : "Masuk";
-      submitBtn.innerText = isSignup ? "Daftar" : "Masuk";
-      renderToggleLink();
+    if (result.error) {
+      console.error(result.error);
+      return alert("Gagal: " + result.error.message);
     }
 
-    renderToggleLink(); // Initial render
+    const user = result.data?.user;
+    const token = result.data?.session?.access_token;
 
-    submitBtn.addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      if (!email || !password) return alert("Isi email dan password!");
+    if (user && token) {
+      localStorage.setItem("userId", user.id);
+      localStorage.setItem("supabaseAccessToken", token);
 
-      let result;
-      if (isSignup) {
-        result = await supabase.auth.signUp({ email, password });
-      } else {
-        result = await supabase.auth.signInWithPassword({ email, password });
-      }
-
-      if (result.error) {
-        console.error(result.error);
-        return alert("Gagal: " + result.error.message);
-      }
-
-      const user = result.data?.user;
-      const token = result.data?.session?.access_token;
-
-      if (user && token) {
-        localStorage.setItem("userId", user.id);
-        localStorage.setItem("supabaseAccessToken", token);
-
-        // Hanya insert ke `users` saat signup
-        if (isSignup) {
-          const { error: insertErr } = await supabase.from("users").insert({
-            user_id: user.id,
-            wallet_address: "EXR_" + user.id.slice(0, 8)
-          });
-
-          if (insertErr) {
-            console.error("Insert error:", insertErr);
-            return alert("Gagal menyimpan wallet: " + insertErr.message);
-          }
-
-          window.location.href = "setupwallet.html";
-        } else {
-          window.location.href = "dompet.html";
-        }
-      } else {
-        alert("Gagal login/signup.");
-      }
-    });
-  </script>
+      const redirectTo = isSignup ? "setupwallet.html" : "dompet.html";
+      window.location.href = redirectTo;
+    } else {
+      alert("Gagal login/signup.");
+    }
+  });
+</script>
 </body>
 </html>
