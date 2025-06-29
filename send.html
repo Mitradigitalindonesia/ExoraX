@@ -227,8 +227,8 @@
       const to = document.getElementById("send-to").value.trim();
       const amount = parseFloat(document.getElementById("send-amount").value);
 
-      if (!/^EXR[a-zA-Z0-9]{20,}$/.test(to)) {
-  showStatus("⚠️ Alamat tujuan tidak valid.", "error");
+      if (!/^EXR_[a-fA-F0-9]{32}$/.test(to)) {
+  showStatus("⚠️ Alamat tujuan tidak valid. Harus format EXR_xxxxxxxxx", "error");
   return;
 }
 
