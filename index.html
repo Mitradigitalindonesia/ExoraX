@@ -3,207 +3,133 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EXORA | Login & Landing</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <title>EXORA | Masuk atau Daftar</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
-      font-family: 'Orbitron', sans-serif;
-      background: radial-gradient(circle at top, #0f0c29, #302b63, #24243e);
-      color: #fff;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b, #1e3a8a);
+      color: white;
       display: flex;
-      flex-direction: column;
-      justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      padding: 2rem;
-      background-attachment: fixed;
+      justify-content: center;
+      height: 100vh;
     }
-
-    .glass {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    .card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px);
+      padding: 24px;
       border-radius: 16px;
-      padding: 2rem;
-      max-width: 400px;
       width: 100%;
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+      max-width: 360px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    h2 {
       text-align: center;
-      animation: fadeIn 1s ease-in-out;
+      margin-bottom: 16px;
+      color: #38bdf8;
     }
-
-    .logo {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #6effff;
-      text-shadow: 0 0 10px #6effff;
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
     }
-
-    .tagline {
-      font-size: 1.1rem;
-      margin-bottom: 2rem;
-      color: #ccc;
-    }
-
     button {
-      padding: 12px 24px;
-      background: #6effff;
-      color: #000;
+      width: 100%;
+      padding: 12px;
+      background: #38bdf8;
+      color: #0f172a;
+      font-weight: bold;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: bold;
     }
-
     button:hover {
-      background: #48dada;
-      transform: scale(1.05);
+      background: #0ea5e9;
     }
-
-    #status {
-      margin-top: 1rem;
-      font-size: 14px;
-      color: #fff;
-    }
-
-    footer {
-      margin-top: 3rem;
+    .switch-mode {
+      margin-top: 16px;
       text-align: center;
-      font-size: 0.8rem;
-      color: #aaa;
+      font-size: 14px;
     }
-
-    @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Spinner style */
-.spinner {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 60px;
-  height: 60px;
-  margin: -30px 0 0 -30px;
-  border: 6px solid #6effff;
-  border-top: 6px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  z-index: 999;
-}
-
-.hidden {
-  display: none;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+    .switch-mode a {
+      color: #38bdf8;
+      cursor: pointer;
+    }
+    .notif {
+      text-align: center;
+      font-size: 14px;
+      margin-top: 10px;
+      color: #f87171;
+    }
   </style>
 </head>
 <body>
-
-  <div class="glass">
-    <div class="logo">EXORA</div>
-    <div class="tagline">Crypto Exchange, Game & Mining Ecosystem</div>
-    <button id="login-btn">Login with Solana Wallet</button>
-    <div id="status"></div>
+  <div class="card">
+    <h2 id="form-title">Masuk ke EXORA</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="auth-btn">Masuk</button>
+    <div class="switch-mode">
+      Belum punya akun? <a onclick="toggleMode()">Daftar</a>
+    </div>
+    <div class="notif" id="notif"></div>
   </div>
-<!-- Tambahkan ini dalam <body> sebelum </body> -->
-<div id="spinner" class="spinner hidden"></div>
-  <footer>&copy; 2025 EXORA Project. All rights reserved.</footer>
 
   <script type="module">
-    import bs58 from 'https://cdn.jsdelivr.net/npm/bs58@5.0.0/+esm';
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const backendUrl = "https://game-crypto-backend.onrender.com";
+    const supabase = createClient(
+      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+    );
 
-    // Fungsi utama login
-    document.getElementById("login-btn").addEventListener("click", async () => {
-  const statusEl = document.getElementById("status");
-  const spinner = document.getElementById("spinner");
-  spinner.classList.remove("hidden"); // Tampilkan spinner
+    let isSignup = false;
 
-  if (!window.solana || !window.solana.isPhantom) {
-    statusEl.textContent = "Phantom Wallet tidak ditemukan.";
-    spinner.classList.add("hidden");
-    return;
-  }
+    function toggleMode() {
+      isSignup = !isSignup;
+      document.getElementById("form-title").innerText = isSignup ? "Daftar Akun EXORA" : "Masuk ke EXORA";
+      document.getElementById("auth-btn").innerText = isSignup ? "Daftar" : "Masuk";
+      document.querySelector(".switch-mode").innerHTML = isSignup
+        ? `Sudah punya akun? <a onclick="toggleMode()">Masuk</a>`
+        : `Belum punya akun? <a onclick="toggleMode()">Daftar</a>`;
+      document.getElementById("notif").textContent = '';
+    }
 
-      try {
-        const resp = await window.solana.connect();
-        const walletAddress = resp.publicKey.toString();
-        const timestamp = Date.now();
-        const message = `Sign this message to log in.\nWallet: ${walletAddress}\nTimestamp: ${timestamp}`;
-        const encodedMessage = new TextEncoder().encode(message);
+    document.getElementById("auth-btn").onclick = async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const notif = document.getElementById("notif");
 
-        if (!window.solana.signMessage) {
-          statusEl.textContent = "Wallet tidak mendukung signMessage.";
-          return;
-        }
+      if (!email || !password) {
+        notif.textContent = "Email dan password wajib diisi.";
+        return;
+      }
 
-        const signedMessage = await window.solana.signMessage(encodedMessage, "utf8");
-        const signature = bs58.encode(signedMessage.signature);
+      notif.textContent = "⏳ Memproses...";
 
-        const res = await fetch(`${backendUrl}/login-wallet`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ wallet: walletAddress, message, signature })
-        });
+      let result;
+      if (isSignup) {
+        result = await supabase.auth.signUp({ email, password });
+      } else {
+        result = await supabase.auth.signInWithPassword({ email, password });
+      }
 
-        const result = await res.json();
-
-        if (!result.success) {
-          throw new Error(result.message || "Login gagal");
-        }
-
-        const { access_token, user } = result;
-
-        // ✅ Simpan token dan info user ke localStorage
-        localStorage.setItem("supabaseAccessToken", access_token);
-        localStorage.setItem("userId", user.id);
-        localStorage.setItem("walletAddress", user.wallet_address);
-
-        // ✅ Inisialisasi Supabase client (opsional langsung di sini)
-        const supabase = createClient(
-          'https://ocfjkltbtwqrbiucrkyq.supabase.co',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
-          {
-            global: {
-              headers: {
-                Authorization: `Bearer ${access_token}`
-              }
-            }
-          }
-        );
-
-        // (Opsional) cek user dari Supabase
-        const { data: authUser, error: authError } = await supabase.auth.getUser();
-        if (authError) console.error("Auth error:", authError);
-
-        statusEl.textContent = `✅ Berhasil login sebagai ${user.wallet_address}`;
-    setTimeout(() => window.location.href = "dompet.html", 1000);
-
-  } catch (err) {
-    console.error(err);
-    statusEl.textContent = "❌ Gagal login: " + (err.message || "Unknown error");
-
-  } finally {
-    spinner.classList.add("hidden"); // Sembunyikan spinner
-  }
-});
+      if (result.error) {
+        notif.textContent = "❌ " + result.error.message;
+      } else {
+        notif.style.color = "#4ade80";
+        notif.textContent = isSignup ? "✅ Daftar berhasil. Silakan cek email untuk verifikasi." : "✅ Masuk berhasil!";
+        localStorage.setItem("supabaseAccessToken", result.data.session.access_token);
+        localStorage.setItem("userId", result.data.user.id);
+        setTimeout(() => {
+          window.location.href = "create-wallet.html"; // atau halaman utama dompet
+        }, 1000);
+      }
+    };
   </script>
 </body>
 </html>
