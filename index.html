@@ -117,14 +117,17 @@
 
       let result;
       if (isSignup) {
-        result = await supabase.auth.signUp({ email, password });
-      } else {
-        result = await supabase.auth.signInWithPassword({ email, password });
-      }
+  // Tambahkan user ke public.users setelah berhasil daftar
+  const { error: insertErr } = await supabase.from("users").insert({
+    user_id: user.id,
+    wallet_address: "EXR_" + user.id.slice(0, 8) // Contoh auto address
+  });
 
-      if (result.error) {
-        return alert("Gagal: " + result.error.message);
-      }
+  if (insertErr) {
+    alert("Gagal menyimpan user ke database: " + insertErr.message);
+    return;
+  }
+}
 
       const user = result.data?.user;
       const token = result.data?.session?.access_token;
