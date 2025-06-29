@@ -115,16 +115,18 @@
     if (!email || !password) return alert("Isi email dan password!");
 
     let result;
-    if (isSignup) {
-      result = await supabase.auth.signUp({ email, password });
-    } else {
-      result = await supabase.auth.signInWithPassword({ email, password });
-    }
+if (isSignup) {
+  result = await supabase.auth.signUp({ email, password });
+} else {
+  result = await supabase.auth.signInWithPassword({ email, password });
+}
 
-    if (result.error) {
-      console.error(result.error);
-      return alert("Gagal: " + result.error.message);
-    }
+console.log("Supabase auth result:", result); // Debugging
+
+if (result?.error?.message) {
+  console.error("Auth Error:", result.error);
+  return alert("Gagal: " + result.error.message);
+}
 
     const user = result.data?.user;
     const token = result.data?.session?.access_token;
