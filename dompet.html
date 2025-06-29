@@ -721,15 +721,14 @@ async function loadPortfolio() {
 for (const item of cryptoAssets) {
   const symbol = item.symbol.toUpperCase();
 
-  // Jika sudah ada di price_pool (misalnya USDT), jangan timpa
-  if (!priceMap[symbol]) {
-    priceMap[symbol] = {
-      symbol,
-      price: (item.price_usd || 0) * BTC_TO_IDR / 105000,
-      logo: `<img src="${item.logo_url}" alt="${item.symbol}" width="36" height="36" style="border-radius:50%;">`,
-      isCrypto: true
-    };
-  }
+  // Timpa semua harga dari crypto_assets
+  priceMap[symbol] = {
+    symbol,
+    price: (item.price_usd || 0) * BTC_TO_IDR / 105000,
+    logo: `<img src="${item.logo_url}" alt="${item.symbol}" width="36" height="36" style="border-radius:50%;">`,
+    isCrypto: true
+  };
+}
 }
 
   let total = 0;
