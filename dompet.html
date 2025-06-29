@@ -520,9 +520,7 @@ let selectedWallet = null;
 let selectedPrice = 0;
 
 const ASSET_SYMBOLS = ['IDR', 'USDT', 'EXR', 'CX', 'MX', 'GX', 'LX', 'SX'];
-const BTC_TO_IDR = 850000000;
 
-// ========== MODAL ==========
 function showModal() {
   const modal = document.getElementById('trade-modal');
   modal.style.display = 'flex';
@@ -546,12 +544,16 @@ function initModalEvents() {
   });
 }
 
-// ========== CREATE DEFAULT WALLETS ==========
 async function createDefaultWallets(userId) {
   const SYMBOL_NAMES = {
-    IDR: 'Rupiah', USDT: 'Tether', EXR: 'Exora',
-    CX: 'Coin CX', MX: 'Coin MX', GX: 'Coin GX',
-    LX: 'Coin LX', SX: 'Coin SX'
+    IDR: 'Rupiah',
+    USDT: 'Tether',
+    EXR: 'Exora',
+    CX: 'Coin CX',
+    MX: 'Coin MX',
+    GX: 'Coin GX',
+    LX: 'Coin LX',
+    SX: 'Coin SX'
   };
 
   const defaults = ASSET_SYMBOLS.map(sym => ({
@@ -568,26 +570,20 @@ async function createDefaultWallets(userId) {
 
   if (error) {
     console.error('❌ Gagal upsert dompet:', error);
-    showNotif('Gagal membuat dompet default: ' + error.message);
-  } else {
-    console.log('✅ Dompet default berhasil dibuat/diabaikan jika sudah ada.');
   }
 }
-// Tambahkan fungsi update harga dari CoinGecko ke crypto_assets
+
 async function updateCryptoPricesFromCoinGecko() {
   const { data: cryptoAssets, error } = await supabase
     .from('crypto_assets')
     .select('id, gecko_id');
 
   if (error || !cryptoAssets) {
-    console.error("\u274C Gagal ambil crypto_assets:", error?.message);
+    console.error("❌ Gagal ambil crypto_assets:", error?.message);
     return;
   }
 
-  const ids = cryptoAssets
-    .map(asset => asset.gecko_id)
-    .filter(Boolean);
-
+  const ids = cryptoAssets.map(asset => asset.gecko_id).filter(Boolean);
   if (ids.length === 0) return;
 
   const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`;
@@ -606,55 +602,43 @@ async function updateCryptoPricesFromCoinGecko() {
         .eq('id', asset.id);
 
       if (updateErr) {
-        console.error(`\u274C Gagal update harga ${asset.gecko_id}:`, updateErr.message);
-      } else {
-        console.log(`\u2705 Harga ${asset.gecko_id} diupdate: $${usdPrice}`);
+        console.error(`❌ Gagal update harga ${asset.gecko_id}:`, updateErr.message);
       }
     });
 
     await Promise.all(updates);
-    console.log("\u2705 Semua harga crypto berhasil diperbarui.");
   } catch (e) {
-    console.error("\u274C Gagal fetch dari CoinGecko:", e);
+    console.error("❌ Gagal fetch dari CoinGecko:", e);
   }
 }
-// ========== INIT USER ==========
+
 async function initUserWallet() {
   const { data: authUser, error: authError } = await supabase.auth.getUser();
-  if (authError || !authUser.user) {
-    console.error("❌ Gagal mendapatkan pengguna:", authError?.message);
-    return;
-  }
+  if (authError || !authUser.user) return;
 
   currentUser = authUser.user;
-  console.log("👤 Pengguna yang login:", currentUser.id);
 
-  // 🚨 Coba ambil semua wallet termasuk yang mungkin tersembunyi oleh RLS
   const { data: existing, error: fetchErr } = await supabase
     .from('wallets')
     .select('symbol')
     .eq('user_id', currentUser.id);
 
-  if (fetchErr) {
-    console.error("❌ Gagal memeriksa wallet:", fetchErr.message);
-    return;
-  }
-
-  // Debugging
-  console.log("📦 Wallet ditemukan:", existing);
+  if (fetchErr) return;
 
   const existingSymbols = (existing || []).map(w => w.symbol);
   const missingSymbols = ASSET_SYMBOLS.filter(sym => !existingSymbols.includes(sym));
 
-  if (missingSymbols.length === 0) {
-    console.log("✅ Semua wallet sudah ada.");
-    return;
-  }
+  if (missingSymbols.length === 0) return;
 
   const SYMBOL_NAMES = {
-    IDR: 'Rupiah', USDT: 'Tether', EXR: 'Exora',
-    CX: 'Coin CX', MX: 'Coin MX', GX: 'Coin GX',
-    LX: 'Coin LX', SX: 'Coin SX'
+    IDR: 'Rupiah',
+    USDT: 'Tether',
+    EXR: 'Exora',
+    CX: 'Coin CX',
+    MX: 'Coin MX',
+    GX: 'Coin GX',
+    LX: 'Coin LX',
+    SX: 'Coin SX'
   };
 
   const inserts = missingSymbols.map(sym => ({
@@ -665,48 +649,41 @@ async function initUserWallet() {
     idr_value: 0
   }));
 
-  // 💥 Coba satu per satu agar tidak semuanya gagal
   for (const wallet of inserts) {
-    const { error } = await supabase.from('wallets').insert(wallet);
-    if (error && error.code === '23505') {
-      console.warn(`⚠️ Duplikat wallet untuk ${wallet.symbol}, dilewati.`);
-    } else if (error) {
-      console.error(`❌ Gagal menambahkan wallet ${wallet.symbol}:`, error.message);
-    } else {
-      console.log(`✅ Wallet ${wallet.symbol} berhasil dibuat.`);
-    }
+    await supabase.from('wallets').insert(wallet);
   }
 }
-// ========== LOAD PORTFOLIO ==========
+
+function showNotif(message = 'Berhasil!', duration = 3000) {
+  const el = document.getElementById('notif');
+  el.innerText = message;
+  el.style.display = 'block';
+  el.style.opacity = 1;
+
+  setTimeout(() => {
+    el.style.opacity = 0;
+    setTimeout(() => (el.style.display = 'none'), 500);
+  }, duration);
+}
+
 async function loadPortfolio() {
   if (!currentUser?.id) return;
 
-  // Ambil data wallet pengguna
-  const { data: wallets, error: walletError } = await supabase
+  const { data: wallets } = await supabase
     .from('wallets')
     .select('*')
     .eq('user_id', currentUser.id);
 
-  // Ambil harga aset lokal dari price_pool
-  const { data: localPrices, error: localErr } = await supabase
+  const { data: localPrices } = await supabase
     .from('price_pool')
     .select('symbol, last_price, logo_svg');
 
-  // Ambil harga crypto dari crypto_assets
-  const { data: cryptoAssets, error: cryptoErr } = await supabase
+  const { data: cryptoAssets } = await supabase
     .from('crypto_assets')
     .select('symbol, price_usd, logo_url');
 
-  if (walletError || localErr || cryptoErr) {
-    console.error("❌ Gagal ambil data:", walletError || localErr || cryptoErr);
-    showNotif("⚠️ Gagal mengambil data portofolio.");
-    return;
-  }
-
-  const BTC_TO_IDR = 850000000;
   const priceMap = {};
 
-  // Masukkan harga lokal
   for (const item of localPrices) {
     priceMap[item.symbol] = {
       symbol: item.symbol,
@@ -716,47 +693,45 @@ async function loadPortfolio() {
     };
   }
 
-  // Masukkan harga crypto
-  // Masukkan harga crypto
-for (const item of cryptoAssets) {
-  const symbol = item.symbol.toUpperCase();
+  const usdToIdr = priceMap['USDT']?.price || 16000;
+  const btc = cryptoAssets.find(item => item.symbol.toUpperCase() === 'BTC');
+  const BTC_TO_IDR = btc?.price_usd ? btc.price_usd * usdToIdr : 850000000;
 
-  // Timpa semua harga dari crypto_assets
-  priceMap[symbol] = {
-    symbol,
-    price: (item.price_usd || 0) * BTC_TO_IDR / 105000,
-    logo: `<img src="${item.logo_url}" alt="${item.symbol}" width="36" height="36" style="border-radius:50%;">`,
-    isCrypto: true
-  };
-}
+  for (const item of cryptoAssets) {
+    const symbol = item.symbol.toUpperCase();
+    if (!priceMap[symbol]) {
+      priceMap[symbol] = {
+        symbol,
+        price: (item.price_usd || 0) * usdToIdr,
+        logo: `<img src="${item.logo_url}" alt="${item.symbol}" width="36" height="36" style="border-radius:50%;">`,
+        isCrypto: true
+      };
+    }
+  }
 
   let total = 0;
-let assetList = [];
+  let assetList = [];
 
-// Buat array dari data wallet + harga
-for (const wallet of wallets) {
-  const data = priceMap[wallet.symbol];
-  if (!data) continue;
+  for (const wallet of wallets) {
+    const data = priceMap[wallet.symbol];
+    if (!data) continue;
 
-  const value = wallet.amount * data.price;
-  total += value;
+    const value = wallet.amount * data.price;
+    total += value;
 
-  assetList.push({
-    ...wallet,
-    value,
-    price: data.price,
-    logo: data.logo
-  });
-}
+    assetList.push({
+      ...wallet,
+      value,
+      price: data.price,
+      logo: data.logo
+    });
+  }
 
-// Urutkan berdasarkan nilai tertinggi
-assetList.sort((a, b) => b.value - a.value);
+  assetList.sort((a, b) => b.value - a.value);
 
-// Buat HTML
-let html = '';
-for (const asset of assetList) {
-  html += `
-    <div class="asset-card" data-symbol="${asset.symbol}" data-wallet-id="${asset.id}">
+  let html = '';
+  for (const asset of assetList) {
+    html += `<div class="asset-card" data-symbol="${asset.symbol}" data-wallet-id="${asset.id}">
       <div class="asset-left">
         ${asset.logo || '<div style="width:36px;height:36px;background:#ccc;border-radius:50%;"></div>'}
         <div class="asset-info">
@@ -768,16 +743,14 @@ for (const asset of assetList) {
         Rp ${asset.value.toLocaleString('id-ID')}
         <div style="font-size: 12px;">Harga: Rp ${Math.round(asset.price).toLocaleString('id-ID')}</div>
       </div>
-    </div>
-  `;
-}
+    </div>`;
+  }
 
   document.getElementById('asset-list').innerHTML = html;
   document.getElementById('idr').innerText = `Rp ${Math.round(total).toLocaleString('id-ID')}`;
   document.getElementById('btc').innerText = `≈ ${(total / BTC_TO_IDR).toFixed(4)} BTC`;
   document.getElementById('return').innerText = `+Rp ${Math.round(total * 0.05).toLocaleString('id-ID')}`;
 
-  // Tambahkan event untuk modal
   document.querySelectorAll('.asset-card').forEach(card => {
     card.addEventListener('click', () => {
       selectedSymbol = card.getAttribute('data-symbol');
@@ -793,18 +766,6 @@ for (const asset of assetList) {
   });
 }
 
-// ========== TRADE ==========
-function showNotif(message = 'Berhasil!', duration = 3000) {
-  const el = document.getElementById('notif');
-  el.innerText = message;
-  el.style.display = 'block';
-  el.style.opacity = 1;
-
-  setTimeout(() => {
-    el.style.opacity = 0;
-    setTimeout(() => el.style.display = 'none', 500);
-  }, duration);
-}
 async function handleTrade(isBuy) {
   const amount = parseFloat(document.getElementById('modal-amount').value);
   if (!amount || amount <= 0) return showNotif("⚠️ Masukkan jumlah yang valid.");
@@ -836,16 +797,15 @@ async function handleTrade(isBuy) {
   } else {
     showNotif('✅ Transaksi berhasil!');
     closeModal();
-    loadPortfolio();
+    await loadPortfolio();
   }
 }
 
 // ========== ENTRY POINT ==========
 document.addEventListener('DOMContentLoaded', async () => {
   initModalEvents();
-
   await initUserWallet();
-  await updateCryptoPricesFromCoinGecko(); // <-- Tambahkan update harga otomatis
+  await updateCryptoPricesFromCoinGecko();
   await loadPortfolio();
 
   document.getElementById('buy-btn').addEventListener('click', () => handleTrade(true));
