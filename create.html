@@ -77,6 +77,11 @@
     const token = localStorage.getItem("supabaseAccessToken");
     const userId = localStorage.getItem("userId");
 
+    if (!token || !userId) {
+      alert("Sesi tidak ditemukan. Silakan login kembali.");
+      window.location.href = "index.html";
+    }
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
       global: { headers: { Authorization: `Bearer ${token}` } }
     });
@@ -84,31 +89,50 @@
     function generateWallet() {
       const phrase = crypto.randomUUID() + '-' + crypto.randomUUID();
       const privateKey = crypto.randomUUID().replace(/-/g, '');
-      const walletAddress = '0x' + Array.from(crypto.getRandomValues(new Uint8Array(20)))
-        .map(b => b.toString(16).padStart(2, '0')).join('');
-
-      return { phrase, privateKey, walletAddress };
+      const address = 'EXR_' + crypto.randomUUID().replace(/-/g, '').slice(0, 36);
+      return { phrase, privateKey, address };
     }
 
     document.getElementById("create-btn").onclick = async () => {
-      const { phrase, privateKey, walletAddress } = generateWallet();
+      // Cek apakah user sudah punya wallet_onchain
+      const { data: existingWallet, error: fetchError } = await supabase
+        .from("wallet_onchain")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
 
+      if (fetchError) {
+        console.error(fetchError);
+        return alert("Gagal mengecek wallet: " + fetchError.message);
+      }
+
+      if (existingWallet) {
+        document.getElementById("phrase").value = existingWallet.phrase || "[terkunci]";
+        document.getElementById("private-key").value = existingWallet.private_key || "[terkunci]";
+        return alert("❗ Wallet sudah ada. Anda tidak bisa membuat dua wallet.");
+      }
+
+      const { phrase, privateKey, address } = generateWallet();
       document.getElementById("phrase").value = phrase;
       document.getElementById("private-key").value = privateKey;
 
-      const { data, error } = await supabase.from('wallet_onchain').upsert({
-        user_id: userId,
-        wallet_address: walletAddress,
-        phrase,
-        private_key: privateKey
-      });
+      const { error: insertError } = await supabase
+        .from("wallet_onchain")
+        .insert({
+          user_id: userId,
+          address,
+          phrase,
+          private_key: privateKey
+        });
 
-      if (error) {
-        alert("❌ Gagal menyimpan wallet: " + error.message);
-      } else {
-        alert("✅ Wallet berhasil dibuat!");
+      if (insertError) {
+        console.error("Insert Error:", insertError);
+        return alert("❌ Gagal membuat wallet: " + insertError.message);
       }
-    }
+
+      alert("✅ Wallet berhasil dibuat!");
+      window.location.href = "dompet.html";
+    };
   </script>
 </body>
 </html>
