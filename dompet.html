@@ -573,7 +573,51 @@ async function createDefaultWallets(userId) {
     console.log('✅ Dompet default berhasil dibuat/diabaikan jika sudah ada.');
   }
 }
+// Tambahkan fungsi update harga dari CoinGecko ke crypto_assets
+async function updateCryptoPricesFromCoinGecko() {
+  const { data: cryptoAssets, error } = await supabase
+    .from('crypto_assets')
+    .select('id, gecko_id');
 
+  if (error || !cryptoAssets) {
+    console.error("\u274C Gagal ambil crypto_assets:", error?.message);
+    return;
+  }
+
+  const ids = cryptoAssets
+    .map(asset => asset.gecko_id)
+    .filter(Boolean);
+
+  if (ids.length === 0) return;
+
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`;
+
+  try {
+    const res = await fetch(url);
+    const prices = await res.json();
+
+    const updates = cryptoAssets.map(async asset => {
+      const usdPrice = prices[asset.gecko_id]?.usd;
+      if (!usdPrice) return;
+
+      const { error: updateErr } = await supabase
+        .from('crypto_assets')
+        .update({ price_usd: usdPrice })
+        .eq('id', asset.id);
+
+      if (updateErr) {
+        console.error(`\u274C Gagal update harga ${asset.gecko_id}:`, updateErr.message);
+      } else {
+        console.log(`\u2705 Harga ${asset.gecko_id} diupdate: $${usdPrice}`);
+      }
+    });
+
+    await Promise.all(updates);
+    console.log("\u2705 Semua harga crypto berhasil diperbarui.");
+  } catch (e) {
+    console.error("\u274C Gagal fetch dari CoinGecko:", e);
+  }
+}
 // ========== INIT USER ==========
 async function initUserWallet() {
   const { data: authUser, error: authError } = await supabase.auth.getUser();
@@ -802,12 +846,12 @@ async function handleTrade(isBuy) {
 document.addEventListener('DOMContentLoaded', async () => {
   initModalEvents();
 
-  await initUserWallet(); // auto buat wallet jika perlu (dengan upsert)
+  await initUserWallet();
+  await updateCryptoPricesFromCoinGecko(); // <-- Tambahkan update harga otomatis
   await loadPortfolio();
 
   document.getElementById('buy-btn').addEventListener('click', () => handleTrade(true));
   document.getElementById('sell-btn').addEventListener('click', () => handleTrade(false));
-  
 });
 </script>
 </body>
