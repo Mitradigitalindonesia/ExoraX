@@ -81,10 +81,10 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabase = createClient(
-    'https://ocfjkltbtwqrbiucrkyq.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
-  );
+    const supabase = createClient(
+      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+    );
 
     let isSignup = false;
 
@@ -106,7 +106,7 @@ const supabase = createClient(
       renderToggleLink();
     }
 
-    renderToggleLink(); // initial render
+    renderToggleLink();
 
     submitBtn.addEventListener("click", async () => {
       const email = document.getElementById("email").value.trim();
@@ -132,35 +132,12 @@ const supabase = createClient(
         localStorage.setItem("userId", user.id);
         localStorage.setItem("supabaseAccessToken", token);
 
-        if (isSignup) {
-          // ✅ INSERT address ke wallet_onchain agar trigger backend bisa jalan
-          const address = generateRandomAddress(); // Simulasi saja
-          const { error: addrErr } = await supabase
-            .from("wallet_onchain")
-            .insert({ user_id: user.id, address });
-
-          if (addrErr) {
-            console.error("Gagal insert ke wallet_onchain:", addrErr);
-            return alert("Gagal buat wallet: " + addrErr.message);
-          }
-
-          window.location.href = "setupwallet.html";
-        } else {
-          window.location.href = "dompet.html";
-        }
+        const redirectTo = isSignup ? "create.html" : "dompet.html";
+        window.location.href = redirectTo;
       } else {
         alert("Gagal login/signup.");
       }
     });
-
-    function generateRandomAddress() {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let addr = 'EXR_';
-      for (let i = 0; i < 36; i++) {
-        addr += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return addr;
-    }
   </script>
 </body>
 </html>
