@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#38bdf8">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#38bdf8">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <title>EXORA | Masuk / Daftar</title>
   <style>
     body {
@@ -18,31 +19,56 @@
       height: 100vh;
       padding: 16px;
     }
+
     .card {
       background: rgba(255, 255, 255, 0.05);
-      padding: 24px;
+      padding: 32px 24px;
       border-radius: 16px;
       width: 100%;
       max-width: 400px;
       text-align: center;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(10px);
     }
+
     h2 {
-      margin-bottom: 16px;
+      margin-bottom: 24px;
       color: #38bdf8;
     }
+
+    .input-wrapper {
+      position: relative;
+      margin-top: 16px;
+    }
+
     input {
       width: 100%;
-      padding: 12px;
-      margin: 8px 0;
+      padding: 12px 44px 12px 16px;
       border-radius: 8px;
       border: none;
       background: #334155;
       color: white;
       font-size: 16px;
+      box-sizing: border-box;
     }
-    button {
+
+    input::placeholder {
+      color: #94a3b8;
+    }
+
+    .input-wrapper button {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #cbd5e1;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    button#submit-btn {
       width: 100%;
       padding: 12px;
       background: #22d3ee;
@@ -52,103 +78,128 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      margin-top: 12px;
+      margin-top: 24px;
+      transition: background 0.3s;
     }
-    button:hover {
+
+    button#submit-btn:hover {
       background: #0ea5e9;
     }
+
     .toggle {
-      margin-top: 16px;
-      color: #94a3b8;
+      margin-top: 20px;
       font-size: 14px;
+      color: #94a3b8;
     }
+
     .toggle a {
       color: #38bdf8;
-      cursor: pointer;
       text-decoration: underline;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <div class="card">
     <h2 id="form-title">Masuk</h2>
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
+    <div class="input-wrapper">
+      <input type="email" id="email" placeholder="Email" />
+    </div>
+    <div class="input-wrapper">
+      <input type="password" id="password" placeholder="Password" />
+      <button type="button" id="toggle-password" aria-label="Toggle Password">
+        <i class="fa-regular fa-eye"></i>
+      </button>
+    </div>
     <button id="submit-btn">Masuk</button>
     <div class="toggle">
       Belum punya akun? <a id="toggle-link">Daftar</a>
     </div>
   </div>
 
-<script>
-  // Pendaftaran service worker (tidak butuh type="module")
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-      .then(() => console.log('✅ Service Worker Registered'))
-      .catch(err => console.error('❌ Service Worker Failed:', err));
-  }
-</script>
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log('✅ Service Worker Registered'))
+        .catch(err => console.error('❌ Service Worker Failed:', err));
+    }
+  </script>
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  <!-- Supabase Auth + Password Toggle -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  const supabase = createClient(
-    'https://ocfjkltbtwqrbiucrkyq.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
-  );
+    const supabase = createClient(
+      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+    );
 
-  let isSignup = false;
+    let isSignup = false;
 
-  const title = document.getElementById("form-title");
-  const toggleContainer = document.querySelector(".toggle");
-  const submitBtn = document.getElementById("submit-btn");
+    const title = document.getElementById("form-title");
+    const toggleContainer = document.querySelector(".toggle");
+    const submitBtn = document.getElementById("submit-btn");
 
-  function renderToggleLink() {
-    toggleContainer.innerHTML = isSignup
-      ? `Sudah punya akun? <a id="toggle-link">Masuk</a>`
-      : `Belum punya akun? <a id="toggle-link">Daftar</a>`;
-    document.getElementById("toggle-link").addEventListener("click", toggleMode);
-  }
+    function renderToggleLink() {
+      toggleContainer.innerHTML = isSignup
+        ? `Sudah punya akun? <a id="toggle-link">Masuk</a>`
+        : `Belum punya akun? <a id="toggle-link">Daftar</a>`;
+      document.getElementById("toggle-link").addEventListener("click", toggleMode);
+    }
 
-  function toggleMode() {
-    isSignup = !isSignup;
-    title.innerText = isSignup ? "Daftar" : "Masuk";
-    submitBtn.innerText = isSignup ? "Daftar" : "Masuk";
+    function toggleMode() {
+      isSignup = !isSignup;
+      title.innerText = isSignup ? "Daftar" : "Masuk";
+      submitBtn.innerText = isSignup ? "Daftar" : "Masuk";
+      renderToggleLink();
+    }
+
     renderToggleLink();
-  }
 
-  renderToggleLink();
+    submitBtn.addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if (!email || !password) return alert("Isi email dan password!");
 
-  submitBtn.addEventListener("click", async () => {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
-    if (!email || !password) return alert("Isi email dan password!");
+      let result;
+      if (isSignup) {
+        result = await supabase.auth.signUp({ email, password });
+      } else {
+        result = await supabase.auth.signInWithPassword({ email, password });
+      }
 
-    let result;
-    if (isSignup) {
-      result = await supabase.auth.signUp({ email, password });
-    } else {
-      result = await supabase.auth.signInWithPassword({ email, password });
-    }
+      if (result?.error) {
+        console.error("Auth Error:", result.error);
+        return alert("Gagal: " + result.error.message);
+      }
 
-    if (result?.error) {
-      console.error("Auth Error:", result.error);
-      return alert("Gagal: " + result.error.message);
-    }
+      const user = result.data?.user;
+      const token = result.data?.session?.access_token;
 
-    const user = result.data?.user;
-    const token = result.data?.session?.access_token;
+      if (user && token) {
+        localStorage.setItem("userId", user.id);
+        localStorage.setItem("supabaseAccessToken", token);
 
-    if (user && token) {
-      localStorage.setItem("userId", user.id);
-      localStorage.setItem("supabaseAccessToken", token);
+        const redirectTo = isSignup ? "create.html" : "dompet.html";
+        window.location.href = redirectTo;
+      } else {
+        alert("Gagal login/signup.");
+      }
+    });
 
-      const redirectTo = isSignup ? "create.html" : "dompet.html";
-      window.location.href = redirectTo;
-    } else {
-      alert("Gagal login/signup.");
-    }
-  });
-</script>
+    // Toggle password
+    const togglePassword = document.getElementById("toggle-password");
+    const passwordInput = document.getElementById("password");
+
+    togglePassword.addEventListener("click", () => {
+      const isHidden = passwordInput.type === "password";
+      passwordInput.type = isHidden ? "text" : "password";
+
+      const icon = togglePassword.querySelector("i");
+      icon.classList.toggle("fa-eye");
+      icon.classList.toggle("fa-eye-slash");
+    });
+  </script>
 </body>
 </html>
