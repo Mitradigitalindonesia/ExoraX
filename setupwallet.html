@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EXORA | Setup Wallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at top, #0f0c29, #302b63, #24243e);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+    h2 { color: #6effff; margin-bottom: 1rem; }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      background: #6effff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #48dada;
+    }
+    .notif {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      display: none;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="glass">
+    <h2>EXORA Wallet Setup</h2>
+    <input type="password" id="pin" placeholder="PIN (6 digit)" maxlength="6">
+    <button id="create-btn">Buat Wallet Baru</button>
+    <div id="notif" class="notif"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { Wallet } from 'https://cdn.jsdelivr.net/npm/ethers@6.8.1/+esm';
+
+    const supabase = createClient(
+      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+    );
+
+    const notif = document.getElementById("notif");
+
+    function showNotif(msg, ok = true) {
+      notif.textContent = msg;
+      notif.style.background = ok ? "#16a34a55" : "#dc262655";
+      notif.style.display = "block";
+      setTimeout(() => notif.style.display = "none", 3000);
+    }
+
+    document.getElementById("create-btn").addEventListener("click", async () => {
+      const pin = document.getElementById("pin").value.trim();
+      if (pin.length !== 6) return showNotif("PIN harus 6 digit", false);
+
+      try {
+        const wallet = Wallet.createRandom();
+        const privateKey = wallet.privateKey;
+        const address = wallet.address;
+
+        console.log("Private Key:", privateKey);
+        console.log("Address:", address);
+
+        const token = localStorage.getItem("supabaseAccessToken");
+        const user_id = localStorage.getItem("userId");
+
+        if (!token || !user_id) {
+          showNotif("User belum login.", false);
+          return;
+        }
+
+        const { error } = await supabase
+          .from('wallet_onchain')
+          .insert({ user_id, private_key: privateKey, address, pin });
+
+        if (error) {
+          console.error(error);
+          return showNotif("Gagal simpan ke Supabase", false);
+        }
+
+        localStorage.setItem("walletAddress", address);
+        showNotif("✅ Wallet berhasil dibuat!");
+        setTimeout(() => window.location.href = "dompet.html", 1200);
+
+      } catch (err) {
+        console.error(err);
+        showNotif("❌ Gagal generate wallet", false);
+      }
+    });
+  </script>
+</body>
+</html>
