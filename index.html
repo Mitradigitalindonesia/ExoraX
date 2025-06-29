@@ -89,45 +89,41 @@
     let isSignup = false;
 
     const title = document.getElementById("form-title");
-    const toggleLink = document.getElementById("toggle-link");
+    const toggleContainer = document.querySelector(".toggle");
     const submitBtn = document.getElementById("submit-btn");
 
-    toggleLink.addEventListener("click", () => {
-      isSignup = !isSignup;
-      title.innerText = isSignup ? "Daftar" : "Masuk";
-      submitBtn.innerText = isSignup ? "Daftar" : "Masuk";
-      toggleLink.innerText = isSignup ? "Masuk" : "Daftar";
-      toggleLink.parentElement.innerHTML = isSignup
+    function renderToggleLink() {
+      toggleContainer.innerHTML = isSignup
         ? `Sudah punya akun? <a id="toggle-link">Masuk</a>`
         : `Belum punya akun? <a id="toggle-link">Daftar</a>`;
       document.getElementById("toggle-link").addEventListener("click", toggleMode);
-    });
+    }
 
-    async function toggleMode() {
+    function toggleMode() {
       isSignup = !isSignup;
       title.innerText = isSignup ? "Daftar" : "Masuk";
       submitBtn.innerText = isSignup ? "Daftar" : "Masuk";
-      toggleLink.innerText = isSignup ? "Masuk" : "Daftar";
+      renderToggleLink();
     }
 
-    document.getElementById("submit-btn").addEventListener("click", async () => {
+    renderToggleLink(); // Initial render
+
+    submitBtn.addEventListener("click", async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
       if (!email || !password) return alert("Isi email dan password!");
 
       let result;
       if (isSignup) {
-  // Tambahkan user ke public.users setelah berhasil daftar
-  const { error: insertErr } = await supabase.from("users").insert({
-    user_id: user.id,
-    wallet_address: "EXR_" + user.id.slice(0, 8) // Contoh auto address
-  });
+        result = await supabase.auth.signUp({ email, password });
+      } else {
+        result = await supabase.auth.signInWithPassword({ email, password });
+      }
 
-  if (insertErr) {
-    alert("Gagal menyimpan user ke database: " + insertErr.message);
-    return;
-  }
-}
+      if (result.error) {
+        console.error(result.error);
+        return alert("Gagal: " + result.error.message);
+      }
 
       const user = result.data?.user;
       const token = result.data?.session?.access_token;
@@ -136,15 +132,26 @@
         localStorage.setItem("userId", user.id);
         localStorage.setItem("supabaseAccessToken", token);
 
-        const redirectTo = isSignup ? "setupwallet.html" : "dompet.html";
-        window.location.href = redirectTo;
+        // Hanya insert ke `users` saat signup
+        if (isSignup) {
+          const { error: insertErr } = await supabase.from("users").insert({
+            user_id: user.id,
+            wallet_address: "EXR_" + user.id.slice(0, 8)
+          });
+
+          if (insertErr) {
+            console.error("Insert error:", insertErr);
+            return alert("Gagal menyimpan wallet: " + insertErr.message);
+          }
+
+          window.location.href = "setupwallet.html";
+        } else {
+          window.location.href = "dompet.html";
+        }
       } else {
         alert("Gagal login/signup.");
       }
     });
-
-    // Expose to global to prevent undefined
-    window.toggleMode = toggleMode;
   </script>
 </body>
 </html>
