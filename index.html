@@ -78,69 +78,89 @@
     </div>
   </div>
 
-  <!-- ... HEAD sama persis seperti sebelumnya ... -->
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  const supabase = createClient(
+const supabase = createClient(
     'https://ocfjkltbtwqrbiucrkyq.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
   );
 
-  let isSignup = false;
+    let isSignup = false;
 
-  const title = document.getElementById("form-title");
-  const toggleContainer = document.querySelector(".toggle");
-  const submitBtn = document.getElementById("submit-btn");
+    const title = document.getElementById("form-title");
+    const toggleContainer = document.querySelector(".toggle");
+    const submitBtn = document.getElementById("submit-btn");
 
-  function renderToggleLink() {
-    toggleContainer.innerHTML = isSignup
-      ? `Sudah punya akun? <a id="toggle-link">Masuk</a>`
-      : `Belum punya akun? <a id="toggle-link">Daftar</a>`;
-    document.getElementById("toggle-link").addEventListener("click", toggleMode);
-  }
-
-  function toggleMode() {
-    isSignup = !isSignup;
-    title.innerText = isSignup ? "Daftar" : "Masuk";
-    submitBtn.innerText = isSignup ? "Daftar" : "Masuk";
-    renderToggleLink();
-  }
-
-  renderToggleLink(); // Initial render
-
-  submitBtn.addEventListener("click", async () => {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
-    if (!email || !password) return alert("Isi email dan password!");
-
-    let result;
-if (isSignup) {
-  result = await supabase.auth.signUp({ email, password });
-} else {
-  result = await supabase.auth.signInWithPassword({ email, password });
-}
-
-console.log("Supabase auth result:", result); // Debugging
-
-if (result?.error?.message) {
-  console.error("Auth Error:", result.error);
-  return alert("Gagal: " + result.error.message);
-}
-
-    const user = result.data?.user;
-    const token = result.data?.session?.access_token;
-
-    if (user && token) {
-      localStorage.setItem("userId", user.id);
-      localStorage.setItem("supabaseAccessToken", token);
-
-      const redirectTo = isSignup ? "setupwallet.html" : "dompet.html";
-      window.location.href = redirectTo;
-    } else {
-      alert("Gagal login/signup.");
+    function renderToggleLink() {
+      toggleContainer.innerHTML = isSignup
+        ? `Sudah punya akun? <a id="toggle-link">Masuk</a>`
+        : `Belum punya akun? <a id="toggle-link">Daftar</a>`;
+      document.getElementById("toggle-link").addEventListener("click", toggleMode);
     }
-  });
-</script>
+
+    function toggleMode() {
+      isSignup = !isSignup;
+      title.innerText = isSignup ? "Daftar" : "Masuk";
+      submitBtn.innerText = isSignup ? "Daftar" : "Masuk";
+      renderToggleLink();
+    }
+
+    renderToggleLink(); // initial render
+
+    submitBtn.addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if (!email || !password) return alert("Isi email dan password!");
+
+      let result;
+      if (isSignup) {
+        result = await supabase.auth.signUp({ email, password });
+      } else {
+        result = await supabase.auth.signInWithPassword({ email, password });
+      }
+
+      if (result?.error) {
+        console.error("Auth Error:", result.error);
+        return alert("Gagal: " + result.error.message);
+      }
+
+      const user = result.data?.user;
+      const token = result.data?.session?.access_token;
+
+      if (user && token) {
+        localStorage.setItem("userId", user.id);
+        localStorage.setItem("supabaseAccessToken", token);
+
+        if (isSignup) {
+          // ✅ INSERT address ke wallet_onchain agar trigger backend bisa jalan
+          const address = generateRandomAddress(); // Simulasi saja
+          const { error: addrErr } = await supabase
+            .from("wallet_onchain")
+            .insert({ user_id: user.id, address });
+
+          if (addrErr) {
+            console.error("Gagal insert ke wallet_onchain:", addrErr);
+            return alert("Gagal buat wallet: " + addrErr.message);
+          }
+
+          window.location.href = "setupwallet.html";
+        } else {
+          window.location.href = "dompet.html";
+        }
+      } else {
+        alert("Gagal login/signup.");
+      }
+    });
+
+    function generateRandomAddress() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let addr = 'EXR_';
+      for (let i = 0; i < 36; i++) {
+        addr += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return addr;
+    }
+  </script>
 </body>
 </html>
