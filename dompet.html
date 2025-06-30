@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
+  <meta name="theme-color" content="#0f172a">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login - Game Crypto</title>
   <style>
@@ -771,6 +772,12 @@ async function handleTrade(isBuy) {
   if (!amount || amount <= 0) return showNotif("⚠️ Masukkan jumlah yang valid.");
   if (!selectedWallet?.id) return showNotif("❌ Wallet tidak ditemukan.");
 
+  // Ambil user dari Supabase Auth
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    return showNotif("❌ Gagal mengambil data user.");
+  }
+
   if (!isBuy) {
     const { data: walletData, error: walletErr } = await supabase
       .from('wallets')
@@ -784,11 +791,12 @@ async function handleTrade(isBuy) {
     }
   }
 
-  const { error } = await supabase.rpc('trade', {
-    p_wallet_id: selectedWallet.id,
-    p_symbol: selectedSymbol,
+  const { error } = await supabase.rpc('trade_asset_with_referral', {
+    p_user_id: user.id,
+    p_symbol: selectedSymbol, // atau 'EXR' jika hanya untuk EXR
+    p_is_buy: isBuy,
     p_amount: amount,
-    p_type: isBuy ? 'buy' : 'sell'
+    p_price: selectedPrice // pastikan variabel ini ada
   });
 
   if (error) {
