@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#0f172a">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Referral</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #1e3a8a 50%, #581c87 100%);
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      padding: 16px;
+      padding-bottom: 80px;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.85);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(6px);
+    }
+
+    input {
+      background: white;
+      color: black;
+    }
+
+    table {
+      width: 100%;
+    }
+
+    th, td {
+      padding: 10px;
+    }
+
+    thead {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    tr {
+      border-bottom: 1px solid #334155;
+    }
+
+    .btn {
+      background: #22d3ee;
+      color: #0f172a;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #0ea5e9;
+    }
+
+    .text-sm { font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-2xl font-bold mb-4 text-center">Referral Kamu</h1>
+
+    <div class="card space-y-4">
+      <div>
+        <p class="text-sm text-gray-400">Kode Referral</p>
+        <div class="flex items-center justify-between mt-1">
+          <span id="referral-code" class="text-lg font-semibold">EXRxxxxx</span>
+          <button id="copy-code" class="text-blue-400 hover:underline text-sm">Salin</button>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-sm text-gray-400">Link Referral</p>
+        <div class="flex items-center mt-1 space-x-2">
+          <input id="referral-link" class="flex-1 px-2 py-1 rounded text-sm" readonly>
+          <button id="copy-link" class="btn">Salin</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="flex justify-between">
+        <span>User Direferensikan</span>
+        <span id="ref-count">0</span>
+      </div>
+      <div class="flex justify-between mt-2">
+        <span>Total Bonus</span>
+        <span id="ref-bonus">Rp 0</span>
+      </div>
+    </div>
+
+    <h2 class="text-lg font-semibold mt-6 mb-2">Detail Referensi</h2>
+    <div class="card overflow-x-auto">
+      <table class="text-sm">
+        <thead>
+          <tr class="text-gray-400">
+            <th class="text-left">User ID</th>
+            <th class="text-right">Saldo</th>
+            <th class="text-right">Transaksi</th>
+            <th class="text-right">Reward</th>
+          </tr>
+        </thead>
+        <tbody id="ref-detail-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+    );
+
+    const siteUrl = 'https://exora-peach.vercel.app';
+
+    document.getElementById('copy-code').addEventListener('click', () => {
+      const code = document.getElementById('referral-code').textContent;
+      navigator.clipboard.writeText(code);
+      alert('✅ Kode referral disalin!');
+    });
+
+    document.getElementById('copy-link').addEventListener('click', () => {
+      const link = document.getElementById('referral-link').value;
+      navigator.clipboard.writeText(link);
+      alert('✅ Link referral disalin!');
+    });
+
+    async function initReferral() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return alert("Belum login");
+
+      const { data: codeRow } = await supabase
+        .from('referral_codes')
+        .select('code')
+        .eq('user_id', user.id)
+        .single();
+
+      const code = codeRow?.code || "EXRXXXXX";
+      document.getElementById("referral-code").textContent = code;
+      document.getElementById("referral-link").value = `${siteUrl}/signup.html?ref=${code}`;
+
+      const { data: referred } = await supabase
+        .from('referrals')
+        .select('user_id')
+        .eq('referrer_id', user.id);
+
+      document.getElementById('ref-count').textContent = referred.length;
+
+      const table = document.getElementById('ref-detail-table');
+      table.innerHTML = '';
+      let totalBonus = 0;
+
+      for (const ref of referred) {
+        const uid = ref.user_id;
+
+        const { data: wallets } = await supabase
+          .from('wallets')
+          .select('amount, symbol')
+          .eq('user_id', uid);
+
+        let saldo = 0;
+        wallets.forEach(w => {
+          const price = (w.symbol === 'IDR') ? 1 : 0;
+          saldo += parseFloat(w.amount) * price;
+        });
+
+        const { data: logs } = await supabase
+          .from('transaction_logs')
+          .select('total_value, fee')
+          .eq('user_id', uid)
+          .eq('is_buy', true);
+
+        const transaksi = logs.reduce((a, b) => a + Number(b.total_value), 0);
+        const reward = logs.reduce((a, b) => a + Number(b.fee) * 0.2, 0);
+        totalBonus += reward;
+
+        table.innerHTML += `
+          <tr>
+            <td>${uid.slice(0, 8)}...</td>
+            <td class="text-right">Rp ${Math.round(saldo).toLocaleString()}</td>
+            <td class="text-right">Rp ${Math.round(transaksi).toLocaleString()}</td>
+            <td class="text-right">Rp ${Math.round(reward).toLocaleString()}</td>
+          </tr>`;
+      }
+
+      document.getElementById('ref-bonus').textContent = 'Rp ' + Math.round(totalBonus).toLocaleString();
+    }
+
+    initReferral();
+  </script>
+</body>
+</html>
