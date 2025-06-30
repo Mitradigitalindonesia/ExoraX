@@ -177,7 +177,7 @@
       const { data: codeRow } = await supabase.from('referral_codes').select('code').eq('user_id', user.id).single();
       const code = codeRow?.code || "EXRXXXXX";
       document.getElementById("referral-code").textContent = code;
-      document.getElementById("referral-link").value = `${siteUrl}/signup.html?ref=${encodeURIComponent(code)}`;
+      document.getElementById("referral-link").value = `${siteUrl}/index.html?ref=${encodeURIComponent(code)}`;
 
       const { data: referred } = await supabase.from('referrals').select('user_id').eq('referrer_id', user.id);
       document.getElementById('ref-count').textContent = referred.length;
