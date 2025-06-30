@@ -15,14 +15,12 @@
       overflow-x: hidden;
       position: relative;
     }
-
     .container {
       max-width: 700px;
       margin: auto;
       padding: 16px;
       padding-bottom: 80px;
     }
-
     .card {
       background: rgba(30, 41, 59, 0.85);
       border-radius: 16px;
@@ -31,28 +29,11 @@
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(6px);
     }
-
-    input {
-      background: white;
-      color: black;
-    }
-
-    table {
-      width: 100%;
-    }
-
-    th, td {
-      padding: 10px;
-    }
-
-    thead {
-      background-color: rgba(255, 255, 255, 0.05);
-    }
-
-    tr {
-      border-bottom: 1px solid #334155;
-    }
-
+    input { background: white; color: black; }
+    table { width: 100%; }
+    th, td { padding: 10px; }
+    thead { background-color: rgba(255, 255, 255, 0.05); }
+    tr { border-bottom: 1px solid #334155; }
     .btn {
       background: #22d3ee;
       color: #0f172a;
@@ -62,12 +43,44 @@
       font-size: 14px;
       cursor: pointer;
     }
-
-    .btn:hover {
-      background: #0ea5e9;
+    .btn:hover { background: #0ea5e9; }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.6);
+      border-top: 1px solid #334155;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      backdrop-filter: blur(8px);
+      z-index: 1000;
     }
-
-    .text-sm { font-size: 14px; }
+    .bottom-nav a {
+      color: #94a3b8;
+      text-align: center;
+      font-size: 12px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .bottom-nav a svg {
+      width: 20px;
+      height: 20px;
+      margin-bottom: 4px;
+      fill: #94a3b8;
+      transition: fill 0.2s ease;
+    }
+    .bottom-nav a.active,
+    .bottom-nav a:hover {
+      color: #38bdf8;
+    }
+    .bottom-nav a.active svg,
+    .bottom-nav a:hover svg {
+      fill: #38bdf8;
+    }
   </style>
 </head>
 <body>
@@ -82,7 +95,6 @@
           <button id="copy-code" class="text-blue-400 hover:underline text-sm">Salin</button>
         </div>
       </div>
-
       <div>
         <p class="text-sm text-gray-400">Link Referral</p>
         <div class="flex items-center mt-1 space-x-2">
@@ -119,6 +131,16 @@
     </div>
   </div>
 
+  <div class="bottom-nav">
+    <a href="home.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg><span>Home</span></a>
+    <a href="market.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg><span>Market</span></a>
+    <a href="dompet.html" class="active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg><span>Dompet</span></a>
+    <a href="mining.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg><span>Mining</span></a>
+    <a href="mitra.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2m8-6a4 4 0 00-8 0m8-10a4 4 0 11-8 0" stroke="currentColor" stroke-width="2"/></svg><span>Mitra</span></a>
+  </div>
+
+  <div id="notif" style="position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #22d3ee; color: #0f172a; padding: 12px 20px; border-radius: 12px; font-weight: bold; display: none; z-index: 9999; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease;"></div>
+
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -132,59 +154,51 @@
     document.getElementById('copy-code').addEventListener('click', () => {
       const code = document.getElementById('referral-code').textContent;
       navigator.clipboard.writeText(code);
-      alert('✅ Kode referral disalin!');
+      showNotif('✅ Kode referral disalin!');
     });
 
     document.getElementById('copy-link').addEventListener('click', () => {
       const link = document.getElementById('referral-link').value;
       navigator.clipboard.writeText(link);
-      alert('✅ Link referral disalin!');
+      showNotif('✅ Link referral disalin!');
     });
+
+    function showNotif(msg) {
+      const notif = document.getElementById("notif");
+      notif.textContent = msg;
+      notif.style.display = "block";
+      setTimeout(() => notif.style.display = "none", 2000);
+    }
 
     async function initReferral() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return alert("Belum login");
 
-      const { data: codeRow } = await supabase
-        .from('referral_codes')
-        .select('code')
-        .eq('user_id', user.id)
-        .single();
-
+      const { data: codeRow } = await supabase.from('referral_codes').select('code').eq('user_id', user.id).single();
       const code = codeRow?.code || "EXRXXXXX";
       document.getElementById("referral-code").textContent = code;
-      document.getElementById("referral-link").value = `${siteUrl}/signup.html?ref=${code}`;
+      document.getElementById("referral-link").value = `${siteUrl}/signup.html?ref=${encodeURIComponent(code)}`;
 
-      const { data: referred } = await supabase
-        .from('referrals')
-        .select('user_id')
-        .eq('referrer_id', user.id);
-
+      const { data: referred } = await supabase.from('referrals').select('user_id').eq('referrer_id', user.id);
       document.getElementById('ref-count').textContent = referred.length;
+      const userIds = referred.map(r => r.user_id);
 
+      const { data: allWallets } = await supabase.from('wallets').select('user_id, symbol, amount').in('user_id', userIds);
+      const { data: allLogs } = await supabase.from('transaction_logs').select('user_id, total_value, fee').in('user_id', userIds).eq('is_buy', true);
+      const { data: prices } = await supabase.from('price_pool').select('symbol, last_price');
+
+      const priceMap = Object.fromEntries(prices.map(p => [p.symbol, p.last_price]));
       const table = document.getElementById('ref-detail-table');
-      table.innerHTML = '';
       let totalBonus = 0;
 
-      for (const ref of referred) {
-        const uid = ref.user_id;
+      for (const uid of userIds) {
+        const wallets = allWallets.filter(w => w.user_id === uid);
+        const logs = allLogs.filter(l => l.user_id === uid);
 
-        const { data: wallets } = await supabase
-          .from('wallets')
-          .select('amount, symbol')
-          .eq('user_id', uid);
-
-        let saldo = 0;
-        wallets.forEach(w => {
-          const price = (w.symbol === 'IDR') ? 1 : 0;
-          saldo += parseFloat(w.amount) * price;
-        });
-
-        const { data: logs } = await supabase
-          .from('transaction_logs')
-          .select('total_value, fee')
-          .eq('user_id', uid)
-          .eq('is_buy', true);
+        let saldo = wallets.reduce((sum, w) => {
+          const price = w.symbol === 'IDR' ? 1 : (priceMap[w.symbol] || 0);
+          return sum + (parseFloat(w.amount) * price);
+        }, 0);
 
         const transaksi = logs.reduce((a, b) => a + Number(b.total_value), 0);
         const reward = logs.reduce((a, b) => a + Number(b.fee) * 0.2, 0);
