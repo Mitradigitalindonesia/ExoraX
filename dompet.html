@@ -791,7 +791,7 @@ async function handleTrade(isBuy) {
     }
   }
 
-  const { error } = await supabase.rpc('trade_asset_with_referral', {
+  const { error } = await supabase.rpc('trade_asset', {
     p_user_id: user.id,
     p_symbol: selectedSymbol, // atau 'EXR' jika hanya untuk EXR
     p_is_buy: isBuy,
