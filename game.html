@@ -317,9 +317,10 @@ function startGame() {
 
 function resetGame() {
   startBtn.style.display = "block";
-  puzzleContainer.innerHTML = '';
   clearInterval(timerInterval);
   timerText.textContent = formatTime(DURATION);
+  tiles = createTiles();           // Tambahkan baris ini
+  drawPuzzle();                    // Tambahkan baris ini
 }
 
 fetchMXBalance();
