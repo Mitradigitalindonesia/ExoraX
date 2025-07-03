@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,107 +16,98 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-    }.game-header {
-  margin-top: 20px;
-  margin-bottom: 10px;
-  font-size: 16px;
-}
-.mx-balance {
-  font-size: 18px;
-  font-weight: bold;
-  color: #38bdf8;
-}
-
-.game-info {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  font-size: 14px;
-  margin-bottom: 10px;
-}
-.game-info div span {
-  display: block;
-  font-size: 18px;
-  font-weight: bold;
-  color: #38bdf8;
-}
-
-#puzzle-container {
-  display: grid;
-  gap: 6px;
-  width: 90vw;
-  max-width: 320px;
-  aspect-ratio: 1 / 1;
-  margin: 20px auto;
-}
-
-.tile {
-  background: #1e3a8a;
-  border-radius: 8px;
-  font-size: 24px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tile.hidden {
-  background: transparent;
-  box-shadow: none;
-  cursor: default;
-}
-
-#start-btn {
-  background: linear-gradient(135deg, #22d3ee, #3b82f6);
-  border: none;
-  color: #0f172a;
-  font-weight: bold;
-  padding: 12px 24px;
-  border-radius: 12px;
-  cursor: pointer;
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
-  margin-top: 10px;
-}
-
-#message {
-  font-size: 16px;
-  margin-top: 10px;
-  color: #fbbf24;
-}
-
-#badges {
-  font-size: 20px;
-  margin-top: 10px;
-}
-
-.progress-container {
-  width: 80%;
-  max-width: 300px;
-  margin: 12px auto 0;
-}
-.progress-bar {
-  height: 8px;
-  background: #334155;
-  border-radius: 4px;
-  overflow: hidden;
-}
-.progress-bar-inner {
-  height: 8px;
-  background: #22d3ee;
-  width: 100%;
-  border-radius: 4px;
-  transition: width 0.3s;
-}
-
-#log, #totalRewardDisplay {
-  font-size: 13px;
-  color: #94a3b8;
-  margin-top: 8px;
-}
-
+    }
+    .game-header {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .mx-balance {
+      font-size: 18px;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+    .game-info {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .game-info div span {
+      display: block;
+      font-size: 18px;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+    #puzzle-container {
+      display: grid;
+      gap: 6px;
+      width: 90vw;
+      max-width: 320px;
+      aspect-ratio: 1 / 1;
+      margin: 20px auto;
+    }
+    .tile {
+      background: #1e3a8a;
+      border-radius: 8px;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tile.hidden {
+      background: transparent;
+      box-shadow: none;
+      cursor: default;
+    }
+    #start-btn {
+      background: linear-gradient(135deg, #22d3ee, #3b82f6);
+      border: none;
+      color: #0f172a;
+      font-weight: bold;
+      padding: 12px 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+      margin-top: 10px;
+    }
+    #message {
+      font-size: 16px;
+      margin-top: 10px;
+      color: #fbbf24;
+    }
+    #badges {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+    .progress-container {
+      width: 80%;
+      max-width: 300px;
+      margin: 12px auto 0;
+    }
+    .progress-bar {
+      height: 8px;
+      background: #334155;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-bar-inner {
+      height: 8px;
+      background: #22d3ee;
+      width: 100%;
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    #log, #totalRewardDisplay {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -126,16 +118,20 @@
     <div>Tiket<br><span id="tiket">0</span></div>
     <div>Timer<br><span id="timer">1:00</span></div>
     <div>Reward<br><span>0.5 MX</span></div>
-  </div>  <div id="badges">🏅</div>
+  </div>
+  <div id="badges">🏅</div>
   <div id="puzzle-container"></div>
   <button id="start-btn">Mulai Puzzle</button>
-  <div id="message"></div>  <div class="progress-container">
+  <div id="message"></div>
+  <div class="progress-container">
     <div class="progress-bar">
       <div id="tiketBar" class="progress-bar-inner"></div>
     </div>
   </div>
   <div id="log">Terakhir: Belum ada aktivitas</div>
-  <div id="totalRewardDisplay">Total MX Hari Ini: <span id="totalReward">0.0</span> MX</div>  <script type="module">
+  <div id="totalRewardDisplay">Total MX Hari Ini: <span id="totalReward">0.0</span> MX</div>
+
+  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const puzzleContainer = document.getElementById("puzzle-container");
@@ -152,9 +148,8 @@
     const ICONS = ["💎", "🔮", "🪩"];
     const SIZE = 3;
     const TOTAL = SIZE * SIZE;
-    const MAX_TIKET = 10;
     const DURATION = 60;
-    const REWARD_PER_WIN = 0.5;
+    let MAX_TIKET = 10;
 
     let tiles = [];
     let timer = DURATION;
@@ -162,15 +157,7 @@
     let wins = 0;
     let totalReward = 0;
     let currentIcon = "💎";
-
-    const todayDate = new Date().toISOString().slice(0, 10);
-    const todayKey = `tiket_${todayDate}`;
-    const lastPlayedKey = "last_played_date";
-
-    if (localStorage.getItem(lastPlayedKey) !== todayDate) {
-      localStorage.setItem(todayKey, MAX_TIKET);
-      localStorage.setItem(lastPlayedKey, todayDate);
-    }
+    let lastRemainingTickets = 10;
 
     const token = localStorage.getItem("supabaseAccessToken");
     const user_id = localStorage.getItem("userId");
@@ -179,157 +166,169 @@
       { global: { headers: { Authorization: `Bearer ${token}` } } }
     );
 
-let lastRemainingTickets = MAX_TIKET;
+    async function fetchMXBalance() {
+      if (!user_id) return;
+      const { data, error } = await supabase
+        .from("wallets")
+        .select("amount")
+        .eq("user_id", user_id)
+        .eq("symbol", "MX")
+        .single();
+      if (error || !data) mxBalanceText.textContent = "0.0 MX";
+      else mxBalanceText.textContent = `${parseFloat(data.amount).toFixed(2)} MX`;
+    }
 
-async function fetchMXBalance() {
-  if (!user_id) return;
-  const { data, error } = await supabase
-    .from("wallets")
-    .select("amount")
-    .eq("user_id", user_id)
-    .eq("symbol", "MX")
-    .single();
-  if (error || !data) mxBalanceText.textContent = "0.0 MX";
-  else mxBalanceText.textContent = `${parseFloat(data.amount).toFixed(2)} MX`;
-}
+    async function fetchPuzzleStatus() {
+      const { data, error } = await supabase.rpc("rpc_get_puzzle_status", {
+        p_user_id: user_id
+      });
+      if (error || !data || data.length === 0) {
+        console.error("Gagal memuat status puzzle:", error);
+        return;
+      }
 
-function setTiketBar(val) {
-  tiketText.textContent = val;
-  tiketBar.style.width = `${(val / MAX_TIKET) * 100}%`;
-}
+      const result = data[0];
+      MAX_TIKET = result.max_tickets;
+      lastRemainingTickets = result.max_tickets - result.total_tickets;
+      wins = result.total_wins;
+      updateTiketDisplay(lastRemainingTickets);
+      badges.textContent = "🏅".repeat(wins);
+    }
 
-function updateTiketDisplay(val = MAX_TIKET) {
-  setTiketBar(val);
-  badges.textContent = "🏅".repeat(wins);
-}
+    function setTiketBar(val) {
+      tiketText.textContent = val;
+      tiketBar.style.width = `${(val / MAX_TIKET) * 100}%`;
+    }
 
-function formatTime(s) {
-  const m = Math.floor(s / 60);
-  const d = s % 60;
-  return `${m}:${d.toString().padStart(2, '0')}`;
-}
+    function updateTiketDisplay(val = MAX_TIKET) {
+      setTiketBar(val);
+      badges.textContent = "🏅".repeat(wins);
+    }
 
-function startTimer() {
-  clearInterval(timerInterval);
-  timer = DURATION;
-  timerText.textContent = formatTime(timer);
-  timerInterval = setInterval(() => {
-    timer--;
-    timerText.textContent = formatTime(timer);
-    if (timer <= 0) {
+    function formatTime(s) {
+      const m = Math.floor(s / 60);
+      const d = s % 60;
+      return `${m}:${d.toString().padStart(2, '0')}`;
+    }
+
+    function startTimer() {
       clearInterval(timerInterval);
-      message.textContent = "⏰ Waktu habis!";
-      log.textContent = `Terakhir: Gagal menyelesaikan puzzle. Tiket tersisa ${lastRemainingTickets}`;
-      resetGame();
+      timer = DURATION;
+      timerText.textContent = formatTime(timer);
+      timerInterval = setInterval(() => {
+        timer--;
+        timerText.textContent = formatTime(timer);
+        if (timer <= 0) {
+          clearInterval(timerInterval);
+          message.textContent = "⏰ Waktu habis!";
+          log.textContent = `Terakhir: Gagal menyelesaikan puzzle. Tiket tersisa ${lastRemainingTickets}`;
+          resetGame();
+        }
+      }, 1000);
     }
-  }, 1000);
-}
 
-function shuffle(arr) {
-  return arr.sort(() => Math.random() - 0.5);
-}
-
-function createTiles() {
-  const arr = [];
-  for (let i = 0; i < TOTAL - 1; i++) arr.push(i);
-  arr.push(null);
-  return shuffle(arr);
-}
-
-function drawPuzzle() {
-  puzzleContainer.innerHTML = '';
-  puzzleContainer.style.gridTemplateColumns = `repeat(${SIZE}, 1fr)`;
-  tiles.forEach((val, i) => {
-    const tile = document.createElement("div");
-    tile.classList.add("tile");
-    if (val === null) {
-      tile.classList.add("hidden");
-      tile.textContent = "";
-    } else {
-      tile.textContent = currentIcon + " " + (val + 1);
+    function shuffle(arr) {
+      return arr.sort(() => Math.random() - 0.5);
     }
-    tile.addEventListener("click", () => moveTile(i));
-    puzzleContainer.appendChild(tile);
-  });
-}
 
-async function claimRewardAndContinue() {
-  const { data, error } = await supabase.rpc("rpc_claim_puzzle_mx", {
-    p_user_id: user_id,
-  });
-  if (error || !data || data.length === 0) {
-    message.textContent = error?.message || "Gagal klaim reward.";
-    log.textContent = `Terakhir: Gagal klaim reward. Coba lagi.`;
-    return;
-  }
-
-  const result = data[0];
-  lastRemainingTickets = result.remaining_tickets;
-  message.textContent = `🎉 Puzzle selesai! +${result.final_reward} MX`;
-  log.textContent = `Terakhir: Menang (${result.total_wins}x), Tiket ${result.remaining_tickets}`;
-  totalRewardText.textContent = (parseFloat(result.final_reward) + totalReward).toFixed(1);
-  updateTiketDisplay(result.remaining_tickets);
-  mxBalanceText.textContent = `${parseFloat(result.final_balance).toFixed(2)} MX`;
-  wins = result.total_wins;
-  totalReward += parseFloat(result.final_reward);
-
-  setTimeout(() => {
-    if (result.remaining_tickets > 0) startGame();
-    else {
-      message.textContent = "✅ Semua puzzle selesai hari ini.";
-      resetGame();
+    function createTiles() {
+      const arr = [];
+      for (let i = 0; i < TOTAL - 1; i++) arr.push(i);
+      arr.push(null);
+      return shuffle(arr);
     }
-  }, 1200);
-}
 
-function moveTile(i) {
-  const empty = tiles.indexOf(null);
-  const isValid = [1, -1, SIZE, -SIZE].includes(i - empty) &&
-    !(i % SIZE === 0 && empty % SIZE === SIZE - 1) &&
-    !(i % SIZE === SIZE - 1 && empty % SIZE === 0);
-  if (isValid) {
-    [tiles[i], tiles[empty]] = [tiles[empty], tiles[i]];
-    drawPuzzle();
-    if (checkWin()) {
+    function drawPuzzle() {
+      puzzleContainer.innerHTML = '';
+      puzzleContainer.style.gridTemplateColumns = `repeat(${SIZE}, 1fr)`;
+      tiles.forEach((val, i) => {
+        const tile = document.createElement("div");
+        tile.classList.add("tile");
+        if (val === null) {
+          tile.classList.add("hidden");
+          tile.textContent = "";
+        } else {
+          tile.textContent = currentIcon + " " + (val + 1);
+        }
+        tile.addEventListener("click", () => moveTile(i));
+        puzzleContainer.appendChild(tile);
+      });
+    }
+
+    async function claimRewardAndContinue() {
+      const { data, error } = await supabase.rpc("rpc_claim_puzzle_mx", {
+        p_user_id: user_id,
+      });
+      if (error || !data || data.length === 0) {
+        message.textContent = error?.message || "Gagal klaim reward.";
+        log.textContent = `Terakhir: Gagal klaim reward. Coba lagi.`;
+        return;
+      }
+
+      const result = data[0];
+      lastRemainingTickets = result.remaining_tickets;
+      message.textContent = `🎉 Puzzle selesai! +${result.final_reward} MX`;
+      log.textContent = `Terakhir: Menang (${result.total_wins}x), Tiket ${result.remaining_tickets}`;
+      totalRewardText.textContent = (parseFloat(result.final_reward) + totalReward).toFixed(1);
+      updateTiketDisplay(result.remaining_tickets);
+      mxBalanceText.textContent = `${parseFloat(result.final_balance).toFixed(2)} MX`;
+      wins = result.total_wins;
+      totalReward += parseFloat(result.final_reward);
+
+      setTimeout(() => {
+        if (result.remaining_tickets > 0) startGame();
+        else {
+          message.textContent = "✅ Semua puzzle selesai hari ini.";
+          resetGame();
+        }
+      }, 1200);
+    }
+
+    function moveTile(i) {
+      const empty = tiles.indexOf(null);
+      const isValid = [1, -1, SIZE, -SIZE].includes(i - empty) &&
+        !(i % SIZE === 0 && empty % SIZE === SIZE - 1) &&
+        !(i % SIZE === SIZE - 1 && empty % SIZE === 0);
+      if (isValid) {
+        [tiles[i], tiles[empty]] = [tiles[empty], tiles[i]];
+        drawPuzzle();
+        if (checkWin()) {
+          clearInterval(timerInterval);
+          claimRewardAndContinue();
+        }
+      }
+    }
+
+    function checkWin() {
+      for (let i = 0; i < TOTAL - 1; i++) if (tiles[i] !== i) return false;
+      return true;
+    }
+
+    function startGame() {
+      if (lastRemainingTickets <= 0) {
+        message.textContent = "Tiket habis!";
+        return;
+      }
+      currentIcon = ICONS[Math.floor(Math.random() * ICONS.length)];
+      message.textContent = "";
+      startBtn.style.display = "none";
+      tiles = createTiles();
+      drawPuzzle();
+      startTimer();
+    }
+
+    function resetGame() {
+      startBtn.style.display = "block";
       clearInterval(timerInterval);
-      claimRewardAndContinue();
+      timerText.textContent = formatTime(DURATION);
+      tiles = createTiles();
+      drawPuzzle();
     }
-  }
-}
 
-function checkWin() {
-  for (let i = 0; i < TOTAL - 1; i++) if (tiles[i] !== i) return false;
-  return true;
-}
-
-function startGame() {
-  if (lastRemainingTickets <= 0) {
-    message.textContent = "Tiket habis!";
-    return;
-  }
-  currentIcon = ICONS[Math.floor(Math.random() * ICONS.length)];
-  message.textContent = "";
-  startBtn.style.display = "none";
-  tiles = createTiles();
-  drawPuzzle();
-  startTimer();
-}
-
-function resetGame() {
-  startBtn.style.display = "block";
-  clearInterval(timerInterval);
-  timerText.textContent = formatTime(DURATION);
-  tiles = createTiles();           // Tambahkan baris ini
-  drawPuzzle();                    // Tambahkan baris ini
-}
-
-fetchMXBalance();
-updateTiketDisplay();
-resetGame();
-startBtn.addEventListener("click", startGame);
-
-
-
+    await fetchPuzzleStatus();
+    await fetchMXBalance();
+    resetGame();
+    startBtn.addEventListener("click", startGame);
   </script>
-  </body>
+</body>
 </html>
