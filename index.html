@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="id">
+<!DOCTYPE html><html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="theme-color" content="#0f172a">
@@ -79,9 +78,7 @@
   </style>
 </head>
 <body>
-  <img src="/icon-192.png" alt="Loading..." class="loading" id="loader">
-
-  <div class="card" id="login-card">
+  <img src="/icon-192.png" alt="Loading..." class="loading" id="loader">  <div class="card" id="login-card">
     <h2 id="form-title">Masuk</h2>
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
@@ -90,35 +87,35 @@
     <div class="toggle">
       Belum punya akun? <a id="toggle-link">Daftar</a>
     </div>
-  </div>
-
-  <script type="module">
+  </div>  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabase = createClient(
       'https://ocfjkltbtwqrbiucrkyq.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          storage: localStorage
-        }
-      }
+      { global: { headers: { Authorization: '' } } }
     );
 
     const loader = document.getElementById('loader');
     const loginCard = document.getElementById('login-card');
 
-    // Periksa apakah user sudah login
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        location.href = "dompet.html";
-      } else {
-        loader.style.display = "none";
-        loginCard.style.display = "block";
-      }
-    });
+    // Cek JWT dari localStorage
+    const token = localStorage.getItem("supabaseAccessToken");
+    if (token) {
+      supabase.auth.setSession({ access_token: token, refresh_token: token }).then(async ({ data, error }) => {
+        if (!error && data?.session?.user) {
+          location.href = "dompet.html";
+        } else {
+          localStorage.removeItem("supabaseAccessToken");
+          localStorage.removeItem("userId");
+          loader.style.display = "none";
+          loginCard.style.display = "block";
+        }
+      });
+    } else {
+      loader.style.display = "none";
+      loginCard.style.display = "block";
+    }
 
     const title = document.getElementById("form-title");
     const toggleContainer = document.querySelector(".toggle");
@@ -135,7 +132,6 @@
       referralInput.style.display = "block";
     }
 
-    // === Toggle Mode Login/Signup ===
     function toggleMode() {
       isSignup = !isSignup;
       title.textContent = isSignup ? "Daftar" : "Masuk";
@@ -214,6 +210,5 @@
         await supabase.from("wallets").insert({ user_id: userId, symbol, amount: 0, address });
       }
     }
-  </script>
-</body>
+  </script></body>
 </html>
