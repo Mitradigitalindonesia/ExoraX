@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-   <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#0f172a">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>EXORA Marketplace</title>
   <style>
@@ -16,101 +16,63 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-    }h1 { margin: 24px 0 16px; }
+    }
+    h1 { margin: 24px 0 16px; }
 
-.table-container {
-  width: 90%;
-  max-width: 800px;
-  overflow-x: auto;
-}
+    .table-container {
+      width: 90%;
+      max-width: 800px;
+      overflow-x: auto;
+    }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid #334155;
-}
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid #334155;
+    }
 
-th, td {
-  padding: 12px 8px;
-  text-align: left;
-  border-bottom: 1px solid #334155;
-  font-size: 14px;
-}
+    th, td {
+      padding: 12px 8px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+      font-size: 14px;
+    }
 
-th {
-  background: rgba(0,0,0,0.2);
-}
+    th {
+      background: rgba(0,0,0,0.2);
+    }
 
-tr:hover {
-  background: rgba(56,189,248,0.1);
-}
+    tr:hover {
+      background: rgba(56,189,248,0.1);
+    }
 
-.btn-buy {
-  background: #22d3ee;
-  color: #0f172a;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-weight: bold;
-  cursor: pointer;
-}
+    .btn-activate {
+      background: #22d3ee;
+      color: #0f172a;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-.btn-buy:hover {
-  background: #0ea5e9;
-}
+    .btn-activate:hover {
+      background: #0ea5e9;
+    }
 
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0,0,0,0.6);
-  border-top: 1px solid #334155;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-}
-
-.bottom-nav a {
-  color: #94a3b8;
-  text-decoration: none;
-  font-size: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.bottom-nav a svg {
-  width: 20px;
-  height: 20px;
-  margin-bottom: 4px;
-  fill: #94a3b8;
-}
-
-.bottom-nav a:hover, .bottom-nav a.active {
-  color: #38bdf8;
-}
-
-.bottom-nav a:hover svg, .bottom-nav a.active svg {
-  fill: #38bdf8;
-}
-
-#notif {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: #0ea5e9;
-  color: white;
-  padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
-  display: none;
-  z-index: 9999;
-}
-
+    #notif {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #0ea5e9;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 9999;
+    }
   </style>
 </head>
 <body>
@@ -128,46 +90,10 @@ tr:hover {
       </thead>
       <tbody></tbody>
     </table>
-  <!-- Navigasi bawah dipisahkan dari container -->
-  <div class="bottom-nav">
-    <a href="home.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Home</span>
-    </a>
-    <a href="market.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Market</span>
-    </a>
-    <a href="dompet.html" class="active">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Dompet</span>
-    </a>
-    <a href="mining.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Mining</span>
-    </a>
-    <a href="mitra.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2m8-6a4 4 0 00-8 0m8-10a4 4 0 11-8 0" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Mitra</span>
-    </a>
   </div>
-  <div id="notif" style="
-  position: fixed;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #22d3ee;
-  color: #0f172a;
-  padding: 12px 20px;
-  border-radius: 12px;
-  font-weight: bold;
-  display: none;
-  z-index: 9999;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  transition: all 0.3s ease;
-"></div>
-</body>
-</html>
+
+  <div id="notif"></div>
+
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -191,92 +117,74 @@ const supabase = createClient(
     }
   }
 );
+function showNotif(msg) {
+  const notif = document.getElementById("notif");
+  notif.innerText = msg;
+  notif.style.display = "block";
+  setTimeout(() => notif.style.display = "none", 3000);
+}
 
-    const tableBody = document.querySelector('#marketTable tbody');
+async function loadItems() {
+  const tableBody = document.querySelector("#marketTable tbody");
+  tableBody.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
 
-    function showNotif(msg) {
-      const notif = document.getElementById('notif');
-      notif.innerText = msg;
-      notif.style.display = 'block';
-      setTimeout(() => notif.style.display = 'none', 3000);
-    }
-
-    async function loadListings() {
-  tableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
-
-  const [itemsRes, listingsRes] = await Promise.all([
-    supabase.from('items').select('id, item_name, hashrate, power_usage, price_exr'),
-    supabase.from('market_listings').select('id, item_id, item_name, hashrate, power_usage, price_exr')
+  const [itemsRes, inventoryRes] = await Promise.all([
+    supabase.from("items").select("*"),
+    supabase.from("inventory").select("item_id").eq("user_id", userId)
   ]);
 
-  if (itemsRes.error) {
-    console.error('Error items:', itemsRes.error);
-  }
-
-  if (listingsRes.error) {
-    console.error('Error listings:', listingsRes.error);
-  }
-
-  if (itemsRes.error || listingsRes.error) {
-    tableBody.innerHTML = '<tr><td colspan="5">Gagal memuat data</td></tr>';
+  if (itemsRes.error || inventoryRes.error) {
+    console.error("Error:", itemsRes.error || inventoryRes.error);
+    tableBody.innerHTML = "<tr><td colspan='5'>Gagal memuat data</td></tr>";
     return;
   }
 
-  const items = itemsRes.data;
-  const listings = listingsRes.data;
+  const inventoryIds = inventoryRes.data.map(i => i.item_id);
+  tableBody.innerHTML = "";
 
-  tableBody.innerHTML = '';
-  items.forEach(item => {
-    const listing = listings.find(l => l.item_id === item.id);
-    const tr = document.createElement('tr');
-    const price = listing?.price_exr || item.price_exr;
-    const id = listing?.id || item.id;
-    const type = listing ? 'user' : 'system';
-
+  itemsRes.data.forEach(item => {
+    const alreadyOwned = inventoryIds.includes(item.id);
+    const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${item.item_name}</td>
-      <td>${item.hashrate || 0} H/s</td>
-      <td>${item.power_usage} W</td>
-      <td>${price} EXR</td>
-      <td><button class="btn-buy" data-id="${id}" data-price="${price}" data-type="${type}">Beli</button></td>
+      <td>${item.hashrate ?? 0} H/s</td>
+      <td>${item.power_usage ?? 0} W</td>
+      <td>${item.price_exr} EXR</td>
+      <td>
+        ${alreadyOwned 
+          ? `<span style="color:#22d3ee;">Owned</span>` 
+          : `<button class="btn-activate" data-id="${item.id}" data-price="${item.price_exr}">Buy</button>`
+        }
+      </td>
     `;
     tableBody.appendChild(tr);
   });
 
-  document.querySelectorAll('.btn-buy').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      btn.disabled = true;
-      const type = btn.dataset.type;
-      const id = btn.dataset.id;
+  document.querySelectorAll(".btn-activate").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const itemId = btn.dataset.id;
       const price = parseFloat(btn.dataset.price);
 
-      const user = (await supabase.auth.getUser()).data?.user;
-      if (!user) return showNotif("Token kadaluarsa atau user tidak ditemukan.");
+      btn.disabled = true;
+      const { data, error } = await supabase.rpc("rpc_buy_item", {
+        p_user_id: userId,
+        p_item_id: itemId,
+        p_price_exr: price
+      });
 
-      if (type === 'user') {
-        const { data, error } = await supabase.rpc('rpc_buy_market_item', {
-          p_buyer_id: user.id,
-          p_listing_id: id
-        });
-        if (error || !data?.success) return showNotif('Gagal beli dari user: ' + (error?.message || data?.error));
-      } else {
-        const { data, error } = await supabase.rpc('rpc_buy_item', {
-          p_user_id: user.id,
-          p_item_id: id,
-          p_price_exr: price
-        });
-        if (error || !data?.success) return showNotif('Gagal beli dari sistem: ' + (error?.message || data?.error));
+      if (error || !data?.success) {
+        showNotif("Gagal aktivasi item: " + (error?.message || data?.error));
+        btn.disabled = false;
+        return;
       }
 
-      showNotif('✅ Pembelian berhasil!');
-      await loadListings();
+      showNotif("✅ Item berhasil diaktifkan!");
+      await loadItems();
     });
   });
 }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      loadListings();
-    });
-  </script>
-  </body>
+window.addEventListener("DOMContentLoaded", loadItems);
+</script>
+</body>
 </html>
