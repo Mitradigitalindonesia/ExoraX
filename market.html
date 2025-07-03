@@ -1,246 +1,238 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-    <meta name="theme-color" content="#0f172a">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Market - EXORA</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b, #1e3a8a, #581c87);
-      color: white;
-      padding-bottom: 80px;
-    }
+<!DOCTYPE html> 
+<html lang="id">  
+<head>  
+  <meta charset="UTF-8" />  
+    <meta name="theme-color" content="#0f172a">  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Market - EXORA</title>  
+  <style>  
+    body {  
+      margin: 0;  
+      font-family: 'Segoe UI', sans-serif;  
+      background: linear-gradient(135deg, #0f172a, #1e293b, #1e3a8a, #581c87);  
+      color: white;  
+      padding-bottom: calc(100px + env(safe-area-inset-bottom));  
+    }  header {  
+  position: sticky;  
+  top: 0;  
+  z-index: 10;  
+  background-color: rgba(15, 23, 42, 0.85);  
+  backdrop-filter: blur(10px);  
+  text-align: center;  
+  padding: 12px 0 4px;  
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);  
+}  
 
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background-color: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(10px);
-      text-align: center;
-      padding: 12px 0 4px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
+h2 {  
+  margin: 0;  
+  font-size: 30px;  
+}  
 
-    h2 {
-      margin: 0;
-      font-size: 30px;
-    }
+.search-box {  
+  width: 95%;  
+  max-width: 600px;  
+  margin: 8px auto 12px;  
+}  
 
-    .search-box {
-      width: 95%;
-      max-width: 600px;
-      margin: 8px auto 12px;
-    }
+.search-box input {  
+  width: 95%;  
+  padding: 10px;  
+  border-radius: 8px;  
+  border: 1px solid #334155;  
+  background-color: rgba(255, 255, 255, 0.05);  
+  color: white;  
+  font-size: 14px;  
+}  
 
-    .search-box input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background-color: rgba(255, 255, 255, 0.05);
-      color: white;
-      font-size: 14px;
-    }
+.market-list {  
+  width: 95%;  
+  max-width: 600px;  
+  margin: auto;  
+  border-radius: 12px;  
+  overflow: hidden;  
+  background-color: rgba(255, 255, 255, 0.03);  
+}  
 
-    .market-list {
-      width: 85%;
-      max-width: 600px;
-      margin: auto;
-      margin-bottom: 100px;
-      border-radius: 12px;
-      overflow: hidden;
-      background-color: rgba(255, 255, 255, 0.03);
-    }
+.coin {  
+  display: flex;  
+  justify-content: space-between;  
+  align-items: center;  
+  padding: 12px;  
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);  
+  cursor: pointer;  
+  transition: background 0.2s ease;  
+}  
 
-    .coin {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
+.coin:hover {  
+  background-color: rgba(255, 255, 255, 0.05);  
+}  
 
-    .coin:hover {
-      background-color: rgba(255, 255, 255, 0.05);
-    }
+.coin img {  
+  width: 24px;  
+  height: 24px;  
+  margin-right: 10px;  
+}  
 
-    .coin img {
-      width: 24px;
-      height: 24px;
-      margin-right: 10px;
-    }
+.coin-left {  
+  display: flex;  
+  align-items: center;  
+}  
 
-    .coin-left {
-      display: flex;
-      align-items: center;
-    }
+.coin-name {  
+  font-weight: bold;  
+  font-size: 14px;  
+}  
 
-    .coin-name {
-      font-weight: bold;
-      font-size: 14px;
-    }
+.coin-price {  
+  font-size: 14px;  
+  text-align: right;  
+}  
 
-    .coin-price {
-      font-size: 14px;
-      text-align: right;
-    }
+.coin-idr {  
+  font-size: 11px;  
+  color: #94a3b8;  
+}  
 
-    .coin-idr {
-      font-size: 11px;
-      color: #94a3b8;
-    }
+.coin-change {  
+  font-size: 12px;  
+  font-weight: bold;  
+  padding: 4px 8px;  
+  border-radius: 8px;  
+  background-color: rgba(34, 197, 94, 0.2);  
+  color: #4ade80;  
+}  
 
-    .coin-change {
-      font-size: 12px;
-      font-weight: bold;
-      padding: 4px 8px;
-      border-radius: 8px;
-      background-color: rgba(34, 197, 94, 0.2);
-      color: #4ade80;
-    }
+.coin-change.negative {  
+  background-color: rgba(220, 38, 38, 0.2);  
+  color: #f87171;  
+}  
 
-    .coin-change.negative {
-      background-color: rgba(220, 38, 38, 0.2);
-      color: #f87171;
-    }
+.bottom-nav {
+  position: fixed;
+  bottom: env(safe-area-inset-bottom, 0); /* Pastikan tidak tertutup gesture bar */
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  border-top: 1px solid #334155;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+}
 
-        .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0, 0, 0, 0.6);
-      border-top: 1px solid #334155;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-      backdrop-filter: blur(8px);
-      z-index: 1000;
-    }
+.bottom-nav a {  
+  color: #94a3b8;  
+  text-align: center;  
+  font-size: 12px;  
+  text-decoration: none;  
+  display: flex;  
+  flex-direction: column;  
+  align-items: center;  
+}  
 
-    .bottom-nav a {
-      color: #94a3b8;
-      text-align: center;
-      font-size: 12px;
-      text-decoration: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+.bottom-nav a svg {  
+  width: 20px;  
+  height: 20px;  
+  margin-bottom: 4px;  
+  fill: #94a3b8;  
+  transition: fill 0.2s ease;  
+}  
 
-    .bottom-nav a svg {
-      width: 20px;
-      height: 20px;
-      margin-bottom: 4px;
-      fill: #94a3b8;
-      transition: fill 0.2s ease;
-    }
+.bottom-nav a.active,  
+.bottom-nav a:hover {  
+  color: #38bdf8;  
+}  
 
-    .bottom-nav a.active,
-    .bottom-nav a:hover {
-      color: #38bdf8;
-    }
+.bottom-nav a.active svg,  
+.bottom-nav a:hover svg {  
+  fill: #38bdf8;  
+}
 
-    .bottom-nav a.active svg,
-    .bottom-nav a:hover svg {
-      fill: #38bdf8;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <div class="search-box">
-      <input type="text" id="searchInput" placeholder="Cari coin... (cth: BTC, ethereum)">
-    </div>
-  </header>
-
-  <div id="marketList" class="market-list">Loading...</div>
-
-  <div class="bottom-nav">
-    <a href="home.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Home</span>
-    </a>
-    <a href="market.html" class="active">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Market</span>
-    </a>
-    <a href="dompet.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Dompet</span>
-    </a>
-    <a href="mining.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Mining</span>
-    </a>
-    <a href="mitra.html">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2m8-6a4 4 0 00-8 0m8-10a4 4 0 11-8 0" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Mitra</span>
+  </style>  
+</head>  
+<body>  
+  <header>  
+    <h2>Crypto Asset</h2>  
+    <div class="search-box">  
+      <input type="text" id="searchInput" placeholder="Cari coin... (cth: BTC, ethereum)">  
+    </div>  
+  </header>    <div id="marketList" class="market-list">Loading...</div>    <div class="bottom-nav">  
+    <a href="home.html">  
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v8a2 2 0 01-2 2h-3m-6 0H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2"/></svg>  
+      <span>Home</span>  
     </a>  
-  </div>  
-
-  <script>
-    let allCoins = [];
-
-    async function loadMarkets() {
-      try {
-        const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false');
-        allCoins = await res.json();
-        renderCoins(allCoins);
-      } catch (err) {
-        document.getElementById("marketList").innerText = "❌ Gagal memuat data pasar.";
-        console.error(err);
-      }
-    }
-
-    function renderCoins(coins) {
-      const marketList = document.getElementById("marketList");
-      marketList.innerHTML = coins
-        .map((coin) => {
-          const idr = coin.current_price * 16000;
-          const change = coin.price_change_percentage_24h?.toFixed(2) || "0.00";
-          const changeClass = change < 0 ? "coin-change negative" : "coin-change";
-          const symbol = coin.symbol.toUpperCase() + "USDT";
-
-          return `
-            <div class="coin" onclick="goToTrade('${symbol}', ${coin.current_price}, '${coin.image}', '${coin.id}')">
-              <div class="coin-left">
-                <img src="${coin.image}" alt="${coin.symbol}" />
-                <div>
-                  <div class="coin-name">${coin.symbol.toUpperCase()}/USDT</div>
-                  <div class="coin-idr">Rp${idr.toLocaleString(undefined, {maximumFractionDigits:2})}</div>
-                </div>
-              </div>
-              <div class="coin-price">
-                ${coin.current_price.toLocaleString(undefined, {minimumFractionDigits:2})}<br>
-                <span class="${changeClass}">${change}%</span>
-              </div>
-            </div>
-          `;
-        })
-        .join("");
-    }
-
-    function goToTrade(symbol, price, image, coin_id) {
-      const url = `trade.html?symbol=${symbol}&price=${price}&image=${encodeURIComponent(image)}&coin_id=${coin_id}`;
-      window.location.href = url;
-    }
-
-    document.getElementById('searchInput').addEventListener('input', function () {
-      const keyword = this.value.toLowerCase();
-      const filtered = allCoins.filter((c) =>
-        c.name.toLowerCase().includes(keyword) || c.symbol.toLowerCase().includes(keyword)
-      );
-      renderCoins(filtered);
-    });
-
-    loadMarkets();
-  </script>
-</body>
+    <a href="market.html" class="active">  
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="2"/></svg>  
+      <span>Market</span>  
+    </a>  
+    <a href="dompet.html">  
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6v6l4 2m6-4a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>  
+      <span>Dompet</span>  
+    </a>  
+    <a href="mining.html">  
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 12h6M12 9v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/></svg>  
+      <span>Mining</span>  
+    </a>  
+    <a href="mitra.html">  
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2m8-6a4 4 0 00-8 0m8-10a4 4 0 11-8 0" stroke="currentColor" stroke-width="2"/></svg>  
+      <span>Mitra</span>  
+    </a>    
+  </div>      <script>  
+    let allCoins = [];  
+  
+    async function loadMarkets() {  
+      try {  
+        const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false');  
+        allCoins = await res.json();  
+        renderCoins(allCoins);  
+      } catch (err) {  
+        document.getElementById("marketList").innerText = "❌ Gagal memuat data pasar.";  
+        console.error(err);  
+      }  
+    }  
+  
+    function renderCoins(coins) {  
+      const marketList = document.getElementById("marketList");  
+      marketList.innerHTML = coins  
+        .map((coin) => {  
+          const idr = coin.current_price * 16000;  
+          const change = coin.price_change_percentage_24h?.toFixed(2) || "0.00";  
+          const changeClass = change < 0 ? "coin-change negative" : "coin-change";  
+          const symbol = coin.symbol.toUpperCase() + "USDT";  
+  
+          return `  
+            <div class="coin" onclick="goToTrade('${symbol}', ${coin.current_price}, '${coin.image}', '${coin.id}')">  
+              <div class="coin-left">  
+                <img src="${coin.image}" alt="${coin.symbol}" />  
+                <div>  
+                  <div class="coin-name">${coin.symbol.toUpperCase()}/USDT</div>  
+                  <div class="coin-idr">Rp${idr.toLocaleString(undefined, {maximumFractionDigits:2})}</div>  
+                </div>  
+              </div>  
+              <div class="coin-price">  
+                ${coin.current_price.toLocaleString(undefined, {minimumFractionDigits:2})}<br>  
+                <span class="${changeClass}">${change}%</span>  
+              </div>  
+            </div>  
+          `;  
+        })  
+        .join("");  
+    }  
+  
+    function goToTrade(symbol, price, image, coin_id) {  
+      const url = `trade.html?symbol=${symbol}&price=${price}&image=${encodeURIComponent(image)}&coin_id=${coin_id}`;  
+      window.location.href = url;  
+    }  
+  
+    document.getElementById('searchInput').addEventListener('input', function () {  
+      const keyword = this.value.toLowerCase();  
+      const filtered = allCoins.filter((c) =>  
+        c.name.toLowerCase().includes(keyword) || c.symbol.toLowerCase().includes(keyword)  
+      );  
+      renderCoins(filtered);  
+    });  
+  
+    loadMarkets();  
+  </script>  </body>  
 </html>
