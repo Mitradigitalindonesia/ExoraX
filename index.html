@@ -16,8 +16,8 @@
       align-items: center;
       height: 100vh;
       padding: 16px;
+      flex-direction: column;
     }
-
     .card {
       background: rgba(255, 255, 255, 0.05);
       padding: 24px;
@@ -27,13 +27,12 @@
       text-align: center;
       box-shadow: 0 4px 16px rgba(0,0,0,0.4);
       backdrop-filter: blur(10px);
+      display: none;
     }
-
     h2 {
       margin-bottom: 16px;
       color: #38bdf8;
     }
-
     input {
       width: 100%;
       padding: 12px;
@@ -44,7 +43,6 @@
       color: white;
       font-size: 16px;
     }
-
     button {
       width: 100%;
       padding: 12px;
@@ -57,70 +55,38 @@
       cursor: pointer;
       margin-top: 12px;
     }
-
     button:hover {
       background: #0ea5e9;
     }
-
     .toggle {
       margin-top: 16px;
       color: #94a3b8;
       font-size: 14px;
     }
-
     .toggle a {
       color: #38bdf8;
       cursor: pointer;
       text-decoration: underline;
     }
-
-    /* Saat loading, sembunyikan form login dan tampilkan spinner */
-    .card, #toggle-link {
-      display: none;
+    #loading {
+      text-align: center;
     }
-
-    body.loading .spinner {
-      display: flex;
+    #loading img {
+      width: 80px;
+      animation: zoom 1.2s infinite ease-in-out;
     }
-
-    .spinner {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      animation: fadeIn 0.5s ease-in;
-    }
-
-    .spinner img {
-      width: 96px;
-      height: 96px;
-      animation: zoomInOut 2s ease-in-out infinite;
-    }
-
-    @keyframes zoomInOut {
-      0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-      }
-      50% {
-        transform: scale(1.2);
-        opacity: 0.8;
-      }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    @keyframes zoom {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
     }
   </style>
 </head>
-<body class="loading">
-  <!-- Spinner Logo Saat Loading -->
-  <div class="spinner">
+<body>
+  <div id="loading">
     <img src="icon-512.png" alt="Loading...">
+    <p>Memuat sesi login...</p>
   </div>
 
-  <!-- Form Login -->
   <div class="card">
     <h2 id="form-title">Masuk</h2>
     <input type="email" id="email" placeholder="Email" />
@@ -147,14 +113,17 @@
       }
     );
 
-    // === Cek session saat awal ===
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      location.href = "dompet.html";
-    } else {
-      document.body.classList.remove("loading");
-      document.querySelector(".card").style.display = "block";
-    }
+    // Cek session lalu redirect jika sudah login
+    setTimeout(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          window.location.href = "dompet.html";
+        } else {
+          document.getElementById("loading").style.display = "none";
+          document.querySelector(".card").style.display = "block";
+        }
+      });
+    }, 800);
 
     const title = document.getElementById("form-title");
     const toggleContainer = document.querySelector(".toggle");
@@ -163,7 +132,6 @@
 
     let isSignup = false;
 
-    // Auto isi referral dari URL
     const params = new URLSearchParams(location.search);
     const refCode = params.get("ref");
     if (refCode) {
