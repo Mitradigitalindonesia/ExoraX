@@ -94,19 +94,18 @@
       Belum punya akun? <a id="toggle-link">Daftar</a>
     </div>
   </div>
+
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabase = createClient(
       'https://ocfjkltbtwqrbiucrkyq.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
-      { global: { headers: { Authorization: '' } } }
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
     );
 
     const loader = document.getElementById('loader');
     const loginCard = document.getElementById('login-card');
 
-    // Cek JWT dari localStorage
     const token = localStorage.getItem("supabaseAccessToken");
     if (token) {
       supabase.auth.setSession({ access_token: token, refresh_token: token }).then(async ({ data, error }) => {
@@ -131,7 +130,6 @@
 
     let isSignup = false;
 
-    // Auto-detect kode referral dari URL
     const params = new URLSearchParams(location.search);
     const refCode = params.get("ref");
     if (refCode) {
@@ -218,7 +216,7 @@
       }
     }
 
-    // PWA: Daftarkan service worker
+    // ✅ PWA: Daftarkan service worker
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("/sw.js")
