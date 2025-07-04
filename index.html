@@ -1,8 +1,13 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="theme-color" content="#0f172a">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
   <title>EXORA | Masuk / Daftar</title>
   <style>
     body {
@@ -25,7 +30,7 @@
       text-align: center;
       box-shadow: 0 4px 16px rgba(0,0,0,0.4);
       backdrop-filter: blur(10px);
-      display: none; /* Tersembunyi saat loading */
+      display: none;
     }
     h2 {
       margin-bottom: 16px;
@@ -78,7 +83,8 @@
   </style>
 </head>
 <body>
-  <img src="/icon-192.png" alt="Loading..." class="loading" id="loader">  <div class="card" id="login-card">
+  <img src="/icon-192.png" alt="Loading..." class="loading" id="loader">
+  <div class="card" id="login-card">
     <h2 id="form-title">Masuk</h2>
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
@@ -87,7 +93,8 @@
     <div class="toggle">
       Belum punya akun? <a id="toggle-link">Daftar</a>
     </div>
-  </div>  <script type="module">
+  </div>
+  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabase = createClient(
@@ -124,7 +131,7 @@
 
     let isSignup = false;
 
-    // === Auto-detect kode referral dari URL ===
+    // Auto-detect kode referral dari URL
     const params = new URLSearchParams(location.search);
     const refCode = params.get("ref");
     if (refCode) {
@@ -210,5 +217,15 @@
         await supabase.from("wallets").insert({ user_id: userId, symbol, amount: 0, address });
       }
     }
-  </script></body>
+
+    // PWA: Daftarkan service worker
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js")
+          .then((reg) => console.log("✅ Service Worker terdaftar:", reg))
+          .catch((err) => console.error("❌ Gagal register SW:", err));
+      });
+    }
+  </script>
+</body>
 </html>
