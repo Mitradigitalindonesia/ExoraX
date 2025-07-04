@@ -148,7 +148,7 @@
     const ICONS = ["💎", "🔮", "🪩"];
     const SIZE = 3;
     const TOTAL = SIZE * SIZE;
-    const DURATION = 60;
+    const DURATION = 600;
     let MAX_TIKET = 10;
 
     let tiles = [];
@@ -206,8 +206,8 @@
     }
 
     function formatTime(s) {
-      const m = Math.floor(s / 60);
-      const d = s % 60;
+      const m = Math.floor(s / 600);
+      const d = s % 600;
       return `${m}:${d.toString().padStart(2, '0')}`;
     }
 
