@@ -206,8 +206,8 @@
     }
 
     function formatTime(s) {
-      const m = Math.floor(s / 600);
-      const d = s % 600;
+      const m = Math.floor(s / 60);
+      const d = s % 60;
       return `${m}:${d.toString().padStart(2, '0')}`;
     }
 
