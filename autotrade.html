@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="id">
+<!DOCTYPE html><html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -102,25 +101,17 @@
     }
   </style>
 </head>
-<body>
-
-  <div class="summary-card">
+<body>  <div class="summary-card">
     <h1 id="balance">0 EXR</h1>
     <small id="totalYield">Total Keuntungan: 0 EXR</small>
-  </div>
-
-  <div id="botsContainer"></div>
-  <button class="start-btn" onclick="openModal()">+ Buat Bot</button>
-
-  <div id="botModal" class="modal">
+  </div>  <div id="botsContainer"></div>
+  <button class="start-btn" onclick="openModal()">+ Buat Bot</button>  <div id="botModal" class="modal">
     <div class="modal-content">
       <h2>Buat Bot Baru</h2>
       <input type="number" id="investment" placeholder="Jumlah Lot" value="0.01" />
       <button onclick="startBot()">Mulai Bot</button>
     </div>
-  </div>
-
-<script>
+  </div><script>
   const token = localStorage.getItem("supabaseAccessToken");
   const user_id = localStorage.getItem("userId");
 
@@ -154,7 +145,82 @@
   function closeModal() {
     document.getElementById("botModal").style.display = "none";
   }
+async function loadActiveBots() {
+  const { data: bots, error } = await supabaseClient
+    .from("bots")
+    .select("*")
+    .eq("user_id", user_id)
+    .eq("is_active", true);
 
+  if (error) {
+    console.error("Gagal mengambil bot:", error);
+    return;
+  }
+
+  bots.forEach(bot => {
+    const botId = bot.id;
+    let currentBet = parseFloat(bot.current_bet);
+    let totalInvestasi = 0;
+    let totalPayout = 0;
+    let totalPNL = 0;
+
+    const botDiv = document.createElement("div");
+    botDiv.className = "bot-card";
+    botDiv.id = `bot-${botId}`;
+    botDiv.innerHTML = `
+      <img src="bot.png" alt="robot-icon" style="width: 64px; height: 64px; margin-right: 16px; border-radius: 12px; box-shadow: 0 0 12px #7c3aed;" />
+      <div class="bot-info">
+        <div>Trade: ${parseFloat(bot.investment).toFixed(2)} Lot</div>
+        <div id="pnl-${botId}">PNL: 0.00 EXR</div>
+        <button onclick="stopBot('${botId}')">Stop Bot</button>
+      </div>
+    `;
+    botsContainer.appendChild(botDiv);
+
+    activeBots[botId] = setInterval(async () => {
+      const clientSeed = Math.random().toString(36).substring(2);
+      const { data, error } = await supabaseClient.rpc("rpc_play_limbo", {
+        p_user_id: user_id,
+        p_client_seed: clientSeed,
+        p_bet: currentBet,
+        p_target_multiplier: 2.0
+      });
+
+      if (error) {
+        console.error("RPC Error", error);
+        return;
+      }
+
+      const win = data.win;
+      const reward = win ? currentBet * 1.97 : 0;
+
+      totalInvestasi += currentBet;
+      totalPayout += reward;
+      totalPNL = totalPayout - totalInvestasi;
+
+      document.getElementById(`pnl-${botId}`).textContent =
+        `PNL: ${totalPNL.toFixed(2)} EXR`;
+
+      totalYield += reward - currentBet;
+      document.getElementById("totalYield").textContent =
+        `Total Keuntungan: ${totalYield.toFixed(2)} EXR`;
+
+      await supabaseClient
+        .from("bots")
+        .update({
+          current_bet: win ? bot.investment : currentBet * 2,
+          tick_count: bot.tick_count + 1,
+          last_result: win ? "win" : "lose",
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", botId);
+
+      currentBet = win ? bot.investment : currentBet * 2;
+
+      refreshBalance();
+    }, 3000);
+  });
+}
   async function refreshBalance() {
     const { data } = await supabaseClient
       .from("wallets")
@@ -173,7 +239,27 @@
 
     closeModal();
 
-    const botId = Date.now();
+    const { data: insertedBot, error } = await supabaseClient
+      .from("bots")
+      .insert({
+        user_id,
+        asset: "EXR",
+        investment,
+        leverage: 1,
+        position_type: "long",
+        entry_price: 10.0,
+        is_active: true,
+        current_bet: investment
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Gagal menyimpan bot:", error);
+      return;
+    }
+
+    const botId = insertedBot.id;
     let currentBet = investment;
     let totalPNL = 0;
     let totalPayout = 0;
@@ -183,11 +269,11 @@
     botDiv.className = "bot-card";
     botDiv.id = `bot-${botId}`;
     botDiv.innerHTML = `
-     <img src="bot.png" alt="robot-icon" style="width: 64px; height: 64px; margin-right: 16px; border-radius: 12px; box-shadow: 0 0 12px #7c3aed;" />
+      <img src="bot.png" alt="robot-icon" style="width: 64px; height: 64px; margin-right: 16px; border-radius: 12px; box-shadow: 0 0 12px #7c3aed;" />
       <div class="bot-info">
         <div>Trade: ${investment.toFixed(2)} Lot</div>
         <div id="pnl-${botId}">PNL: 0.00 EXR</div>
-        <button onclick="stopBot(${botId})">Stop Bot</button>
+        <button onclick="stopBot('${botId}')">Stop Bot</button>
       </div>
     `;
     botsContainer.prepend(botDiv);
@@ -220,24 +306,37 @@
       document.getElementById("totalYield").textContent =
         `Total Keuntungan: ${totalYield.toFixed(2)} EXR`;
 
+      await supabaseClient
+        .from("bots")
+        .update({
+          current_bet: win ? investment : currentBet * 2,
+          tick_count: insertedBot.tick_count + 1,
+          last_result: win ? "win" : "lose",
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", botId);
+
       currentBet = win ? investment : currentBet * 2;
 
       refreshBalance();
     }, 3000);
   }
 
-  function stopBot(botId) {
+  async function stopBot(botId) {
     clearInterval(activeBots[botId]);
     delete activeBots[botId];
+
+    await supabaseClient
+      .from("bots")
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq("id", botId);
+
     const el = document.getElementById(`bot-${botId}`);
     if (el) el.remove();
     refreshBalance();
   }
 
   refreshBalance();
-  window.openModal = openModal;
-  window.startBot = startBot;
-</script>
-
-</body>
+loadActiveBots();
+</script></body>
 </html>
