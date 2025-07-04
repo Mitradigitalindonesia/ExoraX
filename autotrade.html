@@ -1,10 +1,12 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>DCA Futures Bot</title>
   <meta name="theme-color" content="#0f172a">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.6/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       margin: 0;
@@ -39,17 +41,21 @@
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(6px);
       display: flex;
-      align-items: center;
-      justify-content: flex-start;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .bot-top {
+      display: flex;
       gap: 16px;
+      align-items: center;
     }
     .bot-info {
       display: flex;
       flex-direction: column;
       gap: 4px;
+      flex: 1;
     }
     .bot-card button {
-      margin-top: 8px;
       padding: 8px 12px;
       border: none;
       border-radius: 8px;
@@ -99,52 +105,185 @@
       font-weight: bold;
       margin-top: 12px;
     }
+    canvas {
+      width: 100% !important;
+      height: 150px !important;
+    }
   </style>
 </head>
-<body>  <div class="summary-card">
+<body>
+
+  <div class="summary-card">
     <h1 id="balance">0 EXR</h1>
     <small id="totalYield">Total Keuntungan: 0 EXR</small>
-  </div>  <div id="botsContainer"></div>
-  <button class="start-btn" onclick="openModal()">+ Buat Bot</button>  <div id="botModal" class="modal">
+  </div>
+
+  <div id="botsContainer"></div>
+  <button class="start-btn" onclick="openModal()">+ Buat Bot</button>
+
+  <div id="botModal" class="modal">
     <div class="modal-content">
       <h2>Buat Bot Baru</h2>
       <input type="number" id="investment" placeholder="Jumlah Lot" value="0.01" />
       <button onclick="startBot()">Mulai Bot</button>
     </div>
-  </div><script>
-  const token = localStorage.getItem("supabaseAccessToken");
-  const user_id = localStorage.getItem("userId");
+  </div>
 
-  if (!user_id || !token) {
-    alert("Sesi login tidak ditemukan.");
-    window.location.href = "index.html";
-  }
+<script>
+const token = localStorage.getItem("supabaseAccessToken");
+const user_id = localStorage.getItem("userId");
 
-  const supabaseClient = supabase.createClient(
-    'https://ocfjkltbtwqrbiucrkyq.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+if (!user_id || !token) {
+  alert("Sesi login tidak ditemukan.");
+  window.location.href = "index.html";
+}
+
+const supabaseClient = supabase.createClient(
+  'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
+  {
+    global: {
+      headers: {
+        Authorization: `Bearer ${token}`
       }
     }
-  );
-
-  const balanceEl = document.getElementById("balance");
-  const botsContainer = document.getElementById("botsContainer");
-  const investmentInput = document.getElementById("investment");
-  let activeBots = {};
-  let totalYield = 0;
-
-  function openModal() {
-    document.getElementById("botModal").style.display = "flex";
   }
+);
 
-  function closeModal() {
-    document.getElementById("botModal").style.display = "none";
-  }
+const balanceEl = document.getElementById("balance");
+const botsContainer = document.getElementById("botsContainer");
+const investmentInput = document.getElementById("investment");
+let activeBots = {};
+let totalYield = 0;
+
+function openModal() {
+  document.getElementById("botModal").style.display = "flex";
+}
+function closeModal() {
+  document.getElementById("botModal").style.display = "none";
+}
+async function refreshBalance() {
+  const { data } = await supabaseClient
+    .from("wallets")
+    .select("amount")
+    .eq("user_id", user_id)
+    .eq("symbol", "EXR")
+    .single();
+  if (data) balanceEl.textContent = `${parseFloat(data.amount).toFixed(2)} EXR`;
+}
+
+async function startBot() {
+  const investment = parseFloat(investmentInput.value);
+  if (!investment || investment <= 0) return alert("Jumlah investasi tidak valid.");
+  closeModal();
+
+  const { data: insertedBot, error } = await supabaseClient
+    .from("bots")
+    .insert({
+      user_id,
+      asset: "EXR",
+      investment,
+      leverage: 1,
+      position_type: "long",
+      entry_price: 10.0,
+      is_active: true,
+      current_bet: investment
+    })
+    .select()
+    .single();
+
+  if (error) return console.error("Gagal menyimpan bot:", error);
+
+  createBotUI(insertedBot.id, investment);
+}
+
+function createBotUI(botId, investment) {
+  let currentBet = investment;
+  let totalPNL = 0, totalPayout = 0, totalInvestasi = 0;
+  let pnlHistory = [];
+
+  const botDiv = document.createElement("div");
+  botDiv.className = "bot-card";
+  botDiv.id = `bot-${botId}`;
+  botDiv.innerHTML = `
+    <div class="bot-top">
+      <img src="bot.png" alt="robot-icon" style="width: 64px; height: 64px; border-radius: 12px; box-shadow: 0 0 12px #7c3aed;" />
+      <div class="bot-info">
+        <div>Trade: ${investment.toFixed(2)} Lot</div>
+        <div id="pnl-${botId}">PNL: 0.00 EXR</div>
+        <button onclick="stopBot('${botId}')">Stop Bot</button>
+      </div>
+    </div>
+    <canvas id="chart-${botId}"></canvas>
+  `;
+  botsContainer.prepend(botDiv);
+
+  const ctx = document.getElementById(`chart-${botId}`).getContext('2d');
+  const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'PNL EXR',
+        data: [],
+        borderColor: '#22d3ee',
+        backgroundColor: 'rgba(34, 211, 238, 0.1)',
+        borderWidth: 2,
+        tension: 0.3
+      }]
+    },
+    options: {
+      scales: {
+        x: { display: false },
+        y: { beginAtZero: true }
+      }
+    }
+  });
+
+  activeBots[botId] = setInterval(async () => {
+    const clientSeed = Math.random().toString(36).substring(2);
+    const { data, error } = await supabaseClient.rpc("rpc_play_limbo", {
+      p_user_id: user_id,
+      p_client_seed: clientSeed,
+      p_bet: currentBet,
+      p_target_multiplier: 2.0
+    });
+
+    if (error) return console.error("RPC Error", error);
+
+    const win = data.win;
+    const reward = win ? currentBet * 1.97 : 0;
+    totalInvestasi += currentBet;
+    totalPayout += reward;
+    totalPNL = totalPayout - totalInvestasi;
+    pnlHistory.push(totalPNL);
+
+    document.getElementById(`pnl-${botId}`).textContent =
+      `PNL: ${totalPNL.toFixed(2)} EXR`;
+
+    totalYield += reward - currentBet;
+    document.getElementById("totalYield").textContent =
+      `Total Keuntungan: ${totalYield.toFixed(2)} EXR`;
+
+    chart.data.labels.push(pnlHistory.length);
+    chart.data.datasets[0].data.push(totalPNL);
+    chart.update();
+
+    await supabaseClient.from("bots")
+      .update({
+        current_bet: win ? investment : currentBet * 2,
+        tick_count: pnlHistory.length,
+        last_result: win ? "win" : "lose",
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", botId);
+
+    currentBet = win ? investment : currentBet * 2;
+
+    refreshBalance();
+  }, 3000);
+}
+
 async function loadActiveBots() {
   const { data: bots, error } = await supabaseClient
     .from("bots")
@@ -152,191 +291,30 @@ async function loadActiveBots() {
     .eq("user_id", user_id)
     .eq("is_active", true);
 
-  if (error) {
-    console.error("Gagal mengambil bot:", error);
-    return;
-  }
+  if (error) return console.error("Gagal load bot:", error);
 
   bots.forEach(bot => {
-    const botId = bot.id;
-    let currentBet = parseFloat(bot.current_bet);
-    let totalInvestasi = 0;
-    let totalPayout = 0;
-    let totalPNL = 0;
-
-    const botDiv = document.createElement("div");
-    botDiv.className = "bot-card";
-    botDiv.id = `bot-${botId}`;
-    botDiv.innerHTML = `
-      <img src="bot.png" alt="robot-icon" style="width: 64px; height: 64px; margin-right: 16px; border-radius: 12px; box-shadow: 0 0 12px #7c3aed;" />
-      <div class="bot-info">
-        <div>Trade: ${parseFloat(bot.investment).toFixed(2)} Lot</div>
-        <div id="pnl-${botId}">PNL: 0.00 EXR</div>
-        <button onclick="stopBot('${botId}')">Stop Bot</button>
-      </div>
-    `;
-    botsContainer.appendChild(botDiv);
-
-    activeBots[botId] = setInterval(async () => {
-      const clientSeed = Math.random().toString(36).substring(2);
-      const { data, error } = await supabaseClient.rpc("rpc_play_limbo", {
-        p_user_id: user_id,
-        p_client_seed: clientSeed,
-        p_bet: currentBet,
-        p_target_multiplier: 2.0
-      });
-
-      if (error) {
-        console.error("RPC Error", error);
-        return;
-      }
-
-      const win = data.win;
-      const reward = win ? currentBet * 1.97 : 0;
-
-      totalInvestasi += currentBet;
-      totalPayout += reward;
-      totalPNL = totalPayout - totalInvestasi;
-
-      document.getElementById(`pnl-${botId}`).textContent =
-        `PNL: ${totalPNL.toFixed(2)} EXR`;
-
-      totalYield += reward - currentBet;
-      document.getElementById("totalYield").textContent =
-        `Total Keuntungan: ${totalYield.toFixed(2)} EXR`;
-
-      await supabaseClient
-        .from("bots")
-        .update({
-          current_bet: win ? bot.investment : currentBet * 2,
-          tick_count: bot.tick_count + 1,
-          last_result: win ? "win" : "lose",
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", botId);
-
-      currentBet = win ? bot.investment : currentBet * 2;
-
-      refreshBalance();
-    }, 3000);
+    createBotUI(bot.id, parseFloat(bot.investment));
   });
 }
-  async function refreshBalance() {
-    const { data } = await supabaseClient
-      .from("wallets")
-      .select("amount")
-      .eq("user_id", user_id)
-      .eq("symbol", "EXR")
-      .single();
-    if (data) balanceEl.textContent = `${parseFloat(data.amount).toFixed(2)} EXR`;
-  }
 
-  async function startBot() {
-    const investment = parseFloat(investmentInput.value);
-    if (!investment || investment <= 0) {
-      return alert("Jumlah investasi tidak valid.");
-    }
+async function stopBot(botId) {
+  clearInterval(activeBots[botId]);
+  delete activeBots[botId];
 
-    closeModal();
+  await supabaseClient
+    .from("bots")
+    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .eq("id", botId);
 
-    const { data: insertedBot, error } = await supabaseClient
-      .from("bots")
-      .insert({
-        user_id,
-        asset: "EXR",
-        investment,
-        leverage: 1,
-        position_type: "long",
-        entry_price: 10.0,
-        is_active: true,
-        current_bet: investment
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Gagal menyimpan bot:", error);
-      return;
-    }
-
-    const botId = insertedBot.id;
-    let currentBet = investment;
-    let totalPNL = 0;
-    let totalPayout = 0;
-    let totalInvestasi = 0;
-
-    const botDiv = document.createElement("div");
-    botDiv.className = "bot-card";
-    botDiv.id = `bot-${botId}`;
-    botDiv.innerHTML = `
-      <img src="bot.png" alt="robot-icon" style="width: 64px; height: 64px; margin-right: 16px; border-radius: 12px; box-shadow: 0 0 12px #7c3aed;" />
-      <div class="bot-info">
-        <div>Trade: ${investment.toFixed(2)} Lot</div>
-        <div id="pnl-${botId}">PNL: 0.00 EXR</div>
-        <button onclick="stopBot('${botId}')">Stop Bot</button>
-      </div>
-    `;
-    botsContainer.prepend(botDiv);
-
-    activeBots[botId] = setInterval(async () => {
-      const clientSeed = Math.random().toString(36).substring(2);
-      const { data, error } = await supabaseClient.rpc("rpc_play_limbo", {
-        p_user_id: user_id,
-        p_client_seed: clientSeed,
-        p_bet: currentBet,
-        p_target_multiplier: 2.0
-      });
-
-      if (error) {
-        console.error("RPC Error", error);
-        return;
-      }
-
-      const win = data.win;
-      const reward = win ? currentBet * 1.97 : 0;
-
-      totalInvestasi += currentBet;
-      totalPayout += reward;
-      totalPNL = totalPayout - totalInvestasi;
-
-      document.getElementById(`pnl-${botId}`).textContent =
-        `PNL: ${totalPNL.toFixed(2)} EXR`;
-
-      totalYield += reward - currentBet;
-      document.getElementById("totalYield").textContent =
-        `Total Keuntungan: ${totalYield.toFixed(2)} EXR`;
-
-      await supabaseClient
-        .from("bots")
-        .update({
-          current_bet: win ? investment : currentBet * 2,
-          tick_count: insertedBot.tick_count + 1,
-          last_result: win ? "win" : "lose",
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", botId);
-
-      currentBet = win ? investment : currentBet * 2;
-
-      refreshBalance();
-    }, 3000);
-  }
-
-  async function stopBot(botId) {
-    clearInterval(activeBots[botId]);
-    delete activeBots[botId];
-
-    await supabaseClient
-      .from("bots")
-      .update({ is_active: false, updated_at: new Date().toISOString() })
-      .eq("id", botId);
-
-    const el = document.getElementById(`bot-${botId}`);
-    if (el) el.remove();
-    refreshBalance();
-  }
+  const el = document.getElementById(`bot-${botId}`);
+  if (el) el.remove();
 
   refreshBalance();
+}
+
+refreshBalance();
 loadActiveBots();
-</script></body>
+</script>
+</body>
 </html>
