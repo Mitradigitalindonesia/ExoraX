@@ -2,333 +2,242 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sliding Puzzle EXORA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DCA Futures Bot</title>
+  <meta name="theme-color" content="#0f172a">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.6/dist/umd/supabase.min.js"></script>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b, #1e3a8a, #581c87);
-      color: white;
       margin: 0;
-      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #1e3a8a 50%, #581c87 100%);
+      color: white;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .summary-card {
+      background: rgba(30, 41, 59, 0.85);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(6px);
       text-align: center;
+    }
+    .summary-card h1 {
+      margin: 0;
+      font-size: 32px;
+    }
+    .summary-card small {
+      font-size: 14px;
+      color: #cbd5e1;
+    }
+    .bot-card {
+      background: rgba(30, 41, 59, 0.85);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+    }
+    .bot-info {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
+      gap: 4px;
     }
-    .game-header {
-      margin-top: 20px;
-      margin-bottom: 10px;
+    .bot-card button {
+      margin-top: 8px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      background: #ef4444;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .start-btn {
+      width: 100%;
+      margin-top: 12px;
+      padding: 16px;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      background: #7c3aed;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    .modal-content {
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+    }
+    .modal-content input, .modal-content button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
       font-size: 16px;
     }
-    .mx-balance {
-      font-size: 18px;
-      font-weight: bold;
-      color: #38bdf8;
-    }
-    .game-info {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
-    .game-info div span {
-      display: block;
-      font-size: 18px;
-      font-weight: bold;
-      color: #38bdf8;
-    }
-    #puzzle-container {
-      display: grid;
-      gap: 6px;
-      width: 90vw;
-      max-width: 320px;
-      aspect-ratio: 1 / 1;
-      margin: 20px auto;
-    }
-    .tile {
-      background: #1e3a8a;
-      border-radius: 8px;
-      font-size: 24px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .tile.hidden {
-      background: transparent;
-      box-shadow: none;
-      cursor: default;
-    }
-    #start-btn {
-      background: linear-gradient(135deg, #22d3ee, #3b82f6);
-      border: none;
+    .modal-content button {
+      background: #22d3ee;
       color: #0f172a;
       font-weight: bold;
-      padding: 12px 24px;
-      border-radius: 12px;
-      cursor: pointer;
-      box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
-      margin-top: 10px;
-    }
-    #message {
-      font-size: 16px;
-      margin-top: 10px;
-      color: #fbbf24;
-    }
-    #badges {
-      font-size: 20px;
-      margin-top: 10px;
-    }
-    .progress-container {
-      width: 80%;
-      max-width: 300px;
-      margin: 12px auto 0;
-    }
-    .progress-bar {
-      height: 8px;
-      background: #334155;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    .progress-bar-inner {
-      height: 8px;
-      background: #22d3ee;
-      width: 100%;
-      border-radius: 4px;
-      transition: width 0.3s;
-    }
-    #log, #totalRewardDisplay {
-      font-size: 13px;
-      color: #94a3b8;
-      margin-top: 8px;
+      margin-top: 12px;
     }
   </style>
 </head>
 <body>
-  <div class="game-header">
-    Saldo MX Anda: <span class="mx-balance" id="mxBalance">Loading...</span>
+
+  <div class="summary-card">
+    <h1 id="balance">0 EXR</h1>
+    <small id="totalYield">Total Keuntungan: 0 EXR</small>
   </div>
-  <div class="game-info">
-    <div>Tiket<br><span id="tiket">0</span></div>
-    <div>Timer<br><span id="timer">1:00</span></div>
-    <div>Reward<br><span>0.5 MX</span></div>
-  </div>
-  <div id="badges">🏅</div>
-  <div id="puzzle-container"></div>
-  <button id="start-btn">Mulai Puzzle</button>
-  <div id="message"></div>
-  <div class="progress-container">
-    <div class="progress-bar">
-      <div id="tiketBar" class="progress-bar-inner"></div>
+
+  <div id="botsContainer"></div>
+  <button class="start-btn" onclick="openModal()">+ Buat Bot</button>
+
+  <div id="botModal" class="modal">
+    <div class="modal-content">
+      <h2>Buat Bot Baru</h2>
+      <input type="number" id="investment" placeholder="Jumlah Lot" value="0.01" />
+      <button onclick="startBot()">Mulai Bot</button>
     </div>
   </div>
-  <div id="log">Terakhir: Belum ada aktivitas</div>
-  <div id="totalRewardDisplay">Total MX Hari Ini: <span id="totalReward">0.0</span> MX</div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+<script>
+  const token = localStorage.getItem("supabaseAccessToken");
+  const user_id = localStorage.getItem("userId");
 
-    const puzzleContainer = document.getElementById("puzzle-container");
-    const startBtn = document.getElementById("start-btn");
-    const tiketText = document.getElementById("tiket");
-    const timerText = document.getElementById("timer");
-    const message = document.getElementById("message");
-    const badges = document.getElementById("badges");
-    const log = document.getElementById("log");
-    const tiketBar = document.getElementById("tiketBar");
-    const totalRewardText = document.getElementById("totalReward");
-    const mxBalanceText = document.getElementById("mxBalance");
+  if (!user_id || !token) {
+    alert("Sesi login tidak ditemukan.");
+    window.location.href = "index.html";
+  }
 
-    const ICONS = ["💎", "🔮", "🪩"];
-    const SIZE = 3;
-    const TOTAL = SIZE * SIZE;
-    const DURATION = 60;
-    let MAX_TIKET = 10;
-
-    let tiles = [];
-    let timer = DURATION;
-    let timerInterval;
-    let wins = 0;
-    let totalReward = 0;
-    let currentIcon = "💎";
-    let lastRemainingTickets = 10;
-
-    const token = localStorage.getItem("supabaseAccessToken");
-    const user_id = localStorage.getItem("userId");
-    const supabase = createClient('https://ocfjkltbtwqrbiucrkyq.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
-      { global: { headers: { Authorization: `Bearer ${token}` } } }
-    );
-
-    async function fetchMXBalance() {
-      if (!user_id) return;
-      const { data, error } = await supabase
-        .from("wallets")
-        .select("amount")
-        .eq("user_id", user_id)
-        .eq("symbol", "MX")
-        .single();
-      if (error || !data) mxBalanceText.textContent = "0.0 MX";
-      else mxBalanceText.textContent = `${parseFloat(data.amount).toFixed(2)} MX`;
-    }
-
-    async function fetchPuzzleStatus() {
-      const { data, error } = await supabase.rpc("rpc_get_puzzle_status", {
-        p_user_id: user_id
-      });
-      if (error || !data || data.length === 0) {
-        console.error("Gagal memuat status puzzle:", error);
-        return;
+  const supabaseClient = supabase.createClient(
+    'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
+    {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       }
+    }
+  );
 
-      const result = data[0];
-      MAX_TIKET = result.max_tickets;
-      lastRemainingTickets = result.max_tickets - result.total_tickets;
-      wins = result.total_wins;
-      updateTiketDisplay(lastRemainingTickets);
-      badges.textContent = "🏅".repeat(wins);
+  const balanceEl = document.getElementById("balance");
+  const botsContainer = document.getElementById("botsContainer");
+  const investmentInput = document.getElementById("investment");
+  let activeBots = {};
+  let totalYield = 0;
+
+  function openModal() {
+    document.getElementById("botModal").style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById("botModal").style.display = "none";
+  }
+
+  async function refreshBalance() {
+    const { data } = await supabaseClient
+      .from("wallets")
+      .select("amount")
+      .eq("user_id", user_id)
+      .eq("symbol", "EXR")
+      .single();
+    if (data) balanceEl.textContent = `${parseFloat(data.amount).toFixed(2)} EXR`;
+  }
+
+  async function startBot() {
+    const investment = parseFloat(investmentInput.value);
+    if (!investment || investment <= 0) {
+      return alert("Jumlah investasi tidak valid.");
     }
 
-    function setTiketBar(val) {
-      tiketText.textContent = val;
-      tiketBar.style.width = `${(val / MAX_TIKET) * 100}%`;
-    }
+    closeModal();
 
-    function updateTiketDisplay(val = MAX_TIKET) {
-      setTiketBar(val);
-      badges.textContent = "🏅".repeat(wins);
-    }
+    const botId = Date.now();
+    let currentBet = investment;
+    let totalPNL = 0;
+    let totalPayout = 0;
+    let totalInvestasi = 0;
 
-    function formatTime(s) {
-      const m = Math.floor(s / 60);
-      const d = s % 60;
-      return `${m}:${d.toString().padStart(2, '0')}`;
-    }
+    const botDiv = document.createElement("div");
+    botDiv.className = "bot-card";
+    botDiv.id = `bot-${botId}`;
+    botDiv.innerHTML = `
+     <img src="bot.png" alt="robot-icon" style="width: 64px; height: 64px; margin-right: 16px; border-radius: 12px; box-shadow: 0 0 12px #7c3aed;" />
+      <div class="bot-info">
+        <div>Trade: ${investment.toFixed(2)} Lot</div>
+        <div id="pnl-${botId}">PNL: 0.00 EXR</div>
+        <button onclick="stopBot(${botId})">Stop Bot</button>
+      </div>
+    `;
+    botsContainer.prepend(botDiv);
 
-    function startTimer() {
-      clearInterval(timerInterval);
-      timer = DURATION;
-      timerText.textContent = formatTime(timer);
-      timerInterval = setInterval(() => {
-        timer--;
-        timerText.textContent = formatTime(timer);
-        if (timer <= 0) {
-          clearInterval(timerInterval);
-          message.textContent = "⏰ Waktu habis!";
-          log.textContent = `Terakhir: Gagal menyelesaikan puzzle. Tiket tersisa ${lastRemainingTickets}`;
-          resetGame();
-        }
-      }, 1000);
-    }
-
-    function shuffle(arr) {
-      return arr.sort(() => Math.random() - 0.5);
-    }
-
-    function createTiles() {
-      const arr = [];
-      for (let i = 0; i < TOTAL - 1; i++) arr.push(i);
-      arr.push(null);
-      return shuffle(arr);
-    }
-
-    function drawPuzzle() {
-      puzzleContainer.innerHTML = '';
-      puzzleContainer.style.gridTemplateColumns = `repeat(${SIZE}, 1fr)`;
-      tiles.forEach((val, i) => {
-        const tile = document.createElement("div");
-        tile.classList.add("tile");
-        if (val === null) {
-          tile.classList.add("hidden");
-          tile.textContent = "";
-        } else {
-          tile.textContent = currentIcon + " " + (val + 1);
-        }
-        tile.addEventListener("click", () => moveTile(i));
-        puzzleContainer.appendChild(tile);
-      });
-    }
-
-    async function claimRewardAndContinue() {
-      const { data, error } = await supabase.rpc("rpc_claim_puzzle_mx", {
+    activeBots[botId] = setInterval(async () => {
+      const clientSeed = Math.random().toString(36).substring(2);
+      const { data, error } = await supabaseClient.rpc("rpc_play_limbo", {
         p_user_id: user_id,
+        p_client_seed: clientSeed,
+        p_bet: currentBet,
+        p_target_multiplier: 2.0
       });
-      if (error || !data || data.length === 0) {
-        message.textContent = error?.message || "Gagal klaim reward.";
-        log.textContent = `Terakhir: Gagal klaim reward. Coba lagi.`;
+
+      if (error) {
+        console.error("RPC Error", error);
         return;
       }
 
-      const result = data[0];
-      lastRemainingTickets = result.remaining_tickets;
-      message.textContent = `🎉 Puzzle selesai! +${result.final_reward} MX`;
-      log.textContent = `Terakhir: Menang (${result.total_wins}x), Tiket ${result.remaining_tickets}`;
-      totalRewardText.textContent = (parseFloat(result.final_reward) + totalReward).toFixed(1);
-      updateTiketDisplay(result.remaining_tickets);
-      mxBalanceText.textContent = `${parseFloat(result.final_balance).toFixed(2)} MX`;
-      wins = result.total_wins;
-      totalReward += parseFloat(result.final_reward);
+      const win = data.win;
+      const reward = win ? currentBet * 1.97 : 0;
 
-      setTimeout(() => {
-        if (result.remaining_tickets > 0) startGame();
-        else {
-          message.textContent = "✅ Semua puzzle selesai hari ini.";
-          resetGame();
-        }
-      }, 1200);
-    }
+      totalInvestasi += currentBet;
+      totalPayout += reward;
+      totalPNL = totalPayout - totalInvestasi;
 
-    function moveTile(i) {
-      const empty = tiles.indexOf(null);
-      const isValid = [1, -1, SIZE, -SIZE].includes(i - empty) &&
-        !(i % SIZE === 0 && empty % SIZE === SIZE - 1) &&
-        !(i % SIZE === SIZE - 1 && empty % SIZE === 0);
-      if (isValid) {
-        [tiles[i], tiles[empty]] = [tiles[empty], tiles[i]];
-        drawPuzzle();
-        if (checkWin()) {
-          clearInterval(timerInterval);
-          claimRewardAndContinue();
-        }
-      }
-    }
+      document.getElementById(`pnl-${botId}`).textContent =
+        `PNL: ${totalPNL.toFixed(2)} EXR`;
 
-    function checkWin() {
-      for (let i = 0; i < TOTAL - 1; i++) if (tiles[i] !== i) return false;
-      return true;
-    }
+      totalYield += reward - currentBet;
+      document.getElementById("totalYield").textContent =
+        `Total Keuntungan: ${totalYield.toFixed(2)} EXR`;
 
-    function startGame() {
-      if (lastRemainingTickets <= 0) {
-        message.textContent = "Tiket habis!";
-        return;
-      }
-      currentIcon = ICONS[Math.floor(Math.random() * ICONS.length)];
-      message.textContent = "";
-      startBtn.style.display = "none";
-      tiles = createTiles();
-      drawPuzzle();
-      startTimer();
-    }
+      currentBet = win ? investment : currentBet * 2;
 
-    function resetGame() {
-      startBtn.style.display = "block";
-      clearInterval(timerInterval);
-      timerText.textContent = formatTime(DURATION);
-      tiles = createTiles();
-      drawPuzzle();
-    }
+      refreshBalance();
+    }, 3000);
+  }
 
-    await fetchPuzzleStatus();
-    await fetchMXBalance();
-    resetGame();
-    startBtn.addEventListener("click", startGame);
-  </script>
+  function stopBot(botId) {
+    clearInterval(activeBots[botId]);
+    delete activeBots[botId];
+    const el = document.getElementById(`bot-${botId}`);
+    if (el) el.remove();
+    refreshBalance();
+  }
+
+  refreshBalance();
+  window.openModal = openModal;
+  window.startBot = startBot;
+</script>
+
 </body>
 </html>
