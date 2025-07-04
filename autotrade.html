@@ -244,7 +244,7 @@ function createBotUI(botId, investment) {
 
   activeBots[botId] = setInterval(async () => {
     const clientSeed = Math.random().toString(36).substring(2);
-    const { data, error } = await supabaseClient.rpc("rpc_play_limbo_V2", {
+    const { data, error } = await supabaseClient.rpc("rpc_play_limbo_v2", {
       p_user_id: user_id,
       p_client_seed: clientSeed,
       p_bet: currentBet,
