@@ -241,48 +241,61 @@ function createBotUI(botId, investment) {
   });
 
   activeBots[botId] = setInterval(async () => {
-    const clientSeed = Math.random().toString(36).substring(2);
-    const { data, error } = await supabaseClient.rpc("rpc_play_limbo", {
-      p_user_id: user_id,
-      p_client_seed: clientSeed,
-      p_bet: currentBet,
-      p_target_multiplier: 2.0
-    });
+  const clientSeed = Math.random().toString(36).substring(2);
+  const { data, error } = await supabaseClient.rpc("rpc_play_limbo", {
+    p_user_id: user_id,
+    p_client_seed: clientSeed,
+    p_bet: currentBet,
+    p_target_multiplier: 2.0
+  });
 
-    if (error) return console.error("RPC Error", error);
+  if (error) return console.error("RPC Error", error);
 
-    const win = data.win;
-    const reward = win ? currentBet * 1.97 : 0;
-    totalInvestasi += currentBet;
-    totalPayout += reward;
-    totalPNL = totalPayout - totalInvestasi;
-    pnlHistory.push(totalPNL);
+  // 🔽 Tambahkan di sini:
+  if (data.mc) {
+    alert("Bot dihentikan otomatis karena saldo tidak cukup.");
+    stopBot(botId);
+    return;
+  }
 
-    document.getElementById(`pnl-${botId}`).textContent =
-      `PNL: ${totalPNL.toFixed(2)} EXR`;
+  const win = data.win;
+  const reward = win ? currentBet * 1.97 : 0;
 
-    totalYield += reward - currentBet;
-    document.getElementById("totalYield").textContent =
-      `Total Keuntungan: ${totalYield.toFixed(2)} EXR`;
+  totalInvestasi += currentBet;
+  totalPayout += reward;
+  totalPNL = totalPayout - totalInvestasi;
+  pnlHistory.push(totalPNL);
 
-    chart.data.labels.push(pnlHistory.length);
-    chart.data.datasets[0].data.push(totalPNL);
-    chart.update();
+  document.getElementById(`pnl-${botId}`).textContent =
+    `PNL: ${totalPNL.toFixed(2)} EXR`;
 
-    await supabaseClient.from("bots")
-      .update({
-        current_bet: win ? investment : currentBet * 2,
-        tick_count: pnlHistory.length,
-        last_result: win ? "win" : "lose",
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", botId);
+  document.getElementById(`invest-${botId}`).textContent =
+    `Investasi: ${totalInvestasi.toFixed(2)} EXR`;
 
-    currentBet = win ? investment : currentBet * 2;
+  document.getElementById(`payout-${botId}`).textContent =
+    `Payout: ${totalPayout.toFixed(2)} EXR`;
 
-    refreshBalance();
-  }, 3000);
-}
+  totalYield += reward - currentBet;
+  document.getElementById("totalYield").textContent =
+    `Total Keuntungan: ${totalYield.toFixed(2)} EXR`;
+
+  chart.data.labels.push(pnlHistory.length);
+  chart.data.datasets[0].data.push(totalPNL);
+  chart.update();
+
+  await supabaseClient.from("bots")
+    .update({
+      current_bet: win ? investment : currentBet * 2,
+      tick_count: pnlHistory.length,
+      last_result: win ? "win" : "lose",
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", botId);
+
+  currentBet = win ? investment : currentBet * 2;
+
+  refreshBalance();
+}, 3000);
 
 async function loadActiveBots() {
   const { data: bots, error } = await supabaseClient
