@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Riwayat Penarikan | EXORA</title>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+    );
+
+    async function loadHistory() {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (!user || error) {
+        alert("Silakan login terlebih dahulu.");
+        return;
+      }
+
+      const { data, error: fetchError } = await supabase
+        .from('withdrawals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      const list = document.getElementById('historyList');
+      list.innerHTML = '';
+
+      if (fetchError || !data || data.length === 0) {
+        list.innerHTML = '<p>Belum ada riwayat penarikan.</p>';
+        return;
+      }
+
+      data.forEach(item => {
+        const statusColor = item.status === 'success' ? '#16a34a' :
+                            item.status === 'pending' ? '#facc15' :
+                            '#f87171';
+
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div class="top">
+            <strong>Rp ${parseInt(item.amount).toLocaleString('id-ID')}</strong>
+            <span style="color: ${statusColor}; font-weight: bold;">${item.status}</span>
+          </div>
+          <div class="detail">
+            <p><strong>Bank:</strong> ${item.bank_name}</p>
+            <p><strong>Rekening:</strong> ${item.account_number}</p>
+            <p><strong>Nama:</strong> ${item.account_name}</p>
+            <p><strong>Tanggal:</strong> ${new Date(item.created_at).toLocaleString('id-ID')}</p>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', loadHistory);
+  </script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0f172a;
+      color: white;
+      padding: 20px;
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    .item {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 18px;
+    }
+    .detail p {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Riwayat Penarikan</h1>
+  <div id="historyList">Memuat...</div>
+</body>
+</html>
