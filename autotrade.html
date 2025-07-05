@@ -290,7 +290,7 @@ function createBotUI(botId, investment) {
       })
       .eq("id", botId);
 
-    currentBet = win ? investment : currentBet * 1.5;
+    currentBet = win ? investment : currentBet * 2;
 
     refreshBalance();
   }, 3000);
