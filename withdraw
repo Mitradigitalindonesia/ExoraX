@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Penarikan | EXORA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc'
+    );
+
+    let currentUserId = null;
+    let currentIDRBalance = 0;
+
+    async function loadIDRBalance(userId) {
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('amount')
+        .eq('user_id', userId)
+        .eq('symbol', 'IDR')
+        .single();
+
+      currentIDRBalance = parseFloat(data?.amount ?? 0);
+      document.getElementById('idrBalance').textContent = 'Rp ' + currentIDRBalance.toLocaleString('id-ID');
+    }
+
+    async function submitForm(event) {
+      event.preventDefault();
+
+      const jumlah = parseInt(document.getElementById('jumlah').value);
+      const rekening = document.getElementById('rekening').value.trim();
+      const nama = document.getElementById('nama').value.trim();
+      const bank = document.getElementById('bank').value.trim();
+
+      if (!jumlah || jumlah <= 0) return alert('Jumlah tidak valid.');
+      if (jumlah > currentIDRBalance) return alert('Saldo tidak cukup.');
+      if (!rekening || rekening.length < 8) return alert('Nomor rekening tidak valid.');
+      if (!nama) return alert('Nama pemilik rekening wajib diisi.');
+      if (!bank) return alert('Nama bank atau e-wallet wajib diisi.');
+
+      // 1. Kurangi saldo
+      const { error: updateError } = await supabase.rpc('decrease_wallet_balance', {
+        p_user_id: currentUserId,
+        p_symbol: 'IDR',
+        p_amount: jumlah
+      });
+
+      if (updateError) {
+        alert('Gagal mengurangi saldo: ' + updateError.message);
+        return;
+      }
+
+      // 2. Simpan ke withdrawals
+      const { error: insertError } = await supabase.from('withdrawals').insert({
+        user_id: currentUserId,
+        amount: jumlah,
+        account_number: rekening,
+        account_name: nama,
+        bank_name: bank,
+        status: 'pending'
+      });
+
+      if (insertError) {
+        alert('Gagal menyimpan permintaan: ' + insertError.message);
+        return;
+      }
+
+      alert('Permintaan penarikan berhasil dikirim dan menunggu persetujuan admin.');
+
+      // Reset form
+      document.getElementById('formPenarikan').reset();
+      await loadIDRBalance(currentUserId);
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (!user || error) {
+        alert('User belum login.');
+        return;
+      }
+
+      currentUserId = user.id;
+      await loadIDRBalance(currentUserId);
+
+      // Tambahkan listener ke form
+      document.getElementById('formPenarikan').addEventListener('submit', submitForm);
+    });
+  </script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b, #1e3a8a, #581c87);
+      color: white;
+      padding: 24px;
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      text-align: center;
+      font-size: 24px;
+    }
+    .form-box {
+      max-width: 400px;
+      margin: 40px auto;
+      background: rgba(30,41,59,0.9);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      border: 2px solid #334155;
+      background: #1e293b;
+      color: white;
+      font-size: 16px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #22d3ee;
+    }
+    button {
+      width: 100%;
+      background: #a855f7;
+      color: white;
+      border: none;
+      padding: 14px;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #9333ea;
+    }
+    .balance {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 18px;
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+  <h1>Penarikan Dana</h1>
+  <div class="form-box">
+    <div class="balance">
+      Saldo Tersedia: <span id="idrBalance">Memuat...</span>
+    </div>
+    <br>
+    <form id="formPenarikan">
+      <label for="jumlah">Jumlah Penarikan (Rp)</label>
+      <input id="jumlah" type="number" placeholder="Contoh: 250000" />
+
+      <label for="rekening">Nomor Rekening / Nomor E-Wallet</label>
+      <input id="rekening" type="text" placeholder="Contoh: 1234567890" />
+
+      <label for="nama">Nama Pemilik Rekening</label>
+      <input id="nama" type="text" placeholder="Contoh: Andi Saputra" />
+
+      <label for="bank">Bank / E-Wallet</label>
+      <input id="bank" type="text" placeholder="Contoh: BCA / DANA / OVO" />
+
+      <button type="submit">Kirim Penarikan</button>
+    </form>
+  </div>
+</body>
+</html>
