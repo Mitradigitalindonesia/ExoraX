@@ -2,12 +2,8 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="theme-color" content="#0f172a">
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>EXORA | Masuk / Daftar</title>
   <style>
     body {
@@ -32,49 +28,31 @@
       backdrop-filter: blur(10px);
       display: none;
     }
-    h2 {
-      margin-bottom: 16px;
-      color: #38bdf8;
-    }
+    h2 { margin-bottom: 16px; color: #38bdf8; }
     input {
-      width: 96%;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: none;
-      background: #334155;
-      color: white;
-      font-size: 14px;
+      width: 100%; padding: 12px; margin: 8px 0;
+      border-radius: 8px; border: none;
+      background: #334155; color: white; font-size: 14px;
     }
     button {
-      width: 96%;
-      padding: 12px;
-      background: #22d3ee;
-      color: #0f172a;
-      font-weight: bold;
-      font-size: 14px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 12px;
+      width: 100%; padding: 12px;
+      background: #22d3ee; color: #0f172a;
+      font-weight: bold; font-size: 14px;
+      border: none; border-radius: 8px;
+      cursor: pointer; margin-top: 12px;
     }
-    button:hover {
-      background: #0ea5e9;
-    }
+    button:hover { background: #0ea5e9; }
     .toggle {
-      margin-top: 16px;
-      color: #94a3b8;
+      margin-top: 16px; color: #94a3b8;
       font-size: 13px;
     }
     .toggle a {
-      color: #38bdf8;
-      cursor: pointer;
+      color: #38bdf8; cursor: pointer;
       text-decoration: underline;
     }
     .loading {
       animation: zoom 1.5s ease-in-out infinite;
-      width: 96px;
-      height: 96px;
+      width: 96px; height: 96px;
     }
     @keyframes zoom {
       0%, 100% { transform: scale(1); }
@@ -88,33 +66,51 @@
     <h2 id="form-title">Masuk</h2>
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
+    <small id="toggle-password" style="display:block; cursor:pointer; text-align:right; color:#94a3b8; font-size:13px;">
+      👁 Tampilkan Password
+    </small>
     <input type="text" id="referral-code" placeholder="Kode Referral (Opsional)" style="display:none;" />
     <button id="submit-btn">Masuk</button>
     <div class="toggle">
       Belum punya akun? <a id="toggle-link">Daftar</a>
     </div>
   </div>
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://ocfjkltbtwqrbiucrkyq.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
-      { global: { headers: { Authorization: '' } } }
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const supabase = createClient(
+  'https://ocfjkltbtwqrbiucrkyq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmprbHRidHdxcmJpdWNya3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxMzI1MzMsImV4cCI6MjA2NTcwODUzM30.vnh9oladeho0_usW1j2hpZfFqUv6jOB7lNZ3WANsGjc',
     );
 
     const loader = document.getElementById('loader');
     const loginCard = document.getElementById('login-card');
+    const referralInput = document.getElementById('referral-code');
+    const title = document.getElementById("form-title");
+    const submitBtn = document.getElementById("submit-btn");
+    const toggleContainer = document.querySelector(".toggle");
 
-    // Cek JWT dari localStorage
+    let isSignup = false;
+
+    // Cek kode referral dari URL
+    const params = new URLSearchParams(location.search);
+    const refCode = params.get("ref");
+    if (refCode) {
+      referralInput.value = refCode;
+      referralInput.style.display = "block";
+    }
+
+    // Cek session langsung
     const token = localStorage.getItem("supabaseAccessToken");
     if (token) {
       supabase.auth.setSession({ access_token: token, refresh_token: token }).then(async ({ data, error }) => {
         if (!error && data?.session?.user) {
+          const user = data.session.user;
+          await supabase.from("profiles").upsert({ id: user.id, email: user.email });
           location.href = "dompet.html";
         } else {
-          localStorage.removeItem("supabaseAccessToken");
-          localStorage.removeItem("userId");
+          localStorage.clear();
           loader.style.display = "none";
           loginCard.style.display = "block";
         }
@@ -124,21 +120,7 @@
       loginCard.style.display = "block";
     }
 
-    const title = document.getElementById("form-title");
-    const toggleContainer = document.querySelector(".toggle");
-    const submitBtn = document.getElementById("submit-btn");
-    const referralInput = document.getElementById("referral-code");
-
-    let isSignup = false;
-
-    // Auto-detect kode referral dari URL
-    const params = new URLSearchParams(location.search);
-    const refCode = params.get("ref");
-    if (refCode) {
-      referralInput.value = refCode;
-      referralInput.style.display = "block";
-    }
-
+    // Toggle Login/Signup Mode
     function toggleMode() {
       isSignup = !isSignup;
       title.textContent = isSignup ? "Daftar" : "Masuk";
@@ -152,6 +134,7 @@
 
     document.getElementById("toggle-link").addEventListener("click", toggleMode);
 
+    // Login / Daftar
     submitBtn.addEventListener("click", async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
@@ -169,7 +152,6 @@
             .maybeSingle();
           if (!data) return alert("❌ Kode referral tidak valid");
         }
-
         result = await supabase.auth.signUp({ email, password });
       } else {
         result = await supabase.auth.signInWithPassword({ email, password });
@@ -183,6 +165,9 @@
         localStorage.setItem("userId", user.id);
         localStorage.setItem("supabaseAccessToken", token);
 
+        // ✅ Simpan email ke profiles
+        await supabase.from("profiles").upsert({ id: user.id, email: user.email });
+
         if (isSignup) {
           await afterSignup(user.id, refCode);
           location.href = "create.html";
@@ -192,6 +177,7 @@
       }
     });
 
+    // Fungsi setelah signup
     async function afterSignup(userId, kodeReferral) {
       if (kodeReferral) {
         const { data } = await supabase
@@ -218,12 +204,23 @@
       }
     }
 
-    // PWA: Daftarkan service worker
+    // Toggle password visibility
+    const togglePass = document.getElementById("toggle-password");
+    if (togglePass) {
+      togglePass.addEventListener("click", () => {
+        const input = document.getElementById("password");
+        const isText = input.type === "text";
+        input.type = isText ? "password" : "text";
+        togglePass.textContent = isText ? "👁 Tampilkan Password" : " Sembunyikan Password";
+      });
+    }
+
+    // Service Worker (Optional PWA)
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("/sw.js")
-          .then((reg) => console.log("✅ Service Worker terdaftar:", reg))
-          .catch((err) => console.error("❌ Gagal register SW:", err));
+          .then((reg) => console.log("✅ SW terdaftar:", reg))
+          .catch((err) => console.error("❌ SW error:", err));
       });
     }
   </script>
